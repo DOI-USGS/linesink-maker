@@ -17,8 +17,8 @@ farfield = 'M:/GroundWater_Systems/USFS/Nicolet/ARC/Nicolet_FF.shp'
 nearfield = 'M:/GroundWater_Systems/USFS/Nicolet/ARC/Nicolet_NF.shp'
 
 # output linesink file
-outfile_basename = 'Nicolet'
-error_reporting = 'linesinks_from_NHDPlus_v2_errors.txt'
+outfile_basename = os.path.join(working_dir, 'Nicolet')
+error_reporting = os.path.join(working_dir, 'linesinks_from_NHDPlus_v2_errors.txt')
 
 # merged NHD files for major drainage areas in domain
 flowlines = os.path.join(working_dir, 'NHDPlus_0407_NAD27_utm16.shp')
@@ -26,12 +26,14 @@ elevslope = 'D:/ATLData/BadRiver/BCs/SFR_v4_new_streams/elevslope.dbf'
 PlusFlowVAA = 'D:/ATLData/BadRiver/BCs/SFR_v4_new_streams/PlusFlowlineVAA_0407Merge.dbf'
 
 split_by_HUC = True # GFLOW may not be able import if the lss file is too big
-HUC_shp = 'D:/ATLData/GFL files/Nicolet/basemaps/HUC8_NAD27_utm16.shp'
+HUC_shp = 'D:/ATLData/GFL files/Nicolet/basemaps/north_south.shp'
+HUC_name_field = 'HUC'
 
 # set max error tolerance for simplifying linework 
 # (largest distance between original lines and simplified lines, in projection units)
-nearfield_tolerance = 100
-farfield_tolerance = 300
+nearfield_tolerance = 200
+farfield_tolerance = 500
+min_farfield_order = 2 # minimum stream order to retain in farfield
 
 z_mult = 1/(2.54*12) # elevation units multiplier (from NHDPlus cm to model units)
 resistance = 0.3
@@ -63,7 +65,7 @@ def name(x):
         name = '{} unnamed'.format(x.name)
     return name
 
-    
+
 def write_lss(df, outfile):
     '''
     write GFLOW linesink XML (lss) file from dataframe df
@@ -162,6 +164,10 @@ ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield
 print '\nidentifying farfield and nearfield linesinks'
 df['farfield'] = [line.intersects(ffg) for line in df['geometry']]
 
+# drop farfield linesinks of order less than min_farfield_order
+df = df.drop(df.index[np.where(df['farfield'] & (df['StreamOrde'] < min_farfield_order))], axis=0)
+
+
 print 'simplifying linework geometries to reduce equations...'
 #(see http://toblerity.org/shapely/manual.html)
 df['geometry_nf'] = df['geometry'].map(lambda x: x.simplify(nearfield_tolerance))
@@ -201,6 +207,63 @@ df['dncomid'] = [list(df[df['Hydroseq'] == df.ix[i, 'DnHydroseq']].index) for i 
 df['upcomids'] = [list(df[df['DnHydroseq'] == df.ix[i, 'Hydroseq']].index) for i in df.index]
 
 
+print '\nmerging or splitting lines with only two vertices...'
+# find all routed comids with only 1 line; merge with neighboring comids
+# (GFLOW requires two lines for routed streams)
+
+def bisect(coords):
+    # add vertex to middle of single line segment
+    coords = np.array(coords)
+    mid = 0.5 * (coords[0] + coords[1])
+    new_coords = map(tuple, [coords[0], mid, coords[1]])
+    return new_coords
+
+df['nlines'] = [len(coords) for coords in df.ls_coords]
+comids1 = list(df[(df['nlines'] < 3) & (df['routing'] == 1) ]['COMID'+lsuffix])
+efp.write('\nunrouted comids of length 1 that were dropped:\n')
+for comid in comids1:
+
+    # get up and down comids/elevations
+    upcomids = df[df.index == comid]['upcomids'].item()
+    dncomid = df[df.index == comid]['dncomid'].item()
+
+    if len(dncomid) > 0:
+        if df.ix[comid].ls_coords[-1] == df.ix[dncomid[0]].ls_coords[0]: # merge into downstream comid; then drop
+            new_coords = df.ix[comid].ls_coords + df.ix[dncomid[0]].ls_coords[1:]
+            df.set_value(dncomid[0], 'ls_coords', new_coords) # update coordinates in dncomid
+            df.loc[dncomid, 'maxElev'] = df.ix[comid].maxElev # update max elevation
+            df = df.drop(comid, axis=0)
+            if dncomid in comids1: comids1.remove(dncomid) # for now, no double merges
+            # double merges degrade vertical elevation resolution,
+            # but more merging may be necessary to improve performance of GFLOW's database
+            replacement = dncomid[0]
+        else: # split it
+            new_coords = bisect(df.ix[comid].ls_coords)
+            df.set_value(comid, 'ls_coords', new_coords)
+
+    elif len(upcomids) > 0: # merge into first upstream comid; then drop
+        for uid in upcomids:
+            if df.ix[uid].ls_coords[-1] == df.ix[comid].ls_coords[0]:
+                new_coords = df.ix[uid].ls_coords + df.ix[comid].ls_coords[1:]
+                df.set_value(upcomids[0], 'ls_coords', new_coords) # update coordinates in upcomids[0]
+                df.loc[upcomids[0], 'minElev'] = df.ix[comid].minElev # update min elevation
+                df['upcomids'].replace(comid, upcomids[0]) # update any references to current comid
+                df = df.drop(comid, axis=0)
+                if upcomids[0] in comids1: comids1.remove(upcomids[0])
+                replacement = uid
+            else: # split it (for Nicolet, no linesinks were in this category)
+                new_coords = bisect(df.ix[comid].ls_coords)
+                df.set_value(comid, 'ls_coords', new_coords)
+
+    else: # there's nowhere to put it
+        df = df.drop(comid, axis=0)
+        efp.write('{}\n'.format(comid))
+        replacement=None # this shouldn't be necessary, but just in case
+
+    # update any references to current comid (clunkly because each row is a list)
+    df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
+    df['upcomids'] = [[replacement if v == comid else v for v in l] for l in df['upcomids']]
+
 print "adjusting elevations for comids with zero-gradient..."
 
 comids0 = df[df['dStage'] == 0]['COMID'+lsuffix]
@@ -215,7 +278,7 @@ for comid in comids0:
     upelevsmax = [df[df.index == uid]['maxElev'].item() for uid in upcomids]
     dncomid = df[df.index == comid]['dncomid'].item()
     dnelevmin = [df[df.index == dnid]['minElev'].item() for dnid in dncomid]
-    
+
     # adjust elevations for zero gradient comid if there is room
     if len(upcomids) == 0:
         df.loc[comid, 'maxElev'] += 0.01
@@ -231,7 +294,9 @@ for comid in comids0:
         if not farfield:
             efp.write('{},{},{},{:.2f},{:.2f}\n'.format(comid, upcomids, dncomid, df.ix[comid, 'maxElev'].item(),
                       df.ix[comid, 'minElev'].item()))
-            df.loc[comid, 'routing'] = 0
+            #df.loc[comid, 'routing'] = 0
+            #just increase the max elev slightly to get around zero-gradient error
+            df.loc[comid, 'maxElev'] += 0.01
             zerogradient.append(comid)
 
 print "\nWarning!, the following comids had zero gradients:\n{}".format(zerogradient)
@@ -267,44 +332,7 @@ df['ScenResistance'] = ScenResistance
 df.loc[df['farfield'], 'ScenResistance'] = '__NONE__'
 
 
-# find all routed comids with only 1 line; merge with neighboring comids
-# (GFLOW requires two lines for routed streams)
-df['nlines'] = [len(coords) for coords in df.ls_coords]
-comids1 = list(df[(df['nlines'] < 3) & (df['routing'] == 1) ]['COMID'+lsuffix])
-efp.write('\nunrouted comids of length 1 that were dropped:\n')
-for comid in comids1:
-    
-    # get up and down comids/elevations
-    upcomids = df[df.index == comid]['upcomids'].item()
-    dncomid = df[df.index == comid]['dncomid'].item()
-    
-    if len(dncomid) > 0: # merge into downstream comid; then drop
-        new_coords = list(set(df.ix[comid].ls_coords + df.ix[dncomid[0]].ls_coords))
-        df.set_value(dncomid[0], 'ls_coords', new_coords) # update coordinates in dncomid
-        df.loc[dncomid, 'maxElev'] = df.ix[comid].maxElev # update max elevation
-        df = df.drop(comid, axis=0)
-        if dncomid in comids1: comids1.remove(dncomid) # for now, no double merges
-        # double merges degrade vertical elevation resolution,
-        # but more merging may be necessary to improve performance of GFLOW's database
-        replacement = dncomid[0]
-        
-    elif len(upcomids) > 0: # merge into first upstream comid; then drop
-        new_coords = list(set(df.ix[upcomids[0]].ls_coords + df.ix[comid].ls_coords))
-        df.set_value(upcomids[0], 'ls_coords', new_coords) # update coordinates in upcomids[0]
-        df.loc[upcomids[0], 'minElev'] = df.ix[comid].minElev # update min elevation
-        df['upcomids'].replace(comid, upcomids[0]) # update any references to current comid
-        df = df.drop(comid, axis=0)
-        if upcomids[0] in comids1: comids1.remove(upcomids[0])
-        replacement = upcomids[0]
-        
-    else: # there's no where to put it
-        df = df.drop(comid, axis=0)
-        efp.write('{}\n'.format(comid))
-        replacement=None # this shouldn't be necessary, but just in case
-    
-    # update any references to current comid (clunkly because each row is a list)
-    df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]  
-    df['upcomids'] = [[replacement if v == comid else v for v in l] for l in df['upcomids']]
+
     
 # additional check to drop isolated comids
 isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0]
@@ -325,13 +353,14 @@ print 'number of simplified lines: {}\n'.format(npoints_simp)
 
 
 if split_by_HUC:
+    print '\nGrouping segments by hydrologic unit...'
     # intersect lines with HUCs; then group dataframe by HUCs
-    HUCs_df = GISio.shp2df(HUC_shp, index='HUC', geometry=True)
-    df['HUC'] = len(df)*[None]
+    HUCs_df = GISio.shp2df(HUC_shp, index=HUC_name_field, geometry=True)
+    df[HUC_name_field] = len(df)*[None]
     for HUC in HUCs_df.index:
         lines = [line.intersects(HUCs_df.ix[HUC, 'geometry']) for line in df['geometry']]
-        df.loc[lines, 'HUC'] = HUC
-    dfg = df.groupby('HUC')
+        df.loc[lines, HUC_name_field] = HUC
+    dfg = df.groupby(HUC_name_field)
 
     # write lines for each HUC to separate lss file
     HUCs = np.unique(df.HUC)
