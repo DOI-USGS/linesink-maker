@@ -5,9 +5,9 @@ all input shapefiles have to be in the same projected (i.e. ft. or m, not deg) c
 import numpy as np
 import os
 import sys
-sys.path.append('D:/ATLData/Documents/GitHub/GIS/')
+sys.path.append('D:/ATLData/Documents/GitHub/GIS_utils/')
 import GISio
-import shapely.geometry
+from shapely.geometry import Polygon, MultiPolygon
 import math
 
 working_dir = 'D:/ATLData/GFL files/Nicolet/new_linesinks'
@@ -24,6 +24,7 @@ error_reporting = os.path.join(working_dir, 'linesinks_from_NHDPlus_v2_errors.tx
 flowlines = os.path.join(working_dir, 'NHDPlus_0407_NAD27_utm16.shp')
 elevslope = 'D:/ATLData/BadRiver/BCs/SFR_v4_new_streams/elevslope.dbf'
 PlusFlowVAA = 'D:/ATLData/BadRiver/BCs/SFR_v4_new_streams/PlusFlowlineVAA_0407Merge.dbf'
+Waterbodies = 'D:/ATLData/GFL files/Nicolet/new_linesinks/NHDwaterbodies.shp'
 
 split_by_HUC = True # GFLOW may not be able import if the lss file is too big
 HUC_shp = 'D:/ATLData/GFL files/Nicolet/basemaps/north_south.shp'
@@ -34,6 +35,7 @@ HUC_name_field = 'HUC'
 nearfield_tolerance = 200
 farfield_tolerance = 500
 min_farfield_order = 2 # minimum stream order to retain in farfield
+min_waterbody_size = 1.0 # minimum sized waterbodies to retain (km2)
 
 z_mult = 1/(2.54*12) # elevation units multiplier (from NHDPlus cm to model units)
 resistance = 0.3
@@ -146,10 +148,14 @@ efp = open(error_reporting, 'w')
 df = GISio.shp2df(os.path.join(working_dir, 'flowlines_clipped.shp'), geometry=True, index='COMID')
 elevs = GISio.shp2df(elevslope, index='COMID')
 pfvaa = GISio.shp2df(PlusFlowVAA, index='COMID')
+wbs = GISio.shp2df('D:/ATLData/GFL files/Nicolet/new_linesinks/NHDwaterbodies.shp', index='COMID', geometry=True)
 
-# check for MultiLineStrings and drop them (these are lines that were fragmented by the boundaries)
+# check for MultiLineStrings / MultiPolygons and drop them (these are features that were fragmented by the boundaries)
 mls = [i for i in df.index if 'multi' in df.ix[i]['geometry'].type.lower()]
 df = df.drop(mls, axis=0)
+# get multipolygons using iterator; for some reason the above approach didn't work with the wbs dataframe
+mpoly_inds = [i for i, t in enumerate(wbs['geometry']) if 'multi' in t.type.lower()]
+wbs = wbs.drop(wbs.index[mpoly_inds], axis=0)
 
 # join everything together
 lsuffix = 'fl'
@@ -163,20 +169,46 @@ ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield
 
 print '\nidentifying farfield and nearfield linesinks'
 df['farfield'] = [line.intersects(ffg) for line in df['geometry']]
+wbs['farfield'] = [poly.intersects(ffg) for poly in wbs['geometry']]
 
 # drop farfield linesinks of order less than min_farfield_order
 df = df.drop(df.index[np.where(df['farfield'] & (df['StreamOrde'] < min_farfield_order))], axis=0)
 
-
-print 'simplifying linework geometries to reduce equations...'
-#(see http://toblerity.org/shapely/manual.html)
-df['geometry_nf'] = df['geometry'].map(lambda x: x.simplify(nearfield_tolerance))
-df['geometry_ff'] = df['geometry'].map(lambda x: x.simplify(farfield_tolerance))
+# drop waterbodies that aren't lakes larger than the size threshold
+wbs = wbs.drop(wbs.index[np.where((wbs['AREASQKM'] < min_waterbody_size) | (wbs['FTYPE'] != 'LakePond'))], axis=0)
 
 
-print 'assigning attributes for GFLOW input...'
 
-# elevations
+
+print 'simplifying geometries and assigning attributes for GFLOW input...'
+
+def xy_coords(x):
+    xy = zip(x.coords.xy[0], x.coords.xy[1])
+    return xy
+
+for d in [df, wbs]:
+
+    # simplify line and waterbody geometries
+    #(see http://toblerity.org/shapely/manual.html)
+    d['geometry_nf'] = d['geometry'].map(lambda x: x.simplify(nearfield_tolerance))
+    d['geometry_ff'] = d['geometry'].map(lambda x: x.simplify(farfield_tolerance))
+
+    # convert geometries to coordinates
+    d.loc[np.invert(d['farfield']), 'ls_coords'] = d['geometry_nf'].apply(xy_coords) # nearfield coordinates
+    d.loc[d['farfield'], 'ls_coords'] = d['geometry_ff'].apply(xy_coords) # farfield coordinates
+
+    # loops or braids in NHD linework can result in duplicate lines after simplification
+    # create column of line coordinates converted to strings
+    d['ls_coords_str'] = [''.join(map(str, coords)) for coords in d.ls_coords]
+    d = d.drop_duplicates('ls_coords_str') # drop rows from dataframe containing duplicates
+    d = d.drop('ls_coords_str', axis=1)
+
+    # routing
+    d['routing'] = len(d)*[1]
+    d.loc[d['farfield'], 'routing'] = 0 # turn off all routing in farfield (conversely, nearfield is all routed)
+
+
+# linesink elevations
 min_elev_col = [c for c in df.columns if 'minelev' in c.lower()][0]
 max_elev_col = [c for c in df.columns if 'maxelev' in c.lower()][0]
 df['minElev'] = df[min_elev_col] * z_mult
@@ -184,27 +216,34 @@ df['maxElev'] = df[max_elev_col] * z_mult
 df['dStage'] = df['maxElev'] - df['minElev']
 
 
-# coordinates
-def xy_coords(x):
-    xy = zip(x.coords.xy[0], x.coords.xy[1])
-    return xy
-df.loc[np.invert(df['farfield']), 'ls_coords'] = df['geometry_nf'].apply(xy_coords) # nearfield coordinates
-df.loc[df['farfield'], 'ls_coords'] = df['geometry_ff'].apply(xy_coords) # farfield coordinates
-
-# loops or braids in NHD linework can result in duplicate lines after simplification
-# create column of line coordinates converted to strings
-df['ls_coords_str'] = [''.join(map(str, coords)) for coords in df.ls_coords]
-df = df.drop_duplicates('ls_coords_str') # drop rows from dataframe containing duplicates
-df = df.drop('ls_coords_str', axis=1)
-
-
-# routing
-df['routing'] = len(df)*[1]
-df.loc[df['farfield'], 'routing'] = 0 # turn off all routing in farfield (conversely, nearfield is all routed)
-
 # record up and downstream comids
 df['dncomid'] = [list(df[df['Hydroseq'] == df.ix[i, 'DnHydroseq']].index) for i in df.index]
 df['upcomids'] = [list(df[df['DnHydroseq'] == df.ix[i, 'Hydroseq']].index) for i in df.index]
+
+
+# identify lines that represent lakes larger than the size threshold
+# get elevations and up/downcomids, farfield status for those lakes from the lines; then drop them
+
+wbs['minElev'] = np.zeros(len(wbs))
+wbs['maxElev'] = np.zeros(len(wbs))
+wbs['upcomids'] = np.zeros(len(wbs))
+wbs['dncomid'] = np.zeros(len(wbs))
+for wb_comid in wbs.index:
+    lines = df[df['WBAREACOMI'] == wb_comid]
+
+    # get upcomids and downcomid for lake,
+    # by differencing all up/down comids for lines in lake, and comids in the lake
+    wbs.ix[wb_comid, 'upcomids'] = list(set([c for l in lines.upcomids for c in l]) - set(lines.index))
+    wbs.ix[wb_comid, 'dncomd'] = list(set([c for l in lines.dncomid for c in l]) - set(lines.index))
+
+    # enforce gradient; update elevations in downstream comids
+    if wbs.ix[wb_comid, 'routing'] == 1 and wbs.ix[wb_comid, 'minElev'] == wbs.ix[wb_comid, 'maxElev']:
+        wbs.ix[wb_comid, 'minElev'] -= 0.01
+        for dnid in wbs.ix[wb_comid, 'dncomd']:
+            df.ix[dnid, 'maxElev'] -= 0.01
+
+    # drop the lines representing the lake from the lines dataframe
+    df = df.drop(lines.index)
 
 
 print '\nmerging or splitting lines with only two vertices...'
@@ -264,6 +303,7 @@ for comid in comids1:
     df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
     df['upcomids'] = [[replacement if v == comid else v for v in l] for l in df['upcomids']]
 
+
 print "adjusting elevations for comids with zero-gradient..."
 
 comids0 = df[df['dStage'] == 0]['COMID'+lsuffix]
@@ -288,6 +328,7 @@ for comid in comids0:
         df.loc[comid, 'maxElev'] = 0.5 * (df.ix[comid, 'maxElev'] + np.min(upelevsmax))
     elif len(dncomid) > 0 and dnelevmin < df.ix[comid, 'minElev']:
         df.loc[comid, 'minElev'] = 0.5 * (df.ix[comid, 'minElev'] + dnelevmin)
+
     # otherwise report to error file
     else:
         farfield = df.ix[comid, 'farfield']
@@ -385,7 +426,7 @@ GISio.df2shp(df, outfile_basename.split('.')[0]+'.shp', 'geometry', flowlines[:-
 
 efp.close()
 print 'Done!'
-
+'''
 
 
 '''
