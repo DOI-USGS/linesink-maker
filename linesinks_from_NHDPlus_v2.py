@@ -8,7 +8,8 @@ import os
 import sys
 sys.path.append('D:/ATLData/Documents/GitHub/GIS_utils/')
 import GISio
-from shapely.geometry import LineString
+from shapely.geometry import Polygon, LineString
+from shapely.ops import cascaded_union
 import math
 
 working_dir = 'D:/ATLData/GFL files/Nicolet/new_linesinks'
@@ -237,6 +238,17 @@ df = df.drop(df.index[np.where(df['farfield'] & (df['StreamOrde'] < min_farfield
 print 'dropping waterbodies that are not lakes larger than {}...'.format(min_waterbody_size)
 wbs = wbs.drop(wbs.index[np.where((wbs['AREASQKM'] < min_waterbody_size) | (wbs['FTYPE'] != 'LakePond'))], axis=0)
 
+print 'merging waterbodies with coincident boundaries...'
+for wb_comid in wbs.index:
+    overlapping = wbs.ix[[wbs.ix[wb_comid, 'geometry'].intersects(r) \
+                                                        for r in wbs.geometry]]
+    basering_comid = overlapping.sort('FTYPE').index[0] # sort to prioritize features with names
+    # two or more shapes in overlapping signifies a coincident boundary
+    if len(overlapping > 1):
+        merged = cascaded_union([r for r in overlapping.geometry]).exterior
+        wbs.ix[wb_comid, 'geometry'] = Polygon(merged) # convert from linear ring back to polygon (for next step)
+        wbs = wbs.drop([wbc for wbc in overlapping.index if wbc != basering_comid]) # only keep merged feature
+
 # swap out polygons in lake geometry column with the linear rings that make up their exteriors
 print 'converting lake exterior polygons to lines...'
 wbs['geometry'] = wbs['geometry'].apply(lambda x: x.exterior)
@@ -299,7 +311,7 @@ for wb_comid in wbs.index:
 
     lines = df[df['WBAREACOMI'] == wb_comid]
 
-    # isolated lakes have no overlapping lines
+    # isolated lakes have no overlapping lines and no routing
     if len(lines) == 0:
         df.ix[wb_comid, 'maxElev'] = wb_elevs[wb_comid]
         df.ix[wb_comid, 'minElev'] = wb_elevs[wb_comid] - 0.01
@@ -307,7 +319,7 @@ for wb_comid in wbs.index:
         continue
     # get upcomids and downcomid for lake,
     # by differencing all up/down comids for lines in lake, and comids in the lake
-    #for d in [df, wbs]: # (update both lines and lakes dataframes)
+
     #df.ix[wb_comid, 'upcomids'] = list(set([c for l in lines.upcomids for c in l]) - set(lines.index))
     #df.ix[wb_comid, 'dncomid'] = list(set([c for l in lines.dncomid for c in l]) - set(lines.index))
     df.set_value(wb_comid, 'upcomids', list(set([c for l in lines.upcomids for c in l]) - set(lines.index)))
@@ -336,14 +348,18 @@ for wb_comid in wbs.index:
                 df.ix[dnid, 'maxElev'] -= 0.01
 
         # move begining/end coordinate of linear ring representing lake to outlet location (to ensure correct routing)
-        outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
-        # find vertex closest to outlet
-        X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
-        dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
-        closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
-        # make new set of vertices that start and end at outlet location (and only include one instance of previous start/end!)
-        new_coords = df.ix[wb_comid, 'ls_coords'][closest_ind:] + df.ix[wb_comid, 'ls_coords'][1:closest_ind+1]
-        df.set_value(wb_comid, 'ls_coords', new_coords)
+        # some routed lakes may not have an outlet
+        if len(df.ix[wb_comid, 'dncomid']) > 0:
+            outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
+
+            # find vertex closest to outlet
+            X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
+            dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
+            closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
+
+            # make new set of vertices that start and end at outlet location (and only include one instance of previous start/end!)
+            new_coords = df.ix[wb_comid, 'ls_coords'][closest_ind:] + df.ix[wb_comid, 'ls_coords'][1:closest_ind+1]
+            df.set_value(wb_comid, 'ls_coords', new_coords)
 
     # drop the lines representing the lake from the lines dataframe
     df = df.drop(lines.index)
@@ -367,8 +383,10 @@ efp.write('\nunrouted comids of length 1 that were dropped:\n')
 for comid in comids1:
 
     # get up and down comids/elevations; only consider upcomid/downcomids that are streams (exclude lakes)
-    upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in wbs.index]
-    dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in wbs.index]
+    #upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in wbs.index]
+    #dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in wbs.index]
+    upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
+    dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
     merged = False
     #if comid == 13392281 or 13392281 in upcomids or 13392281 in dncomid:
 
