@@ -199,6 +199,7 @@ if preprocess: # incomplete; does not include projection
     arcpy.FeatureToPoint_management(waterbodies_clipped, wb_centroids_w_elevations)
     arcpy.sa.ExtractMultiValuesToPoints(wb_centroids_w_elevations, [[DEM, elevs_field]])
 
+
 # open error reporting file
 efp = open(error_reporting, 'w')
 
@@ -322,14 +323,27 @@ for wb_comid in wbs.index:
         df.ix[df.FTYPE != 'LakePond', 'dncomid'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].dncomid]
         df.ix[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
 
-    # enforce gradient; update elevations in downstream comids
-    if df.ix[wb_comid, 'routing'] == 1 and df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
-        df.ix[wb_comid, 'minElev'] -= 0.01
-        for dnid in df.ix[wb_comid, 'dncomid']:
-            df.ix[dnid, 'maxElev'] -= 0.01
-
     # get total length of lines representing lake (used later to estimate width)
     df.ix[wb_comid, 'total_line_length'] = np.sum(lines.LengthKM)
+
+    # modifications to routed lakes
+    if df.ix[wb_comid, 'routing'] == 1:
+
+        # enforce gradient; update elevations in downstream comids
+        if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
+            df.ix[wb_comid, 'minElev'] -= 0.01
+            for dnid in df.ix[wb_comid, 'dncomid']:
+                df.ix[dnid, 'maxElev'] -= 0.01
+
+        # move begining/end coordinate of linear ring representing lake to outlet location (to ensure correct routing)
+        outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
+        # find vertex closest to outlet
+        X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
+        dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
+        closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
+        # make new set of vertices that start and end at outlet location (and only include one instance of previous start/end!)
+        new_coords = df.ix[wb_comid, 'ls_coords'][closest_ind:] + df.ix[wb_comid, 'ls_coords'][1:closest_ind+1]
+        df.set_value(wb_comid, 'ls_coords', new_coords)
 
     # drop the lines representing the lake from the lines dataframe
     df = df.drop(lines.index)
@@ -399,11 +413,7 @@ for comid in comids1:
         # split it for now (don't want to drop it if it connects to a lake)
         new_coords = bisect(df.ix[comid].ls_coords)
         df.set_value(comid, 'ls_coords', new_coords)
-        '''
-        df = df.drop(comid, axis=0)
-        efp.write('{}\n'.format(comid))
-        replacement=None # this shouldn't be necessary, but just in case
-        '''
+
     if merged:
         # update any references to current comid (clunkly because each row is a list)
         df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
