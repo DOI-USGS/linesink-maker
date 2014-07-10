@@ -225,11 +225,12 @@ df = df.join(pfvaa, how='inner', lsuffix=lsuffix, rsuffix='pfvaa')
 
 # read in nearfield and farfield boundaries
 nf = GISio.shp2df(nearfield, geometry=True)
+nfg = nf.iloc[0]['geometry'] # polygon representing nearfield
 ff = GISio.shp2df(os.path.join(working_dir, 'ff_cutout.shp'), geometry=True)
-ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield
+ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
 print '\nidentifying farfield and nearfield linesinks...'
-df['farfield'] = [line.intersects(ffg) for line in df['geometry']]
+df['farfield'] = [line.intersects(ffg) and not line.intersects(nfg) for line in df['geometry']]
 wbs['farfield'] = [poly.intersects(ffg) for poly in wbs['geometry']]
 
 print 'removing farfield streams lower than {} order...'.format(min_farfield_order)
@@ -399,7 +400,7 @@ for comid in comids1:
             df.loc[dncomid, 'maxElev'] = df.ix[comid].maxElev # update max elevation
             #df['dncomid'].replace(comid, dncomid)
             df = df.drop(comid, axis=0)
-            if dncomid in comids1: comids1.remove(dncomid) # for now, no double merges
+            #if dncomid in comids1: comids1.remove(dncomid) # for now, no double merges
             # double merges degrade vertical elevation resolution,
             # but more merging may be necessary to improve performance of GFLOW's database
             replacement = dncomid[0]
@@ -417,7 +418,7 @@ for comid in comids1:
                 df.loc[uid, 'minElev'] = df.ix[comid].minElev # update min elevation
                 #df['upcomids'].replace(comid, uid) # update any references to current comid
                 df = df.drop(comid, axis=0)
-                if uid in comids1: comids1.remove(uid)
+                #if uid in comids1: comids1.remove(uid)
                 replacement = uid
                 merged = True
                 break
@@ -518,6 +519,20 @@ df.ix[df['FTYPE'] == 'LakePond', 'AutoSWIZC'] = 2 # Along surface water boundary
 # additional check to drop isolated lines
 isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0 and c not in wbs.index]
 df = df.drop(isolated, axis=0)
+
+
+# also fix any overlapping lines (caused by simplication) by removing the line with a lower arbolate sum
+def actually_crosses(A, B, precis=0.0001):
+    """A hybrid spatial predicate that determines if two geometries cross on both sides"""
+    # from http://gis.stackexchange.com/questions/26443/is-there-a-way-to-tell-if-two-linestrings-really-intersect-in-jts-or-geos
+    return (B.crosses(A) and
+            B.crosses(A.parallel_offset(precis, 'left')) and
+            B.crosses(A.parallel_offset(precis, 'right')))
+for comid in df.index:
+    crossed = df.ix[[actually_crosses(df.ix[comid, 'geometry'], l) for l in df.geometry]]
+    crossed = crossed.append(df.ix[comid]).sort('ArbolateSu', ascending=False)
+    # drop all overlapping lines but the largest
+    df.drop(crossed.index[1:])
 
 
 # names
