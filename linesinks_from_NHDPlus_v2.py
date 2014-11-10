@@ -7,7 +7,9 @@ import numpy as np
 import os
 import sys
 sys.path.append('D:/ATLData/Documents/GitHub/GIS_utils/')
+sys.path.append('D:/ATLData/Documents/GitHub/pdio/')
 import GISio
+import pdio
 from shapely.geometry import Polygon, LineString
 from shapely.ops import cascaded_union
 import math
@@ -188,6 +190,7 @@ def closest_vertex(point, shape):
     closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
     return closest_ind
 
+
 ### Main Program #############################
 
 if preprocess: # incomplete; does not include projection
@@ -276,6 +279,8 @@ print 'simplifying geometries...'
 df['geometry_nf'] = df['geometry'].map(lambda x: x.simplify(nearfield_tolerance))
 df['geometry_ff'] = df['geometry'].map(lambda x: x.simplify(farfield_tolerance))
 
+pdio.save_pandas(os.path.join(working_dir, 'df.pklz'), df)
+df = pdio.load_pandas(os.path.join(working_dir, 'df.pklz'))
 
 print 'Assigning attributes for GFLOW input...'
 
@@ -286,11 +291,6 @@ def xy_coords(x):
 df.loc[np.invert(df['farfield']), 'ls_coords'] = df['geometry_nf'].apply(xy_coords) # nearfield coordinates
 df.loc[df['farfield'], 'ls_coords'] = df['geometry_ff'].apply(xy_coords) # farfield coordinates
 
-# loops or braids in NHD linework can result in duplicate lines after simplification
-# create column of line coordinates converted to strings
-df['ls_coords_str'] = [''.join(map(str, coords)) for coords in df.ls_coords]
-df = df.drop_duplicates('ls_coords_str') # drop rows from dataframe containing duplicates
-df = df.drop('ls_coords_str', axis=1)
 
 # routing
 df['routing'] = len(df)*[1]
@@ -311,6 +311,38 @@ df['dncomid'] = len(df)*[[]]
 df['upcomids'] = len(df)*[[]]
 df.ix[lines, 'dncomid'] = [list(df[df['Hydroseq'] == df.ix[i, 'DnHydroseq']].index) for i in lines]
 df.ix[lines, 'upcomids'] = [list(df[df['DnHydroseq'] == df.ix[i, 'Hydroseq']].index) for i in lines]
+
+
+# loops or braids in NHD linework can result in duplicate lines after simplification
+# create column of line coordinates converted to strings
+df['ls_coords_str'] = [''.join(map(str, coords)) for coords in df.ls_coords]
+
+# identify duplicates; make common set of up and down comids for duplicates
+duplicates = np.unique(df.ix[df.duplicated('ls_coords_str'), 'ls_coords_str'])
+for dup in duplicates:
+    alld = df[df.ls_coords_str == dup]
+    upcomids = []
+    dncomid = []
+    for i, r in alld.iterrows():
+        if i == 6820078:
+            j=2
+        upcomids += r.upcomids
+        dncomid += r.dncomid
+
+        # if nothing routes to the braid, drop it (keep the duplicate braid that is routed too)
+        if len(r.upcomids) == 0:
+            df.drop(i, axis=0)
+
+    upcomids, dncomid = list(set(upcomids)), list(set(dncomid))
+
+    alld = df[df.ls_coords_str == dup]
+    for i, r in alld.iterrows():
+        df.set_value(i, 'upcomids', upcomids)
+        df.set_value(i, 'dncomid', dncomid)
+
+# drop the duplicates (this may cause problems if multiple braids are routed to)
+df = df.drop_duplicates('ls_coords_str') # drop rows from dataframe containing duplicates
+df = df.drop('ls_coords_str', axis=1)
 
 
 # read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)
@@ -389,8 +421,8 @@ print '\nmerging or splitting lines with only two vertices...'
 def bisect(coords):
     # add vertex to middle of single line segment
     coords = np.array(coords)
-    mid = 0.5 * (coords[0] + coords[1])
-    new_coords = map(tuple, [coords[0], mid, coords[1]])
+    mid = 0.5 * (coords[0] + coords[-1])
+    new_coords = map(tuple, [coords[0], mid, coords[-1]])
     return new_coords
 
 df['nlines'] = [len(coords) for coords in df.ls_coords]
@@ -399,13 +431,17 @@ comids1 = list(df[(df['nlines'] < 3) & (df['routing'] == 1)].index)
 efp.write('\nunrouted comids of length 1 that were dropped:\n')
 for comid in comids1:
 
+
     # get up and down comids/elevations; only consider upcomid/downcomids that are streams (exclude lakes)
     #upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in wbs.index]
     #dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in wbs.index]
     upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
     dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
     merged = False
-    #if comid == 13392281 or 13392281 in upcomids or 13392281 in dncomid:
+    if comid == 13396559 or comid == 13396569 or comid == 13396555 or comid == 13397241:
+        j=2
+    if comid == 6820088:
+        j=2
 
     # first try to merge with downstream comid
     if len(dncomid) > 0:
@@ -413,14 +449,20 @@ for comid in comids1:
         if df.ix[comid].ls_coords[-1] == df.ix[dncomid[0]].ls_coords[0]:
             new_coords = df.ix[comid].ls_coords + df.ix[dncomid[0]].ls_coords[1:]
             df.set_value(dncomid[0], 'ls_coords', new_coords) # update coordinates in dncomid
-            df.loc[dncomid, 'maxElev'] = df.ix[comid].maxElev # update max elevation
-            #df['dncomid'].replace(comid, dncomid)
+            df.loc[dncomid[0], 'maxElev'] = df.ix[comid].maxElev # update max elevation
+
             df = df.drop(comid, axis=0)
-            #if dncomid in comids1: comids1.remove(dncomid) # for now, no double merges
-            # double merges degrade vertical elevation resolution,
-            # but more merging may be necessary to improve performance of GFLOW's database
+
+            # record merged comid and replace references to it (as a dncomid)
             replacement = dncomid[0]
-            merged = True
+            df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
+
+            # add upcomids of merged segment to its replacement
+            new_upcomids = list(set(df.ix[replacement, 'upcomids'] + upcomids))
+            new_upcomids.remove(comid)
+            df.set_value(replacement, 'upcomids', new_upcomids)
+
+            #merged = True
         else: # split it
             new_coords = bisect(df.ix[comid].ls_coords)
             df.set_value(comid, 'ls_coords', new_coords)
@@ -432,10 +474,18 @@ for comid in comids1:
                 new_coords = df.ix[uid].ls_coords + df.ix[comid].ls_coords[1:]
                 df.set_value(uid, 'ls_coords', new_coords) # update coordinates in upcomid
                 df.loc[uid, 'minElev'] = df.ix[comid].minElev # update min elevation
-                #df['upcomids'].replace(comid, uid) # update any references to current comid
+
                 df = df.drop(comid, axis=0)
-                #if uid in comids1: comids1.remove(uid)
+
+                # record merged comid and replace references to it (in the upcomids list of the downstream comid)
                 replacement = uid
+
+                new_upcomids = df.ix[dncomid[0], 'upcomids'].replace(comid, replacement)
+                df.set_value(replacement, 'upcomids', new_upcomids)
+
+                # update the dncomids of the replacement with those of the merged comid
+                df.set_value(replacement, 'dncomids', dncomid[0])
+
                 merged = True
                 break
             else: # split it (for Nicolet, no linesinks were in this category)
@@ -448,12 +498,12 @@ for comid in comids1:
         # split it for now (don't want to drop it if it connects to a lake)
         new_coords = bisect(df.ix[comid].ls_coords)
         df.set_value(comid, 'ls_coords', new_coords)
-
+'''
     if merged:
         # update any references to current comid (clunkly because each row is a list)
         df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
         df['upcomids'] = [[replacement if v == comid else v for v in l] for l in df['upcomids']]
-
+'''
 
 print "adjusting elevations for comids with zero-gradient..."
 
@@ -536,7 +586,7 @@ df.ix[df['FTYPE'] == 'LakePond', 'AutoSWIZC'] = 2 # Along surface water boundary
 isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0 and c not in wbs.index]
 df = df.drop(isolated, axis=0)
 
-
+'''
 print "removing any overlapping lines caused by simplication..."
 def actually_crosses(A, B, precis=0.0001):
     """A hybrid spatial predicate that determines if two geometries cross on both sides"""
@@ -583,8 +633,8 @@ for comid in df.index:
                 plt.plot(LineString(df.ix[line_comid, 'ls_coords']).coords.xy[0], LineString(df.ix[line_comid, 'ls_coords']).coords.xy[1])
 
         # otherwise, if just lines are involved, drop the lines with the lowest Arbolate sums
-        else:
-            df = df.drop(crossed.index[1:])
+        #else:
+            #df = df.drop(crossed.index[1:])
 
         # only address each comid once
         for comid in crossed.index:
@@ -592,7 +642,7 @@ for comid in df.index:
         pdf.savefig()
         plt.close()
 pdf.close()
-
+'''
 # names
 df['ls_name'] = len(df)*[None]
 df['ls_name'] = df.apply(name, axis=1)
