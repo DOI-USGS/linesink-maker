@@ -185,6 +185,7 @@ class linesinks:
 
         # NHD files
         self.flowlines = inpars.findall('.//flowlines')[0].text
+        self.elevslope = inpars.findall('.//elevslope')[0].text
         self.PlusFlowVAA = inpars.findall('.//PlusFlowVAA')[0].text
         self.waterbodies = inpars.findall('.//waterbodies')[0].text
 
@@ -192,8 +193,16 @@ class linesinks:
         self.DEM = inpars.findall('.//DEM')[0].text
         self.elevs_field = inpars.findall('.//elevs_field')[0].text
         self.DEM_zmult = float(inpars.findall('.//DEM_zmult')[0].text)
-        self.flowlines_clipped = os.path.join(self.path, 'flowlines_clipped.shp')
-        self.waterbodies_clipped = os.path.join(self.path, 'waterbodies_clipped.shp')
+
+        try:
+            self.flowlines_clipped = inpars.findall('.//flowlines_clipped')[0].text
+        except:
+            self.flowlines_clipped = os.path.join(self.path, 'flowlines_clipped.shp')
+        try:
+            self.waterbodies_clipped = inpars.findall('.//waterbodies_clipped')[0].text
+        except:
+            self.waterbodies_clipped = os.path.join(self.path, 'waterbodies_clipped.shp')
+            
         self.wb_centroids_w_elevations = self.waterbodies_clipped[:-4] + '_points.shp' # elevations extracted during preprocessing routine
         self.elevs_field = 'DEM_m' # field in wb_centroids_w_elevations containing elevations
 
@@ -312,14 +321,15 @@ class linesinks:
         df['geometry_ff'] = df['geometry'].map(lambda x: x.simplify(self.farfield_tolerance))
 
         if pickle:
-            pdio.save_pandas(os.path.join(self.path, 'df.pklz'), df)
+            #pdio.save_pandas(os.path.join(self.path, 'df.pklz'), df)
+            df.to_msgpack(os.path.join(self.working_dir, pickle))
             self.efp.close()
 
 
     def makeLineSinks(self, pickle=None):
 
         if pickle:
-            df = pdio.load_pandas(os.path.join(self.path, 'df.pklz'))
+            df = pdio.load_pandas(os.path.join(self.path, pickle))
             efp = open(self.efp, 'a')
 
 
