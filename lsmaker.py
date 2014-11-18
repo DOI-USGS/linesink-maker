@@ -4,10 +4,8 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import os
 import sys
-sys.path.append('D:/ATLData/Documents/GitHub/GIS_utils/')
-sys.path.append('D:/ATLData/Documents/GitHub/pdio/')
+sys.path.append('D:/ATLData/Documents/GitHub/GIS_utils')
 import GISio
-import pdio
 from shapely.geometry import Polygon, LineString
 from shapely.ops import cascaded_union
 import math
@@ -159,11 +157,11 @@ class linesinks:
             if not os.path.exists(self.path):
                 os.makedirs(self.path)
         except:
-            self.working_dir = os.getcwd()
+            self.path = os.getcwd()
 
         # global settings
         self.preproc = self.tf2flag(inpars.findall('.//preprocess')[0].text)
-        self.zmult = float(inpars.findall('.//zmult')[0].text)
+        self.z_mult = float(inpars.findall('.//zmult')[0].text) # elevation units multiplier (from NHDPlus cm to model units)
         self.resistance = float(inpars.findall('.//resistance')[0].text) # (days); c in documentation
         self.H = float(inpars.findall('.//H')[0].text) # aquifer thickness in model units
         self.k = float(inpars.findall('.//k')[0].text) # hydraulic conductivity of the aquifer in model units
@@ -188,6 +186,7 @@ class linesinks:
         self.elevslope = inpars.findall('.//elevslope')[0].text
         self.PlusFlowVAA = inpars.findall('.//PlusFlowVAA')[0].text
         self.waterbodies = inpars.findall('.//waterbodies')[0].text
+        self.prj = self.flowlines[:-4] + '.prj'
 
         # preprocessed files
         self.DEM = inpars.findall('.//DEM')[0].text
@@ -202,7 +201,7 @@ class linesinks:
             self.waterbodies_clipped = inpars.findall('.//waterbodies_clipped')[0].text
         except:
             self.waterbodies_clipped = os.path.join(self.path, 'waterbodies_clipped.shp')
-            
+
         self.wb_centroids_w_elevations = self.waterbodies_clipped[:-4] + '_points.shp' # elevations extracted during preprocessing routine
         self.elevs_field = 'DEM_m' # field in wb_centroids_w_elevations containing elevations
 
@@ -219,7 +218,7 @@ class linesinks:
             return False
 
 
-    def preprocess(self):
+    def preprocess_arcpy(self):
         '''
         requires arcpy
         incomplete; does not include projection
@@ -243,15 +242,14 @@ class linesinks:
         arcpy.sa.ExtractMultiValuesToPoints(self.wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
 
 
-    def makeLines(self, pickle=False):
+    def preprocess(self, save=True):
         '''
         associate NHD tabular information to linework
         intersect lines with nearfield and farfield domains
-        simplify linework
+        edit linework
             - remove farfield streams lower than minimum order
             - remove lakes smaller than minimum size
             - convert lakes from polygons to lines; merge with lines
-            - simplify line geometries
         '''
 
         # open error reporting file
@@ -260,8 +258,8 @@ class linesinks:
         print '\nAssembling input...'
         # read linework shapefile into pandas dataframe
         df = GISio.shp2df(self.flowlines_clipped, geometry=True, index='COMID')
-        elevs = GISio.shp2df(self.elevslope, index='COMID')
-        pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID')
+        elevs = GISio.shp2df(self.elevslope, index='COMID', clipto=df)
+        pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', clipto=df)
         wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', geometry=True)
 
         # check for MultiLineStrings / MultiPolygons and drop them (these are features that were fragmented by the boundaries)
@@ -279,7 +277,7 @@ class linesinks:
         # read in nearfield and farfield boundaries
         nf = GISio.shp2df(self.nearfield, geometry=True)
         nfg = nf.iloc[0]['geometry'] # polygon representing nearfield
-        ff = GISio.shp2df(os.path.join(self.working_dir, 'ff_cutout.shp'), geometry=True)
+        ff = GISio.shp2df(os.path.join(self.path, 'ff_cutout.shp'), geometry=True)
         ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
         print '\nidentifying farfield and nearfield linesinks...'
@@ -310,29 +308,30 @@ class linesinks:
         # swap out polygons in lake geometry column with the linear rings that make up their exteriors
         print 'converting lake exterior polygons to lines...'
         wbs['geometry'] = wbs['geometry'].apply(lambda x: x.exterior)
+        wbs['geometry'] = [LineString(g) for g in wbs.geometry]
+        wbs['waterbody'] = [True] * len(wbs)
 
         print 'merging flowline and waterbody datasets...'
+        df['waterbody'] = [False] * len(df)
         df = df.append(wbs)
 
-        print 'simplifying geometries...'
+        print 'Done with preprocessing.'
+        if save:
+            GISio.df2shp(df, 'lines.shp', prj=self.prj)
+
+
+
+    def makeLineSinks(self, df=None, shp=None):
+
+        if not df:
+            df = GISio.shp2df(shp, index='COMID', geometry=True, true_values=['True'], false_values=['False'])
+        self.wblist = df.ix[df.waterbody].index
+
+        print 'simplifying NHD linework geometries...'
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
         df['geometry_nf'] = df['geometry'].map(lambda x: x.simplify(self.nearfield_tolerance))
         df['geometry_ff'] = df['geometry'].map(lambda x: x.simplify(self.farfield_tolerance))
-
-        if pickle:
-            #pdio.save_pandas(os.path.join(self.path, 'df.pklz'), df)
-            df.to_msgpack(os.path.join(self.working_dir, pickle))
-            self.efp.close()
-
-
-    def makeLineSinks(self, pickle=None):
-
-        if pickle:
-            df = pdio.load_pandas(os.path.join(self.path, pickle))
-            efp = open(self.efp, 'a')
-
-
 
         print 'Assigning attributes for GFLOW input...'
 
@@ -340,8 +339,9 @@ class linesinks:
         def xy_coords(x):
             xy = zip(x.coords.xy[0], x.coords.xy[1])
             return xy
-        df.loc[np.invert(df['farfield']), 'ls_coords'] = df['geometry_nf'].apply(xy_coords) # nearfield coordinates
-        df.loc[df['farfield'], 'ls_coords'] = df['geometry_ff'].apply(xy_coords) # farfield coordinates
+
+        df.loc[np.invert(df.farfield), 'ls_coords'] = df.ix[np.invert(df.farfield), 'geometry_nf'].apply(xy_coords) # nearfield coordinates
+        df.loc[df.farfield, 'ls_coords'] = df.ix[df.farfield, 'geometry_ff'].apply(xy_coords) # farfield coordinates
 
 
         # routing
@@ -358,7 +358,7 @@ class linesinks:
 
 
         # record up and downstream comids for lines
-        lines = [l for l in df.index if l not in self.wbs.index]
+        lines = [l for l in df.index if l not in self.wblist]
         df['dncomid'] = len(df)*[[]]
         df['upcomids'] = len(df)*[[]]
         df.ix[lines, 'dncomid'] = [list(df[df['Hydroseq'] == df.ix[i, 'DnHydroseq']].index) for i in lines]
@@ -405,7 +405,7 @@ class linesinks:
         # get elevations, up/downcomids, and total lengths for those lines
         # assign attributes to lakes, then drop the lines
 
-        for wb_comid in self.wbs.index:
+        for wb_comid in self.wblist:
 
             lines = df[df['WBAREACOMI'] == wb_comid]
             if wb_comid == 9022741:
@@ -485,8 +485,8 @@ class linesinks:
 
 
             # get up and down comids/elevations; only consider upcomid/downcomids that are streams (exclude lakes)
-            #upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in wbs.index]
-            #dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in wbs.index]
+            #upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in self.wblist]
+            #dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in self.wblist]
             upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
             dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
             merged = False
@@ -635,7 +635,7 @@ class linesinks:
 
 
         # additional check to drop isolated lines
-        isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0 and c not in self.wbs.index]
+        isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0 and c not in self.wblist]
         df = df.drop(isolated, axis=0)
 
         '''
@@ -739,7 +739,7 @@ class linesinks:
         df = df.drop(['ls_coords'], axis=1)
         GISio.df2shp(df, self.outfile_basename.split('.')[0]+'.shp', 'geometry', self.flowlines[:-4]+'.prj')
 
-        efp.close()
+        self.efp.close()
         print 'Done!'
 
 
