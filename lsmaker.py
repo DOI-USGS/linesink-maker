@@ -3,8 +3,6 @@ __author__ = 'aleaf'
 import xml.etree.ElementTree as ET
 import numpy as np
 import os
-import sys
-sys.path.append('D:/ATLData/Documents/GitHub/GIS_utils')
 import GISio
 from shapely.geometry import Polygon, LineString
 from shapely.ops import cascaded_union
@@ -16,26 +14,34 @@ from matplotlib.backends.backend_pdf import PdfPages
 ### Functions #############################
 
 def w_parameter(B, lmbda):
-    # see Haitjema 2005, "Dealing with Resistance to Flow into Surface Waters"
+    """Compute w parameter for estimating an effective conductance term
+    (i.e., when simulating Lakes using Linesinks instead of GFLOW's lake package)
+
+    If only larger lakes are simulated (e.g., > 1 km2), w parameter will be = lambda
+
+    see Haitjema 2005, "Dealing with Resistance to Flow into Surface Waters"
+    """
     if lmbda <= 0.1 * B:
         w = lmbda
     elif 0.1 * B < lmbda < 2 * B:
         w = lmbda * np.tanh(B / (2 * lmbda))
     else:
-        w = B /2
+        w = B / 2
     return w
 
 
 def width_from_arboate(arbolate, lmbda):
-    # estimate stream width in feet from arbolate sum in meters
-    # see LMB report, Appendix 2, p 266.
+    """Estimate stream width in feet from arbolate sum in meters, using relationship
+    described by Feinstein et al (2010), Appendix 2, p 266.
+    """
     estwidth = 0.1193 * math.pow(1000 * arbolate, 0.5032)
     w = 2 * w_parameter(estwidth, lmbda) # assumes stream is rep. by single linesink
     return w
 
 
 def lake_width(area, total_line_length, lmbda):
-    # estimate conductance width from lake area and length of flowlines running through it
+    """Estimate conductance width from lake area and length of flowlines running through it
+    """
     if total_line_length > 0:
         estwidth = 1000 * (area / total_line_length) / 0.3048  # (km2/km)*(ft/km)
     else:
@@ -49,7 +55,8 @@ def lake_width(area, total_line_length, lmbda):
 
 
 def name(x):
-    # convention to name linesinks from NHDPlus
+    """Abbreviations for naming linesinks from names in NHDPlus
+    """
     if x.GNIS_NAME:
         # reduce name down with abbreviations
         abb = {'Branch': 'Br',
@@ -73,9 +80,8 @@ def name(x):
 
 
 def write_lss(df, outfile):
-    '''
-    write GFLOW linesink XML (lss) file from dataframe df
-    '''
+    """write GFLOW linesink XML (lss) file from dataframe df
+    """
     # global inputs
     depth = 3 # streambed thickness
     DefaultResistance = 0.3
@@ -134,11 +140,13 @@ def write_lss(df, outfile):
 
 
 def closest_vertex(point, shape):
-    # return index of closest vertex in shapely geometry object
+    """Returns index of closest vertex in shapely geometry object
+    """
     X, Y = np.ravel(shape.coords.xy[0]), np.ravel(shape.coords.xy[1])
     dX, dY = X - point[0], Y - point[1]
     closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
     return closest_ind
+
 
 class linesinks:
 
@@ -186,7 +194,7 @@ class linesinks:
         self.elevslope = inpars.findall('.//elevslope')[0].text
         self.PlusFlowVAA = inpars.findall('.//PlusFlowVAA')[0].text
         self.waterbodies = inpars.findall('.//waterbodies')[0].text
-        self.prj = self.flowlines[:-4] + '.prj'
+        self.prj = inpars.findall('.//prj')[0].text
 
         # preprocessed files
         self.DEM = inpars.findall('.//DEM')[0].text
@@ -291,7 +299,13 @@ class linesinks:
         wbs = wbs.drop(wbs.index[np.where((wbs['AREASQKM'] < self.min_waterbody_size) | (wbs['FTYPE'] != 'LakePond'))], axis=0)
 
         print 'merging waterbodies with coincident boundaries...'
+        dropped = []
         for wb_comid in wbs.index:
+
+            # skipped already merged
+            if wb_comid in dropped:
+                continue
+
             overlapping = wbs.ix[[wbs.ix[wb_comid, 'geometry'].intersects(r) \
                                                                 for r in wbs.geometry]]
             basering_comid = overlapping.sort('FTYPE').index[0] # sort to prioritize features with names
@@ -299,7 +313,10 @@ class linesinks:
             if len(overlapping > 1):
                 merged = cascaded_union([r for r in overlapping.geometry]).exterior
                 wbs.ix[basering_comid, 'geometry'] = Polygon(merged) # convert from linear ring back to polygon (for next step)
-                wbs = wbs.drop([wbc for wbc in overlapping.index if wbc != basering_comid]) # only keep merged feature
+
+                todrop = [wbc for wbc in overlapping.index if wbc != basering_comid]
+                dropped += todrop
+                wbs = wbs.drop(todrop) # only keep merged feature
                 # replace references to dropped waterbody in lines
                 for wbc in overlapping.index:
                     df.ix[df['WBAREACOMI'] == wbc, 'WBAREACOMI'] = basering_comid
@@ -314,35 +331,100 @@ class linesinks:
         print 'merging flowline and waterbody datasets...'
         df['waterbody'] = [False] * len(df)
         df = df.append(wbs)
+        df.COMID = df.index
 
         print 'Done with preprocessing.'
         if save:
             GISio.df2shp(df, 'lines.shp', prj=self.prj)
 
+        self.df = df
 
+    def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None):
 
-    def makeLineSinks(self, df=None, shp=None):
+        if nearfield_tolerance is None:
+            nearfield_tolerance = self.nearfield_tolerance
+            farfield_tolerance = self.farfield_tolerance
 
-        if not df:
-            df = GISio.shp2df(shp, index='COMID', geometry=True, true_values=['True'], false_values=['False'])
-        self.wblist = df.ix[df.waterbody].index
+        if isinstance(self.df.farfield.iloc[0], basestring):
+            self.df.loc[:, 'farfield'] = [True if f.lower() == 'true' else False for f in self.df.farfield]
 
         print 'simplifying NHD linework geometries...'
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
+        '''
         df['geometry_nf'] = df['geometry'].map(lambda x: x.simplify(self.nearfield_tolerance))
         df['geometry_ff'] = df['geometry'].map(lambda x: x.simplify(self.farfield_tolerance))
+        '''
+        df = self.df[['farfield', 'geometry']]
 
-        print 'Assigning attributes for GFLOW input...'
+        ls_geom = np.array([LineString()] * len(df))
+        domain_tol = [nearfield_tolerance, farfield_tolerance]
+        for i, domain in enumerate([np.invert(df.farfield).values, df.farfield.values]):
+
+            # simplify the linesinks in the domain; add simplified geometries to global geometry column
+            # assign geometries to numpy array first and then to df (had trouble assigning with pandas)
+            ls_geom[domain] = [g.simplify(domain_tol[i]) for g in df.ix[domain, 'geometry'].tolist()]
+
+        df.loc[:, 'ls_geom'] = ls_geom
 
         # convert geometries to coordinates
         def xy_coords(x):
-            xy = zip(x.coords.xy[0], x.coords.xy[1])
+            xy = zip(x.xy[0], x.xy[1])
             return xy
 
+        # add column of lists, containing linesink coordinates
+        df.loc[:, 'ls_coords'] = df.ls_geom.apply(xy_coords)
+
+        return df
+
+    def prototype(self, nftol=[10, 50, 100, 200, 500], fftol=500):
+
+        if not os.path.isdir('prototypes'):
+            os.makedirs('prototypes')
+
+        if isinstance(fftol, float) or isinstance(fftol, int):
+            fftol = [fftol] * len(nftol)
+
+        nlines = []
+        for i, tol in enumerate(nftol):
+            df = self.simplify_lines(nearfield_tolerance=tol, farfield_tolerance=fftol[i])
+
+            # count the number of lines with distance tolerance
+            nlines.append(np.sum([len(l) for l in df.ls_coords]))
+
+            # make a shapefile of the simplified lines with nearfield_tol=tol
+            df.drop('ls_coords', axis=1, inplace=True)
+            outshp = 'prototypes/' + self.outfile_basename + '_dis_tol_{}.shp'.format(tol)
+            GISio.df2shp(df, outshp, geo_column='ls_geom', prj=self.prj)
+
+        plt.figure()
+        plt.plot(nftol, nlines)
+        plt.xlabel('Distance tolerance')
+        plt.ylabel('Number of lines')
+        plt.savefig(self.outfile_basename + 'tol_vs_nlines.pdf')
+
+
+    def makeLineSinks(self, shp=None):
+
+        if shp:
+            self.df = GISio.shp2df(shp, index='COMID', geometry=True, true_values=['True'], false_values=['False'])
+
+        df = self.df
+
+        self.lines_df = self.simplify_lines()
+
+        df['ls_geom'] = self.lines_df['ls_geom']
+        df['ls_coords'] = self.lines_df['ls_coords']
+
+        self.wblist = df.ix[df.waterbody].index
+
+        print 'Assigning attributes for GFLOW input...'
+
+
+        '''
         df.loc[np.invert(df.farfield), 'ls_coords'] = df.ix[np.invert(df.farfield), 'geometry_nf'].apply(xy_coords) # nearfield coordinates
         df.loc[df.farfield, 'ls_coords'] = df.ix[df.farfield, 'geometry_ff'].apply(xy_coords) # farfield coordinates
-
+        '''
 
         # routing
         df['routing'] = len(df)*[1]
@@ -451,7 +533,8 @@ class linesinks:
                 if len(df.ix[wb_comid, 'dncomid']) > 0:
                     outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
 
-                    closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'geometry_nf'])
+                    #closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'geometry_nf'])
+                    closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'ls_geom'])
                     '''
                     X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
                     dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
@@ -734,9 +817,11 @@ class linesinks:
         df['upcomids'] = df['upcomids'].map(lambda x: ' '.join([str(c) for c in x]))
 
         # recreate shapely geometries from coordinates column; drop all other coords/geometries
-        df = df.drop([c for c in df.columns if 'geometry' in c], axis=1)
-        df['geometry'] = df['ls_coords'].map(lambda x: LineString(x))
-        df = df.drop(['ls_coords'], axis=1)
+        #df = df.drop([c for c in df.columns if 'geometry' in c], axis=1)
+        df['geometry'] = df['ls_geom']
+        df = df.drop(['ls_geom', 'ls_coords'], axis=1)
+        #df['geometry'] = df['ls_coords'].map(lambda x: LineString(x))
+        #df = df.drop(['ls_coords'], axis=1)
         GISio.df2shp(df, self.outfile_basename.split('.')[0]+'.shp', 'geometry', self.flowlines[:-4]+'.prj')
 
         self.efp.close()
