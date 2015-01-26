@@ -216,7 +216,7 @@ class linesinks:
         # outputs
         self.outfile_basename = inpars.findall('.//outfile_basename')[0].text
         self.error_reporting = inpars.findall('.//error_reporting')[0].text
-
+        self.efp = open(self.error_reporting, 'w')
 
     def tf2flag(self, intxt):
         # converts text written in XML file to True or False flag
@@ -224,7 +224,6 @@ class linesinks:
             return True
         else:
             return False
-
 
     def preprocess_arcpy(self):
         '''
@@ -249,7 +248,6 @@ class linesinks:
         arcpy.FeatureToPoint_management(self.waterbodies_clipped, self.wb_centroids_w_elevations)
         arcpy.sa.ExtractMultiValuesToPoints(self.wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
 
-
     def preprocess(self, save=True):
         '''
         associate NHD tabular information to linework
@@ -261,7 +259,8 @@ class linesinks:
         '''
 
         # open error reporting file
-        self.efp = open(self.error_reporting, 'w')
+        self.efp = open(self.error_reporting, 'a')
+        self.efp.write('\nPreprocessing...\n')
 
         print '\nAssembling input...'
         # read linework shapefile into pandas dataframe
@@ -393,7 +392,7 @@ class linesinks:
             nlines.append(np.sum([len(l) for l in df.ls_coords]))
 
             # make a shapefile of the simplified lines with nearfield_tol=tol
-            df.drop('ls_coords', axis=1, inplace=True)
+            df.drop(['ls_coords', 'geometry'], axis=1, inplace=True)
             outshp = 'prototypes/' + self.outfile_basename + '_dis_tol_{}.shp'.format(tol)
             GISio.df2shp(df, outshp, geo_column='ls_geom', prj=self.prj)
 
@@ -403,8 +402,9 @@ class linesinks:
         plt.ylabel('Number of lines')
         plt.savefig(self.outfile_basename + 'tol_vs_nlines.pdf')
 
-
     def makeLineSinks(self, shp=None):
+        self.efp = open(self.error_reporting, 'a')
+        self.efp.write('\nMaking the lines...\n')
 
         if shp:
             self.df = GISio.shp2df(shp, index='COMID', geometry=True, true_values=['True'], false_values=['False'])
@@ -534,7 +534,7 @@ class linesinks:
                     outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
 
                     #closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'geometry_nf'])
-                    closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'ls_geom'])
+                    closest_ind = closest_vertex(outlet_coords, df.ix[wb_comid, 'ls_geom'])
                     '''
                     X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
                     dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
@@ -547,7 +547,6 @@ class linesinks:
 
             # drop the lines representing the lake from the lines dataframe
             df = df.drop(lines.index)
-
 
         print '\nmerging or splitting lines with only two vertices...'
         # find all routed comids with only 1 line; merge with neighboring comids
@@ -578,61 +577,64 @@ class linesinks:
             if comid == 6820088:
                 j=2
 
-            # first try to merge with downstream comid
-            if len(dncomid) > 0:
-                # only merge if start of downstream comid coincides with last line segment
-                if df.ix[comid].ls_coords[-1] == df.ix[dncomid[0]].ls_coords[0]:
-                    new_coords = df.ix[comid].ls_coords + df.ix[dncomid[0]].ls_coords[1:]
-                    df.set_value(dncomid[0], 'ls_coords', new_coords) # update coordinates in dncomid
-                    df.loc[dncomid[0], 'maxElev'] = df.ix[comid].maxElev # update max elevation
-
-                    df = df.drop(comid, axis=0)
-
-                    # record merged comid and replace references to it (as a dncomid)
-                    replacement = dncomid[0]
-                    df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
-
-                    # add upcomids of merged segment to its replacement
-                    new_upcomids = list(set(df.ix[replacement, 'upcomids'] + upcomids))
-                    new_upcomids.remove(comid)
-                    df.set_value(replacement, 'upcomids', new_upcomids)
-
-                    #merged = True
-                else: # split it
-                    new_coords = bisect(df.ix[comid].ls_coords)
-                    df.set_value(comid, 'ls_coords', new_coords)
-
-            elif len(upcomids) > 0: # merge into first upstream comid; then drop
-                for uid in upcomids:
-                    # check if upstream end coincides with current start
-                    if df.ix[uid].ls_coords[-1] == df.ix[comid].ls_coords[0]:
-                        new_coords = df.ix[uid].ls_coords + df.ix[comid].ls_coords[1:]
-                        df.set_value(uid, 'ls_coords', new_coords) # update coordinates in upcomid
-                        df.loc[uid, 'minElev'] = df.ix[comid].minElev # update min elevation
+            try:
+                # first try to merge with downstream comid
+                if len(dncomid) > 0:
+                    # only merge if start of downstream comid coincides with last line segment
+                    if df.ix[comid].ls_coords[-1] == df.ix[dncomid[0]].ls_coords[0]:
+                        new_coords = df.ix[comid].ls_coords + df.ix[dncomid[0]].ls_coords[1:]
+                        df.set_value(dncomid[0], 'ls_coords', new_coords) # update coordinates in dncomid
+                        df.loc[dncomid[0], 'maxElev'] = df.ix[comid].maxElev # update max elevation
 
                         df = df.drop(comid, axis=0)
 
-                        # record merged comid and replace references to it (in the upcomids list of the downstream comid)
-                        replacement = uid
+                        # record merged comid and replace references to it (as a dncomid)
+                        replacement = dncomid[0]
+                        df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
 
-                        new_upcomids = df.ix[dncomid[0], 'upcomids'].replace(comid, replacement)
+                        # add upcomids of merged segment to its replacement
+                        new_upcomids = list(set(df.ix[replacement, 'upcomids'] + upcomids))
+                        new_upcomids.remove(comid)
                         df.set_value(replacement, 'upcomids', new_upcomids)
 
-                        # update the dncomids of the replacement with those of the merged comid
-                        df.set_value(replacement, 'dncomids', dncomid[0])
+                        #merged = True
+                    else: # split it
+                        new_coords = bisect(df.ix[comid].ls_coords)
+                        df.set_value(comid, 'ls_coords', new_coords)
 
-                        merged = True
-                        break
-                    else: # split it (for Nicolet, no linesinks were in this category)
-                        continue
-                if not merged:
+                elif len(upcomids) > 0: # merge into first upstream comid; then drop
+                    for uid in upcomids:
+                        # check if upstream end coincides with current start
+                        if df.ix[uid].ls_coords[-1] == df.ix[comid].ls_coords[0]:
+                            new_coords = df.ix[uid].ls_coords + df.ix[comid].ls_coords[1:]
+                            df.set_value(uid, 'ls_coords', new_coords) # update coordinates in upcomid
+                            df.loc[uid, 'minElev'] = df.ix[comid].minElev # update min elevation
+
+                            df = df.drop(comid, axis=0)
+
+                            # record merged comid and replace references to it (in the upcomids list of the downstream comid)
+                            replacement = uid
+
+                            new_upcomids = df.ix[dncomid[0], 'upcomids'].replace(comid, replacement)
+                            df.set_value(replacement, 'upcomids', new_upcomids)
+
+                            # update the dncomids of the replacement with those of the merged comid
+                            df.set_value(replacement, 'dncomids', dncomid[0])
+
+                            merged = True
+                            break
+                        else: # split it (for Nicolet, no linesinks were in this category)
+                            continue
+                    if not merged:
+                        new_coords = bisect(df.ix[comid].ls_coords)
+                        df.set_value(comid, 'ls_coords', new_coords)
+
+                else: # the segment is not routed to any up/dn comids that aren't lakes
+                    # split it for now (don't want to drop it if it connects to a lake)
                     new_coords = bisect(df.ix[comid].ls_coords)
                     df.set_value(comid, 'ls_coords', new_coords)
-
-            else: # the segment is not routed to any up/dn comids that aren't lakes
-                # split it for now (don't want to drop it if it connects to a lake)
-                new_coords = bisect(df.ix[comid].ls_coords)
-                df.set_value(comid, 'ls_coords', new_coords)
+            except:
+                pass
         '''
             if merged:
                 # update any references to current comid (clunkly because each row is a list)
