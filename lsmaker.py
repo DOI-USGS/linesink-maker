@@ -217,14 +217,12 @@ class linesinks:
         self.outfile_basename = inpars.findall('.//outfile_basename')[0].text
         self.error_reporting = inpars.findall('.//error_reporting')[0].text
 
-
     def tf2flag(self, intxt):
         # converts text written in XML file to True or False flag
         if intxt.lower() == 'true':
             return True
         else:
             return False
-
 
     def preprocess_arcpy(self):
         '''
@@ -248,7 +246,6 @@ class linesinks:
         # get the elevations of all NHD Waterbody features from DEM (needed for isolated lakes)
         arcpy.FeatureToPoint_management(self.waterbodies_clipped, self.wb_centroids_w_elevations)
         arcpy.sa.ExtractMultiValuesToPoints(self.wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
-
 
     def preprocess(self, save=True):
         '''
@@ -403,8 +400,7 @@ class linesinks:
         plt.ylabel('Number of lines')
         plt.savefig(self.outfile_basename + 'tol_vs_nlines.pdf')
 
-
-    def makeLineSinks(self, shp=None):
+    def make_linesinks(self, shp=None):
 
         if shp:
             self.df = GISio.shp2df(shp, index='COMID', geometry=True, true_values=['True'], false_values=['False'])
@@ -568,10 +564,10 @@ class linesinks:
 
 
             # get up and down comids/elevations; only consider upcomid/downcomids that are streams (exclude lakes)
-            #upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in self.wblist]
-            #dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in self.wblist]
-            upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
-            dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
+            upcomids = [c for c in df.ix[comid, 'upcomids'] if c not in self.wblist]
+            dncomid = [c for c in df.ix[comid, 'dncomid'] if c not in self.wblist]
+            #upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
+            #dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
             merged = False
             if comid == 13396559 or comid == 13396569 or comid == 13396555 or comid == 13397241:
                 j=2
