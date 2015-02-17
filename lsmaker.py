@@ -197,22 +197,24 @@ class linesinks:
         self.prj = inpars.findall('.//prj')[0].text
 
         # preprocessed files
+        self.preprocdir = ''
         self.DEM = inpars.findall('.//DEM')[0].text
         self.elevs_field = inpars.findall('.//elevs_field')[0].text
         self.DEM_zmult = float(inpars.findall('.//DEM_zmult')[0].text)
 
         try:
             self.flowlines_clipped = inpars.findall('.//flowlines_clipped')[0].text
+            self.preprocdir = os.path.split(self.flowlines_clipped)[0]
         except:
-            self.flowlines_clipped = os.path.join(self.path, 'flowlines_clipped.shp')
+            self.flowlines_clipped = os.path.join(self.path, self.preprocdir, 'flowlines_clipped.shp')
         try:
             self.waterbodies_clipped = inpars.findall('.//waterbodies_clipped')[0].text
         except:
-            self.waterbodies_clipped = os.path.join(self.path, 'waterbodies_clipped.shp')
+            self.waterbodies_clipped = os.path.join(self.path, self.preprocdir, 'waterbodies_clipped.shp')
         try:
             self.farfield_mp = inpars.findall('.//farfield_multipolygon')[0].text
         except:
-            self.farfield_mp = os.path.join(self.path, 'ff_cutout.shp')
+            self.farfield_mp = os.path.join(self.path, self.preprocdir, 'ff_cutout.shp')
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[:-4] + '_points.shp' # elevations extracted during preprocessing routine
         self.elevs_field = 'DEM_m' # field in wb_centroids_w_elevations containing elevations
@@ -241,16 +243,25 @@ class linesinks:
         arcpy.env.qualifiedFieldNames = False
         arcpy.CheckOutExtension("spatial") # Check spatial analyst license
 
-        # clip NHD flowlines and waterbodies to domain
+        # make the output directory if it doesn't exist yet
+        if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
+            os.makedirs(self.preprocdir)
+
+        print 'clipping {} and {} to {}...'.format(self.flowlines, self.waterbodies, self.farfield)
         arcpy.Clip_analysis(self.flowlines, self.farfield, self.flowlines_clipped)
         arcpy.Clip_analysis(self.waterbodies, self.farfield, self.waterbodies_clipped)
+        print 'clipped flowlines written to {}; clipped waterbodies written to {}'\
+            .format(self.flowlines_clipped, self.waterbodies_clipped)
 
-        # convert farfield polygon to donut by erasing the nearfield area (had trouble doing this with shapely)
-        arcpy.Erase_analysis(self.farfield, self.nearfield, os.path.join(self.path, 'ff_cutout.shp'))
+        print '\nremoving interior from farfield polygon...'
+        arcpy.Erase_analysis(self.farfield, self.nearfield, self.farfield_mp)
+        print 'farfield donut written to {}'.format(self.farfield_mp)
 
-        # get the elevations of all NHD Waterbody features from DEM (needed for isolated lakes)
+        print '\ngetting NHD Waterbody elevations from DEM (needed for isolated lakes)'
         arcpy.FeatureToPoint_management(self.waterbodies_clipped, self.wb_centroids_w_elevations)
         arcpy.sa.ExtractMultiValuesToPoints(self.wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
+        print 'waterbody elevations written to point dataset {}'.format(self.wb_centroids_w_elevations)
+        print '\nDone.'
 
     def preprocess(self, save=True):
         '''
