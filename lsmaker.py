@@ -209,6 +209,10 @@ class linesinks:
             self.waterbodies_clipped = inpars.findall('.//waterbodies_clipped')[0].text
         except:
             self.waterbodies_clipped = os.path.join(self.path, 'waterbodies_clipped.shp')
+        try:
+            self.farfield_mp = inpars.findall('.//farfield_multipolygon')[0].text
+        except:
+            self.farfield_mp = os.path.join(self.path, 'ff_cutout.shp')
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[:-4] + '_points.shp' # elevations extracted during preprocessing routine
         self.elevs_field = 'DEM_m' # field in wb_centroids_w_elevations containing elevations
