@@ -79,6 +79,7 @@ Notes on linesinkMaker input:
     <flowlines_clipped>preprocessed/flowlines_clipped.shp</flowlines_clipped>
     <waterbodies_clipped>preprocessed/waterbodies_clipped.shp</waterbodies_clipped>
     <farfield_multipolygon>preprocessed/ff_cutout.shp</farfield_multipolygon>
+    <preprocessed_lines>preprocessed/lines.shp</preprocessed_lines>
 </preprocessed_files>
 
 <outputs>
