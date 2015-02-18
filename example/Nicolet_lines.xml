@@ -31,6 +31,12 @@ Notes on linesinkMaker input:
     <!-- ScenResistance:
     name for global resistance parameter to assign to linesinks-->
     <ScenResistance>Rlinesink</ScenResistance>
+    <!-- ComputationalUnits: ('Feet' or 'Meters')
+    model units-->
+    <ComputationalUnits>Feet</ComputationalUnits>
+    <!-- BasemapUnits: ('Feet' or 'Meters')
+    Units of the model basemaps-->
+    <BasemapUnits>Meters</BasemapUnits>
 </GlobalSettings>
 
 <modelDomain>
