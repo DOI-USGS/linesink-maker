@@ -137,14 +137,17 @@ class linesinks:
         self.min_waterbody_size = float(inpars.findall('.//min_waterbody_size')[0].text)
 
         # NHD files
-        self.flowlines = inpars.findall('.//flowlines')[0].text
-        self.elevslope = inpars.findall('.//elevslope')[0].text
-        self.PlusFlowVAA = inpars.findall('.//PlusFlowVAA')[0].text
-        self.waterbodies = inpars.findall('.//waterbodies')[0].text
+        self.flowlines = [f.text for f in inpars.findall('.//flowlines')]
+        self.elevslope = [f.text for f in inpars.findall('.//elevslope')]
+        self.PlusFlowVAA = [f.text for f in inpars.findall('.//PlusFlowVAA')]
+        self.waterbodies = [f.text for f in inpars.findall('.//waterbodies')]
         self.prj = inpars.findall('.//prj')[0].text
         # columns to retain in NHD files (when joining to GIS lines)
+        # Note: may need to add method to handle case discrepancies
+        self.flowlines_cols = ['COMID', 'FCODE', 'FDATE', 'FLOWDIR', 'FTYPE', 'GNIS_ID', 'GNIS_NAME', 'LENGTHKM', 'REACHCODE', 'RESOLUTION', 'WBAREACOMI', 'geometry']
         self.elevslope_cols = ['MINELEVSMO', 'MAXELEVSMO']
         self.pfvaa_cols = ['ArbolateSu', 'Hydroseq', 'DnHydroseq', 'StreamOrde']
+        self.wb_cols = ['AREASQKM', 'COMID', 'ELEVATION', 'FCODE', 'FDATE', 'FTYPE', 'GNIS_ID', 'GNIS_NAME', 'REACHCODE','RESOLUTION', 'geometry']
 
         # preprocessed files
         self.DEM = inpars.findall('.//DEM')[0].text
@@ -227,9 +230,13 @@ class linesinks:
         print '\nAssembling input...'
         # read linework shapefile into pandas dataframe
         df = GISio.shp2df(self.flowlines_clipped, geometry=True, index='COMID').drop_duplicates('COMID')
+        df.drop([c for c in df.columns if c.lower() not in [cc.lower() for cc in self.flowlines_cols]],
+                axis=1, inplace=True)
         elevs = GISio.shp2df(self.elevslope, index='COMID', clipto=df)
         pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', clipto=df)
         wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', geometry=True).drop_duplicates('COMID')
+        wbs.drop([c for c in wbs.columns if c.lower() not in [cc.lower() for cc in self.wb_cols]],
+                 axis=1, inplace=True)
 
         # check for MultiLineStrings / MultiPolygons and drop them (these are features that were fragmented by the boundaries)
         mls = [i for i in df.index if 'Multi' in df.ix[i, 'geometry'].type]
@@ -252,10 +259,11 @@ class linesinks:
         wbs['farfield'] = [poly.intersects(ffg) for poly in wbs.geometry]
 
         print 'removing farfield streams lower than {} order...'.format(self.min_farfield_order)
-        df = df[df.farfield.values & (df.StreamOrde.values > self.min_farfield_order)]
+        # retain all streams not in the farfield or in the farfield and of order > min_farfield_order
+        #df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values > self.min_farfield_order))]
 
         print 'dropping waterbodies that are not lakes larger than {}...'.format(self.min_waterbody_size)
-        wbs = wbs[(wbs.AREASQKM > self.min_waterbody_size) | (wbs.FTYPE == 'LakePond')]
+        wbs = wbs[(wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')]
 
         print 'merging waterbodies with coincident boundaries...'
         dropped = []
@@ -276,7 +284,7 @@ class linesinks:
                 if merged.type == 'MultiPolygon':
                     continue
 
-                wbs.loc[basering_comid, 'geometry'] = Polygon(merged) # convert from linear ring back to polygon (for next step)
+                wbs.loc[basering_comid, 'geometry'] = merged
 
                 todrop = [wbc for wbc in overlapping.index if wbc != basering_comid]
                 dropped += todrop
@@ -648,8 +656,11 @@ class linesinks:
                     #df.loc[comid, 'maxElev'] += 0.01
                     zerogradient.append(comid)
 
-        print "\nWarning!, the following comids had zero gradients:\n{}".format(zerogradient)
-        print "routing for these was turned off. Elevations must be fixed manually"
+        if len(zerogradient) > 0:
+            print "\nWarning!, the following comids had zero gradients:\n{}".format(zerogradient)
+            print "routing for these was turned off. Elevations must be fixed manually"
+        else:
+            print "No zero-gradient linesinks found."
 
 
         # end streams
