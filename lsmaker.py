@@ -122,6 +122,7 @@ class linesinks:
         self.global_stream_depth = 3 # streambed thickness
         self.ComputationalUnits = inpars.findall('.//ComputationalUnits')[0].text # 'Feet' or 'Meters'; for XML output file
         self.BasemapUnits = inpars.findall('.//BasemapUnits')[0].text
+        self.prj = inpars.findall('.//prj')[0].text
 
         # model domain
         self.farfield = inpars.findall('.//farfield')[0].text
@@ -141,7 +142,6 @@ class linesinks:
         self.elevslope = [f.text for f in inpars.findall('.//elevslope')]
         self.PlusFlowVAA = [f.text for f in inpars.findall('.//PlusFlowVAA')]
         self.waterbodies = [f.text for f in inpars.findall('.//waterbodies')]
-        self.prj = inpars.findall('.//prj')[0].text
         # columns to retain in NHD files (when joining to GIS lines)
         # Note: may need to add method to handle case discrepancies
         self.flowlines_cols = ['COMID', 'FCODE', 'FDATE', 'FLOWDIR', 'FTYPE', 'GNIS_ID', 'GNIS_NAME', 'LENGTHKM', 'REACHCODE', 'RESOLUTION', 'WBAREACOMI', 'geometry']
@@ -229,12 +229,12 @@ class linesinks:
 
         print '\nAssembling input...'
         # read linework shapefile into pandas dataframe
-        df = GISio.shp2df(self.flowlines_clipped, geometry=True, index='COMID').drop_duplicates('COMID')
+        df = GISio.shp2df(self.flowlines_clipped, index='COMID').drop_duplicates('COMID')
         df.drop([c for c in df.columns if c.lower() not in [cc.lower() for cc in self.flowlines_cols]],
                 axis=1, inplace=True)
         elevs = GISio.shp2df(self.elevslope, index='COMID', clipto=df)
         pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', clipto=df)
-        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', geometry=True).drop_duplicates('COMID')
+        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID').drop_duplicates('COMID')
         wbs.drop([c for c in wbs.columns if c.lower() not in [cc.lower() for cc in self.wb_cols]],
                  axis=1, inplace=True)
 
@@ -245,13 +245,13 @@ class linesinks:
         wbs = wbs.drop(mps, axis=0)
 
         # join NHD tables to lines
-        df = df.join(elevs[self.elevslope_cols], how='inner')
-        df = df.join(pfvaa[self.pfvaa_cols], how='inner')
+        df = df.join(elevs[self.elevslope_cols], how='inner', lsuffix='1')
+        df = df.join(pfvaa[self.pfvaa_cols], how='inner', lsuffix='1')
 
         # read in nearfield and farfield boundaries
-        nf = GISio.shp2df(self.nearfield, geometry=True)
+        nf = GISio.shp2df(self.nearfield)
         nfg = nf.iloc[0]['geometry'] # polygon representing nearfield
-        ff = GISio.shp2df(self.farfield_mp, geometry=True)
+        ff = GISio.shp2df(self.farfield_mp)
         ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
         print '\nidentifying farfield and nearfield linesinks...'
@@ -383,7 +383,7 @@ class linesinks:
         self.efp.write('\nMaking the lines...\n')
 
         if shp:
-            self.df = GISio.shp2df(shp, index='COMID', geometry=True, true_values=['True'], false_values=['False'])
+            self.df = GISio.shp2df(shp, index='COMID', true_values=['True'], false_values=['False'])
 
         df = self.df
 
@@ -465,6 +465,7 @@ class linesinks:
         # get elevations, up/downcomids, and total lengths for those lines
         # assign attributes to lakes, then drop the lines
 
+        df['total_line_length'] = 0 # field to store total shoreline length of lakes
         for wb_comid in self.wblist:
 
             lines = df[df['WBAREACOMI'] == wb_comid]
@@ -495,7 +496,7 @@ class linesinks:
                 df.ix[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
 
             # get total length of lines representing lake (used later to estimate width)
-            df.ix[wb_comid, 'total_line_length'] = np.sum(lines.LENGTHKM)
+            df.loc[wb_comid, 'total_line_length'] = np.sum(lines.LENGTHKM)
 
             # modifications to routed lakes
             if df.ix[wb_comid, 'routing'] == 1:
@@ -779,7 +780,7 @@ class linesinks:
         if self.split_by_HUC:
             print '\nGrouping segments by hydrologic unit...'
             # intersect lines with HUCs; then group dataframe by HUCs
-            HUCs_df = GISio.shp2df(self.HUC_shp, index=self.HUC_name_field, geometry=True)
+            HUCs_df = GISio.shp2df(self.HUC_shp, index=self.HUC_name_field)
             df[self.HUC_name_field] = len(df)*[None]
             for HUC in HUCs_df.index:
                 lines = [line.intersects(HUCs_df.ix[HUC, 'geometry']) for line in df['geometry']]
@@ -807,7 +808,7 @@ class linesinks:
         df = df.drop(['ls_geom', 'ls_coords'], axis=1)
         #df['geometry'] = df['ls_coords'].map(lambda x: LineString(x))
         #df = df.drop(['ls_coords'], axis=1)
-        GISio.df2shp(df, self.outfile_basename.split('.')[0]+'.shp', 'geometry', self.flowlines[:-4]+'.prj')
+        GISio.df2shp(df, self.outfile_basename.split('.')[0]+'.shp', prj=self.prj)
 
         self.efp.close()
         print 'Done!'

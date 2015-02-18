@@ -11,6 +11,8 @@ Notes on linesinkMaker input:
     full path to working folder where intermediate and output will be generated. -->
     <working_dir></working_dir>
     <!-- prj:
+    Note: Currently LinesinkMaker does not do transformations
+    So input coordinate projections and output prj should be consistent
     projection file for output shapefiles -->
     <prj>shps/Nicolet_north_NF.prj</prj>
     <!-- preprocess:
