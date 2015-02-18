@@ -5,7 +5,7 @@ import numpy as np
 import os
 import GISio
 from shapely.geometry import Polygon, LineString
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 import math
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -79,64 +79,7 @@ def name(x):
     return name
 
 
-def write_lss(df, outfile):
-    """write GFLOW linesink XML (lss) file from dataframe df
-    """
-    # global inputs
-    depth = 3 # streambed thickness
-    DefaultResistance = 0.3
-    ComputationalUnits = 'Feet' # 'Feet' or 'Meters'; for XML output file
-    BasemapUnits = 'Meters'
 
-    nlines = sum([len(p)-1 for p in df.ls_coords])
-
-    print 'writing {} lines to {}'.format(nlines, outfile)
-    ofp = open(outfile,'w')
-    ofp.write('<?xml version="1.0"?>\n')
-    ofp.write('<LinesinkStringFile version="1">\n')
-    ofp.write('\t<ComputationalUnits>{}</ComputationalUnits>\n\t<BasemapUnits>{}</BasemapUnits>\n\n'.format(ComputationalUnits, BasemapUnits))
-
-    for comid in df.index:
-        ofp.write('\t<LinesinkString>\n')
-        ofp.write('\t\t<Label>{}</Label>\n'.format(df.ix[comid, 'ls_name']))
-        ofp.write('\t\t<HeadSpecified>1</HeadSpecified>\n')
-        ofp.write('\t\t<StartingHead>{:.2f}</StartingHead>\n'.format(df.ix[comid, 'maxElev']))
-        ofp.write('\t\t<EndingHead>{:.2f}</EndingHead>\n'.format(df.ix[comid, 'minElev']))
-        ofp.write('\t\t<Resistance>{}</Resistance>\n'.format(df.ix[comid, 'resistance']))
-        ofp.write('\t\t<Width>{:.2f}</Width>\n'.format(df.ix[comid, 'width']))
-        ofp.write('\t\t<Depth>{:.2f}</Depth>\n'.format(resistance))
-        ofp.write('\t\t<Routing>{}</Routing>\n'.format(df.ix[comid, 'routing']))
-        ofp.write('\t\t<EndStream>{}</EndStream>\n'.format(df.ix[comid, 'end_stream']))
-        ofp.write('\t\t<OverlandFlow>0</OverlandFlow>\n')
-        ofp.write('\t\t<EndInflow>0</EndInflow>\n')
-        ofp.write('\t\t<ScenResistance>{}</ScenResistance>\n'.format(df.ix[comid, 'ScenResistance']))
-        ofp.write('\t\t<Drain>0</Drain>\n')
-        ofp.write('\t\t<ScenFluxName>__NONE__</ScenFluxName>\n')
-        ofp.write('\t\t<Gallery>0</Gallery>\n')
-        ofp.write('\t\t<TotalDischarge>0</TotalDischarge>\n')
-        ofp.write('\t\t<InletStream>0</InletStream>\n')
-        ofp.write('\t\t<OutletStream>0</OutletStream>\n')
-        ofp.write('\t\t<OutletTable>__NONE__</OutletTable>\n')
-        ofp.write('\t\t<Lake>0</Lake>\n')
-        ofp.write('\t\t<Precipitation>0</Precipitation>\n')
-        ofp.write('\t\t<Evapotranspiration>0</Evapotranspiration>\n')
-        ofp.write('\t\t<Farfield>{:.0f}</Farfield>\n'.format(df.ix[comid, 'farfield']))
-        ofp.write('\t\t<chkScenario>true</chkScenario>\n') # include linesink in PEST 'scenarios'
-        ofp.write('\t\t<AutoSWIZC>{:.0f}</AutoSWIZC>\n'.format(df.ix[comid, 'AutoSWIZC']))
-        ofp.write('\t\t<DefaultResistance>{:.2f}</DefaultResistance>\n'.format(DefaultResistance))
-        ofp.write('\t\t<Vertices>\n')
-
-        # now write out linesink vertices
-        for x, y in df.ix[comid, 'ls_coords']:
-            ofp.write('\t\t\t<Vertex>\n')
-            ofp.write('\t\t\t\t<X> {:.2f}</X>\n'.format(x))
-            ofp.write('\t\t\t\t<Y> {:.2f}</Y>\n'.format(y))
-            ofp.write('\t\t\t</Vertex>\n')
-
-        ofp.write('\t\t</Vertices>\n')
-        ofp.write('\t</LinesinkString>\n\n')
-    ofp.write('</LinesinkStringFile>')
-    ofp.close()
 
 
 def closest_vertex(point, shape):
@@ -158,6 +101,7 @@ class linesinks:
             raise(InputFileMissing(infile))
 
         inpars = inpardat.getroot()
+        self.inpars = inpars
 
         # setup the working directory (default to current directory)
         try:
@@ -175,6 +119,9 @@ class linesinks:
         self.k = float(inpars.findall('.//k')[0].text) # hydraulic conductivity of the aquifer in model units
         self.lmbda = np.sqrt(10 * 100 * 0.3)
         self.ScenResistance = inpars.findall('.//ScenResistance')[0].text
+        self.global_stream_depth = 3 # streambed thickness
+        self.ComputationalUnits = inpars.findall('.//ComputationalUnits')[0].text # 'Feet' or 'Meters'; for XML output file
+        self.BasemapUnits = inpars.findall('.//BasemapUnits')[0].text
 
         # model domain
         self.farfield = inpars.findall('.//farfield')[0].text
@@ -195,26 +142,20 @@ class linesinks:
         self.PlusFlowVAA = inpars.findall('.//PlusFlowVAA')[0].text
         self.waterbodies = inpars.findall('.//waterbodies')[0].text
         self.prj = inpars.findall('.//prj')[0].text
+        # columns to retain in NHD files (when joining to GIS lines)
+        self.elevslope_cols = ['MINELEVSMO', 'MAXELEVSMO']
+        self.pfvaa_cols = ['ArbolateSu', 'Hydroseq', 'DnHydroseq', 'StreamOrde']
 
         # preprocessed files
-        self.preprocdir = ''
         self.DEM = inpars.findall('.//DEM')[0].text
         self.elevs_field = inpars.findall('.//elevs_field')[0].text
         self.DEM_zmult = float(inpars.findall('.//DEM_zmult')[0].text)
 
-        try:
-            self.flowlines_clipped = inpars.findall('.//flowlines_clipped')[0].text
-            self.preprocdir = os.path.split(self.flowlines_clipped)[0]
-        except:
-            self.flowlines_clipped = os.path.join(self.path, self.preprocdir, 'flowlines_clipped.shp')
-        try:
-            self.waterbodies_clipped = inpars.findall('.//waterbodies_clipped')[0].text
-        except:
-            self.waterbodies_clipped = os.path.join(self.path, self.preprocdir, 'waterbodies_clipped.shp')
-        try:
-            self.farfield_mp = inpars.findall('.//farfield_multipolygon')[0].text
-        except:
-            self.farfield_mp = os.path.join(self.path, self.preprocdir, 'ff_cutout.shp')
+        self.flowlines_clipped = self.get_XMLentry('flowlines_clipped', 'flowlines_clipped.shp')
+        self.waterbodies_clipped = self.get_XMLentry('waterbodies_clipped', 'waterbodies_clipped.shp')
+        self.farfield_mp = self.get_XMLentry('farfield_multipolygon', 'ff_cutout.shp')
+        self.preprocessed_lines = self.get_XMLentry('preprocessed_lines', 'lines.shp')
+        self.preprocdir = os.path.split(self.flowlines_clipped)[0]
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[:-4] + '_points.shp' # elevations extracted during preprocessing routine
         self.elevs_field = 'DEM_m' # field in wb_centroids_w_elevations containing elevations
@@ -223,6 +164,12 @@ class linesinks:
         self.outfile_basename = inpars.findall('.//outfile_basename')[0].text
         self.error_reporting = inpars.findall('.//error_reporting')[0].text
         self.efp = open(self.error_reporting, 'w')
+
+    def get_XMLentry(self, XMLentry, default_name):
+        try:
+            return self.inpars.findall('.//{}'.format(XMLentry))[0].text
+        except:
+            return default_name
 
     def tf2flag(self, intxt):
         # converts text written in XML file to True or False flag
@@ -279,81 +226,87 @@ class linesinks:
 
         print '\nAssembling input...'
         # read linework shapefile into pandas dataframe
-        df = GISio.shp2df(self.flowlines_clipped, geometry=True, index='COMID')
+        df = GISio.shp2df(self.flowlines_clipped, geometry=True, index='COMID').drop_duplicates('COMID')
         elevs = GISio.shp2df(self.elevslope, index='COMID', clipto=df)
         pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', clipto=df)
-        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', geometry=True)
+        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', geometry=True).drop_duplicates('COMID')
 
         # check for MultiLineStrings / MultiPolygons and drop them (these are features that were fragmented by the boundaries)
-        mls = [i for i in df.index if 'multi' in df.ix[i]['geometry'].type.lower()]
+        mls = [i for i in df.index if 'Multi' in df.ix[i, 'geometry'].type]
         df = df.drop(mls, axis=0)
-        # get multipolygons using iterator; for some reason the above approach didn't work with the wbs dataframe
-        mpoly_inds = [i for i, t in enumerate(wbs['geometry']) if 'multi' in t.type.lower()]
-        wbs = wbs.drop(wbs.index[mpoly_inds], axis=0)
+        mps = [i for i in wbs.index if 'Multi' in wbs.ix[i, 'geometry'].type]
+        wbs = wbs.drop(mps, axis=0)
 
         # join NHD tables to lines
-        lsuffix = 'fl'
-        df = df.join(elevs, how='inner', lsuffix=lsuffix, rsuffix='elevs')
-        df = df.join(pfvaa, how='inner', lsuffix=lsuffix, rsuffix='pfvaa')
+        df = df.join(elevs[self.elevslope_cols], how='inner')
+        df = df.join(pfvaa[self.pfvaa_cols], how='inner')
 
         # read in nearfield and farfield boundaries
         nf = GISio.shp2df(self.nearfield, geometry=True)
         nfg = nf.iloc[0]['geometry'] # polygon representing nearfield
-        ff = GISio.shp2df(os.path.join(self.path, 'ff_cutout.shp'), geometry=True)
+        ff = GISio.shp2df(self.farfield_mp, geometry=True)
         ffg = ff.iloc[0]['geometry'] # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
         print '\nidentifying farfield and nearfield linesinks...'
-        df['farfield'] = [line.intersects(ffg) and not line.intersects(nfg) for line in df['geometry']]
-        wbs['farfield'] = [poly.intersects(ffg) for poly in wbs['geometry']]
+        df['farfield'] = [line.intersects(ffg) and not line.intersects(nfg) for line in df.geometry]
+        wbs['farfield'] = [poly.intersects(ffg) for poly in wbs.geometry]
 
         print 'removing farfield streams lower than {} order...'.format(self.min_farfield_order)
-        df = df.drop(df.index[np.where(df['farfield'] & (df['StreamOrde'] < self.min_farfield_order))], axis=0)
+        df = df[df.farfield.values & (df.StreamOrde.values > self.min_farfield_order)]
 
         print 'dropping waterbodies that are not lakes larger than {}...'.format(self.min_waterbody_size)
-        wbs = wbs.drop(wbs.index[np.where((wbs['AREASQKM'] < self.min_waterbody_size) | (wbs['FTYPE'] != 'LakePond'))], axis=0)
+        wbs = wbs[(wbs.AREASQKM > self.min_waterbody_size) | (wbs.FTYPE == 'LakePond')]
 
         print 'merging waterbodies with coincident boundaries...'
         dropped = []
         for wb_comid in wbs.index:
 
-            # skipped already merged
+            # skipped waterbodies that have already been merged
             if wb_comid in dropped:
                 continue
 
-            overlapping = wbs.ix[[wbs.ix[wb_comid, 'geometry'].intersects(r) \
-                                                                for r in wbs.geometry]]
+            wb_geometry = wbs.geometry[wb_comid]
+            overlapping = wbs.ix[[wb_geometry.intersects(r) for r in wbs.geometry]]
             basering_comid = overlapping.sort('FTYPE').index[0] # sort to prioritize features with names
+
             # two or more shapes in overlapping signifies a coincident boundary
             if len(overlapping > 1):
-                merged = cascaded_union([r for r in overlapping.geometry]).exterior
-                wbs.ix[basering_comid, 'geometry'] = Polygon(merged) # convert from linear ring back to polygon (for next step)
+                merged = unary_union([r for r in overlapping.geometry])
+                # multipolygons will result if the two polygons only have a single point in common
+                if merged.type == 'MultiPolygon':
+                    continue
+
+                wbs.loc[basering_comid, 'geometry'] = Polygon(merged) # convert from linear ring back to polygon (for next step)
 
                 todrop = [wbc for wbc in overlapping.index if wbc != basering_comid]
                 dropped += todrop
-                wbs = wbs.drop(todrop) # only keep merged feature
+                wbs = wbs.drop(todrop, axis=0) # only keep merged feature; drop others from index
+
                 # replace references to dropped waterbody in lines
-                for wbc in overlapping.index:
-                    df.ix[df['WBAREACOMI'] == wbc, 'WBAREACOMI'] = basering_comid
-                    # df['WBAREACOMI'] = [basering_comid if c == wbc else c for df['WBAREACOMI']]
+                df.loc[df.WBAREACOMI.isin(todrop), 'WBAREACOMI'] = basering_comid
 
         # swap out polygons in lake geometry column with the linear rings that make up their exteriors
         print 'converting lake exterior polygons to lines...'
-        wbs['geometry'] = wbs['geometry'].apply(lambda x: x.exterior)
-        wbs['geometry'] = [LineString(g) for g in wbs.geometry]
-        wbs['waterbody'] = [True] * len(wbs)
+        wbs['geometry'] = [LineString(g.exterior) for g in wbs.geometry]
+        wbs['waterbody'] = [True] * len(wbs) # boolean variable indicate whether feature is waterbody
 
         print 'merging flowline and waterbody datasets...'
         df['waterbody'] = [False] * len(df)
         df = df.append(wbs)
         df.COMID = df.index
 
-        print 'Done with preprocessing.'
+        print '\nDone with preprocessing.'
         if save:
-            GISio.df2shp(df, 'lines.shp', prj=self.prj)
+            GISio.df2shp(df, self.preprocessed_lines, prj=self.prj)
 
         self.df = df
 
     def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None):
+
+        try:
+            self.df
+        except:
+            'No dataframe attribute for linesinks instance. Run preprocess first.'
 
         if nearfield_tolerance is None:
             nearfield_tolerance = self.nearfield_tolerance
@@ -426,8 +379,10 @@ class linesinks:
 
         df = self.df
 
+        # simplify the lines in the df (dataframe) attribute
         self.lines_df = self.simplify_lines()
 
+        # add linesink geometries back in to dataframe
         df['ls_geom'] = self.lines_df['ls_geom']
         df['ls_coords'] = self.lines_df['ls_coords']
 
@@ -495,7 +450,7 @@ class linesinks:
 
 
         # read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)
-        wb_elevs = GISio.shp2df(self.wb_centroids_w_elevations, index='COMID')
+        wb_elevs = GISio.shp2df(self.wb_centroids_w_elevations, index='COMID').drop_duplicates('COMID')
         wb_elevs = wb_elevs[self.elevs_field] * self.DEM_zmult
 
         # identify lines that represent lakes
@@ -532,7 +487,7 @@ class linesinks:
                 df.ix[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
 
             # get total length of lines representing lake (used later to estimate width)
-            df.ix[wb_comid, 'total_line_length'] = np.sum(lines.LengthKM)
+            df.ix[wb_comid, 'total_line_length'] = np.sum(lines.LENGTHKM)
 
             # modifications to routed lakes
             if df.ix[wb_comid, 'routing'] == 1:
@@ -582,10 +537,10 @@ class linesinks:
 
 
             # get up and down comids/elevations; only consider upcomid/downcomids that are streams (exclude lakes)
-            #upcomids = [c for c in df[df.index == comid]['upcomids'].item() if c not in self.wblist]
-            #dncomid = [c for c in df[df.index == comid]['dncomid'].item() if c not in self.wblist]
-            upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
-            dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
+            upcomids = [c for c in df.ix[comid, 'upcomids'] if c not in self.wblist]
+            dncomid = [c for c in df.ix[comid, 'dncomid'] if c not in self.wblist]
+            #upcomids = [c for c in df[df.index == comid]['upcomids'].item()] # allow lakes and lines to be merged (if their vertices coincide)
+            #dncomid = [c for c in df[df.index == comid]['dncomid'].item()]
             merged = False
             if comid == 13396559 or comid == 13396569 or comid == 13396555 or comid == 13397241:
                 j=2
@@ -667,10 +622,10 @@ class linesinks:
         for comid in comids0:
 
             # get up and down comids/elevations
-            upcomids = df[df.index == comid]['upcomids'].item()
-            upelevsmax = [df[df.index == uid]['maxElev'].item() for uid in upcomids]
-            dncomid = df[df.index == comid]['dncomid'].item()
-            dnelevmin = [df[df.index == dnid]['minElev'].item() for dnid in dncomid]
+            upcomids = [u for u in df.ix[df.index == comid, 'upcomids'].item() if u in df.index]
+            upelevsmax = [df.ix[df.index == uid, 'maxElev'].item() for uid in upcomids]
+            dncomid = [d for d in df.ix[df.index == comid, 'dncomid'].item() if d in df.index]
+            dnelevmin = [df.ix[df.index == dnid, 'minElev'].item() for dnid in dncomid]
 
             # adjust elevations for zero gradient comid if there is room
             if len(upcomids) == 0:
@@ -718,12 +673,14 @@ class linesinks:
 
         # widths for lakes
         df.ix[df['FTYPE'] == 'LakePond', 'width'] = \
-            np.vectorize(self.lake_width)(df.ix[df['FTYPE'] == 'LakePond', 'AREASQKM'], df.ix[df['FTYPE'] == 'LakePond', 'total_line_length'], self.lmbda)
-
+            np.vectorize(lake_width)(df.ix[df['FTYPE'] == 'LakePond', 'AREASQKM'], df.ix[df['FTYPE'] == 'LakePond', 'total_line_length'], self.lmbda)
 
         # resistance
         df['resistance'] = self.resistance
         df.loc[df['farfield'], 'resistance'] = 0
+
+        # depth
+        df['depth'] = self.global_stream_depth
 
         # resistance parameter (scenario)
         df['ScenResistance'] = self.ScenResistance
@@ -823,9 +780,9 @@ class linesinks:
             for HUC in HUCs:
                 dfh = dfg.get_group(HUC)
                 outfile = '{}_{}.lss.xml'.format(self.outfile_basename, HUC)
-                write_lss(dfh, outfile)
+                self.write_lss(dfh, outfile)
         else:
-            write_lss(df, '{}.lss.xml'.format(self.outfile_basename))
+            self.write_lss(df, '{}.lss.xml'.format(self.outfile_basename))
 
 
         # write shapefile of results
@@ -843,6 +800,61 @@ class linesinks:
 
         self.efp.close()
         print 'Done!'
+
+    def write_lss(self, df, outfile):
+        """write GFLOW linesink XML (lss) file from dataframe df
+        """
+
+        nlines = sum([len(p)-1 for p in df.ls_coords])
+
+        print 'writing {} lines to {}'.format(nlines, outfile)
+        ofp = open(outfile,'w')
+        ofp.write('<?xml version="1.0"?>\n')
+        ofp.write('<LinesinkStringFile version="1">\n')
+        ofp.write('\t<ComputationalUnits>{}</ComputationalUnits>\n'
+                  '\t<BasemapUnits>{}</BasemapUnits>\n\n'.format(self.ComputationalUnits, self.BasemapUnits))
+
+        for comid in df.index:
+            ofp.write('\t<LinesinkString>\n')
+            ofp.write('\t\t<Label>{}</Label>\n'.format(df.ix[comid, 'ls_name']))
+            ofp.write('\t\t<HeadSpecified>1</HeadSpecified>\n')
+            ofp.write('\t\t<StartingHead>{:.2f}</StartingHead>\n'.format(df.ix[comid, 'maxElev']))
+            ofp.write('\t\t<EndingHead>{:.2f}</EndingHead>\n'.format(df.ix[comid, 'minElev']))
+            ofp.write('\t\t<Resistance>{}</Resistance>\n'.format(df.ix[comid, 'resistance']))
+            ofp.write('\t\t<Width>{:.2f}</Width>\n'.format(df.ix[comid, 'width']))
+            ofp.write('\t\t<Depth>{:.2f}</Depth>\n'.format(df.ix[comid, 'depth']))
+            ofp.write('\t\t<Routing>{}</Routing>\n'.format(df.ix[comid, 'routing']))
+            ofp.write('\t\t<EndStream>{}</EndStream>\n'.format(df.ix[comid, 'end_stream']))
+            ofp.write('\t\t<OverlandFlow>0</OverlandFlow>\n')
+            ofp.write('\t\t<EndInflow>0</EndInflow>\n')
+            ofp.write('\t\t<ScenResistance>{}</ScenResistance>\n'.format(df.ix[comid, 'ScenResistance']))
+            ofp.write('\t\t<Drain>0</Drain>\n')
+            ofp.write('\t\t<ScenFluxName>__NONE__</ScenFluxName>\n')
+            ofp.write('\t\t<Gallery>0</Gallery>\n')
+            ofp.write('\t\t<TotalDischarge>0</TotalDischarge>\n')
+            ofp.write('\t\t<InletStream>0</InletStream>\n')
+            ofp.write('\t\t<OutletStream>0</OutletStream>\n')
+            ofp.write('\t\t<OutletTable>__NONE__</OutletTable>\n')
+            ofp.write('\t\t<Lake>0</Lake>\n')
+            ofp.write('\t\t<Precipitation>0</Precipitation>\n')
+            ofp.write('\t\t<Evapotranspiration>0</Evapotranspiration>\n')
+            ofp.write('\t\t<Farfield>{:.0f}</Farfield>\n'.format(df.ix[comid, 'farfield']))
+            ofp.write('\t\t<chkScenario>true</chkScenario>\n') # include linesink in PEST 'scenarios'
+            ofp.write('\t\t<AutoSWIZC>{:.0f}</AutoSWIZC>\n'.format(df.ix[comid, 'AutoSWIZC']))
+            ofp.write('\t\t<DefaultResistance>{:.2f}</DefaultResistance>\n'.format(df.ix[comid, 'resistance']))
+            ofp.write('\t\t<Vertices>\n')
+
+            # now write out linesink vertices
+            for x, y in df.ix[comid, 'ls_coords']:
+                ofp.write('\t\t\t<Vertex>\n')
+                ofp.write('\t\t\t\t<X> {:.2f}</X>\n'.format(x))
+                ofp.write('\t\t\t\t<Y> {:.2f}</Y>\n'.format(y))
+                ofp.write('\t\t\t</Vertex>\n')
+
+            ofp.write('\t\t</Vertices>\n')
+            ofp.write('\t</LinesinkString>\n\n')
+        ofp.write('</LinesinkStringFile>')
+        ofp.close()
 
 
 class InputFileMissing(Exception):
