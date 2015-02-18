@@ -53,7 +53,11 @@ Notes on linesinkMaker input:
     <HUC_shp>None</HUC_shp>
     <HUC_name_field>None</HUC_name_field>
 </modelDomain>
-
+<!-- NHDfiles:
+input .shp and .dbf files from NHDPlus. To include multiple files
+(e.g. multiple flowlines files spanning multiple drainage areas)
+simply add additional entries with same XML keyword.
+LinesinkMakr will open all of the files and combine them.-->
 <NHDfiles>
     <flowlines>shps/Nicolet_flowlines.shp</flowlines>
     <elevslope>shps/NHDPlus04/NHDPlusAttributes/elevslope.dbf</elevslope>
