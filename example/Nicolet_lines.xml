@@ -56,8 +56,10 @@ Notes on linesinkMaker input:
 
 <NHDfiles>
     <flowlines>shps/Nicolet_flowlines.shp</flowlines>
-    <elevslope>shps/elevslope.dbf</elevslope>
-    <PlusFlowVAA>shps/PlusFlowlineVAA_0407Merge.dbf</PlusFlowVAA>
+    <elevslope>shps/NHDPlus04/NHDPlusAttributes/elevslope.dbf</elevslope>
+    <elevslope>shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
+    <PlusFlowVAA>shps/NHDPlus04/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
+    <PlusFlowVAA>shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
     <waterbodies>shps/NHDwaterbodies.shp</waterbodies>
 </NHDfiles>
 
