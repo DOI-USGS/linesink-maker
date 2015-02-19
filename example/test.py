@@ -11,6 +11,6 @@ print os.getcwd()
 
 ls = lsm.linesinks('Nicolet_lines.xml')
 
-ls.preprocess()
+#ls.preprocess()
 
 ls.makeLineSinks(shp='preprocessed/lines.shp')

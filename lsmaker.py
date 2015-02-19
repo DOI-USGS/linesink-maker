@@ -82,10 +82,11 @@ def name(x):
 
 
 
-def closest_vertex(point, shape):
+def closest_vertex(point, shape_coords):
     """Returns index of closest vertex in shapely geometry object
     """
-    X, Y = np.ravel(shape.coords.xy[0]), np.ravel(shape.coords.xy[1])
+    X = np.array([i[0] for i in shape_coords])
+    Y = np.array([i[1] for i in shape_coords])
     dX, dY = X - point[0], Y - point[1]
     closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
     return closest_ind
@@ -378,6 +379,212 @@ class linesinks:
         plt.ylabel('Number of lines')
         plt.savefig(self.outfile_basename + 'tol_vs_nlines.pdf')
 
+    def adjust_zero_gradient(self, df):
+        print "adjusting elevations for comids with zero-gradient..."
+
+        comids0 = list(df[df['dStage'] == 0].index)
+        self.efp.write('\nzero-gradient errors:\n')
+        self.efp.write('comid, upcomids, downcomid, elevmax, elevmin\n')
+        zerogradient = []
+
+        for comid in comids0:
+
+            # get up and down comids/elevations
+            upcomids = [u for u in df.ix[df.index == comid, 'upcomids'].item() if u in df.index]
+            upelevsmax = [df.ix[df.index == uid, 'maxElev'].item() for uid in upcomids]
+            dncomid = [d for d in df.ix[df.index == comid, 'dncomid'].item() if d in df.index]
+            dnelevmin = [df.ix[df.index == dnid, 'minElev'].item() for dnid in dncomid]
+
+            # adjust elevations for zero gradient comid if there is room
+            if len(upcomids) == 0:
+                df.loc[comid, 'maxElev'] += 0.01
+            elif len(dncomid) == 0:
+                df.loc[comid, 'minElev'] -= 0.01
+            elif len(upcomids) > 0 and np.min(upelevsmax) > df.ix[comid, 'maxElev']:
+                df.loc[comid, 'maxElev'] = 0.5 * (df.ix[comid, 'maxElev'] + np.min(upelevsmax))
+            elif len(dncomid) > 0 and dnelevmin < df.ix[comid, 'minElev']:
+                df.loc[comid, 'minElev'] = 0.5 * (df.ix[comid, 'minElev'] + dnelevmin)
+
+            # otherwise, downstream and upstream comids are also zero gradient; report to error file
+            else:
+                farfield = df.ix[comid, 'farfield']
+                if not farfield:
+                    self.efp.write('{},{},{},{:.2f},{:.2f}\n'.format(comid, upcomids, dncomid, df.ix[comid, 'maxElev'].item(),
+                              df.ix[comid, 'minElev'].item()))
+                    #df.loc[comid, 'routing'] = 0
+                    #just increase the max elev slightly to get around zero-gradient error
+                    #df.loc[comid, 'maxElev'] += 0.01
+                    zerogradient.append(comid)
+
+        if len(zerogradient) > 0:
+            print "\nWarning!, the following comids had zero gradients:\n{}".format(zerogradient)
+            print "routing for these was turned off. Elevations must be fixed manually"
+        else:
+            print "No zero-gradient linesinks found."
+
+        return df
+
+    def fix_crossing_lines(self, df):
+
+        print "removing any overlapping lines caused by simplication..."
+        def actually_crosses(A, B, precis=0.0001):
+            """A hybrid spatial predicate that determines if two geometries cross on both sides"""
+            # from http://gis.stackexchange.com/questions/26443/is-there-a-way-to-tell-if-two-linestrings-really-intersect-in-jts-or-geos
+            A = LineString(A) # convert back to shapely linestring for test below
+            B = LineString(B)
+            return (B.crosses(A) and
+                    B.crosses(A.parallel_offset(precis, 'left')) and
+                    B.crosses(A.parallel_offset(precis, 'right')))
+
+        pdf = PdfPages('crossing_linesinks.pdf')
+        crossing_lines = []
+        fixed = []
+        lines2drop = []
+        for comid in df.index:
+            if comid in fixed:
+                continue
+            crossed = df.ix[[actually_crosses(df.ix[comid, 'ls_coords'], l) for l in df.ls_coords]]
+            # drop all overlapping lines but the largest
+            crossed = crossed.append(df.ix[comid]).sort('ArbolateSu', ascending=False)
+            if len(crossed) > 1:
+                plt.figure()
+                plt.hold(True)
+                for cid in crossed.index:
+                    plt.plot(LineString(df.ix[cid, 'ls_coords']).coords.xy[0], LineString(df.ix[cid, 'ls_coords']).coords.xy[1])
+                plt.title(str(comid))
+
+
+                # for cases where a lake is being overlapped by a tributary, move the tributary end vertex to outside the lake
+                if 'LakePond' in list(crossed.FTYPE):
+                    crossing_lines = crossed.ix[crossed.FTYPE != 'LakePond'].index
+                    lake_comid = crossed.ix[crossed.FTYPE == 'LakePond'].index[0]
+                    # for all tributaries to the lake (i.e. lines that don't represent lakes)
+                    for line_comid in crossing_lines:
+                        # get point where the line crosses the lake edge (convert from coordinates back to LineString for intersect)
+                        intersection = LineString(df.ix[lake_comid].ls_coords).intersection(LineString(df.ix[line_comid].ls_coords)).xy
+                        # move end of overlapping line to other side of intersection
+                        next_to_last_vertex = df.ix[line_comid].ls_coords[-2]
+                        diff = np.array(next_to_last_vertex) - np.ravel(intersection)
+                        # pick a new endpoint that is between the intersection and next to last
+                        new_endvert = tuple(np.array(next_to_last_vertex) - 0.9 * diff)
+                        new_coords = df.ix[line_comid].ls_coords[:-1] + [new_endvert]
+                        df.set_value(line_comid, 'ls_coords', new_coords)
+                        plt.plot(LineString(df.ix[line_comid, 'ls_coords']).coords.xy[0], LineString(df.ix[line_comid, 'ls_coords']).coords.xy[1])
+
+                # otherwise, if just lines are involved, drop the lines with the lowest Arbolate sums
+                #else:
+                    #df = df.drop(crossed.index[1:])
+
+                # only address each comid once
+                for comid in crossed.index:
+                    fixed.append(comid)
+                pdf.savefig()
+                plt.close()
+        pdf.close()
+
+        return df
+
+    def setup_linesink_lakes(self, df):
+
+        # read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)
+        wb_elevs = GISio.shp2df(self.wb_centroids_w_elevations, index='COMID').drop_duplicates('COMID')
+        wb_elevs = wb_elevs[self.elevs_field] * self.DEM_zmult
+
+        # identify lines that represent lakes
+        # get elevations, up/downcomids, and total lengths for those lines
+        # assign attributes to lakes, then drop the lines
+
+
+        df['total_line_length'] = 0 # field to store total shoreline length of lakes
+        for wb_comid in self.wblist:
+
+            lines = df[df['WBAREACOMI'] == wb_comid]
+            if wb_comid == 9022741:
+                j=2
+
+            # isolated lakes have no overlapping lines and no routing
+            if len(lines) == 0:
+                df.ix[wb_comid, 'maxElev'] = wb_elevs[wb_comid]
+                df.ix[wb_comid, 'minElev'] = wb_elevs[wb_comid] - 0.01
+                df.ix[wb_comid, 'routing'] = 0
+                continue
+            # get upcomids and downcomid for lake,
+            # by differencing all up/down comids for lines in lake, and comids in the lake
+            upcomids = list(set([c for l in lines.upcomids for c in l]) - set(lines.index))
+            dncomids = list(set([c for l in lines.dncomid for c in l]) - set(lines.index))
+            df.set_value(wb_comid, 'upcomids', upcomids)
+            df.set_value(wb_comid, 'dncomid', dncomids)
+
+            df.ix[wb_comid, 'minElev'] = np.min(lines.minElev)
+            df.ix[wb_comid, 'maxElev'] = np.min(lines.maxElev)
+
+            # update all up/dn comids in lines dataframe that reference the lines inside of the lakes
+            # (replace those references with the comids for the lakes)
+            for comid in lines.index:
+                df.ix[df.FTYPE != 'LakePond', 'dncomid'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].dncomid]
+                df.ix[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
+
+            # get total length of lines representing lake (used later to estimate width)
+            df.loc[wb_comid, 'total_line_length'] = np.sum(lines.LENGTHKM)
+
+            # modifications to routed lakes
+            if df.ix[wb_comid, 'routing'] == 1:
+
+                # enforce gradient; update elevations in downstream comids
+                if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
+                    df.ix[wb_comid, 'minElev'] -= 0.01
+                    for dnid in df.ix[wb_comid, 'dncomid']:
+                        df.ix[dnid, 'maxElev'] -= 0.01
+
+                # move begining/end coordinate of linear ring representing lake to outlet location (to ensure correct routing)
+                # some routed lakes may not have an outlet
+                if len(df.ix[wb_comid, 'dncomid']) > 0:
+                    outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
+
+                    #closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'geometry_nf'])
+                    closest_ind = closest_vertex(outlet_coords, df.ix[wb_comid, 'ls_coords'])
+                    '''
+                    X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
+                    dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
+                    closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
+                    '''
+                    # make new set of vertices that start and end at outlet location (and only include one instance of previous start/end!)
+                    new_coords = [outlet_coords] + df.ix[wb_comid, 'ls_coords'][closest_ind+1:] + \
+                                 df.ix[wb_comid, 'ls_coords'][1:closest_ind] + [outlet_coords]
+                    df.set_value(wb_comid, 'ls_coords', new_coords)
+
+            # make sure inlets/outlets don't cross lines representing lake
+            wb_geom = LineString(df.ix[wb_comid, 'ls_coords'])
+            x = [c for c in upcomids if LineString(df.ix[c, 'ls_coords']).crosses(wb_geom)]
+            if len(x) > 0:
+                for c in x:
+                    print c
+                    ls_coords = df.ix[c, 'ls_coords']
+                    intersection_point = np.ravel(LineString(ls_coords).intersection(wb_geom).xy)
+                    print ls_coords
+                    # sequentially drop last vertex from line until it no longer crosses the lake
+                    crossing = True
+                    while crossing:
+                        ls_coords.pop(-1)
+                        if len(ls_coords) < 2 or not LineString(ls_coords).crosses(wb_geom):
+                            break
+
+                    # append new end vertex on line that is close to, but not coincident with lake
+                    diff = np.array(ls_coords[-1]) - intersection_point
+                    print diff
+                    print np.sign(diff)
+                    print np.sign(diff) * np.sqrt(self.nearfield_tolerance)
+                    # make a new endpoint that is between the intersection and next to last
+                    #new_endvert = tuple(np.array(ls_coords[-1]) - 0.9 * diff)
+                    new_endvert = tuple(intersection_point + np.sign(diff) * np.sqrt(self.nearfield_tolerance))
+                    ls_coords.append(new_endvert)
+                    df.set_value(c, 'ls_coords', ls_coords)
+                    print df.ix[c, 'ls_coords']
+            # drop the lines representing the lake from the lines dataframe
+            df = df.drop(lines.index)
+
+        return df
+
     def makeLineSinks(self, shp=None):
         self.efp = open(self.error_reporting, 'a')
         self.efp.write('\nMaking the lines...\n')
@@ -391,7 +598,7 @@ class linesinks:
         self.lines_df = self.simplify_lines()
 
         # add linesink geometries back in to dataframe
-        df['ls_geom'] = self.lines_df['ls_geom']
+        #df['ls_geom'] = self.lines_df['ls_geom']
         df['ls_coords'] = self.lines_df['ls_coords']
 
         self.wblist = df.ix[df.waterbody].index
@@ -456,76 +663,8 @@ class linesinks:
         df = df.drop_duplicates('ls_coords_str') # drop rows from dataframe containing duplicates
         df = df.drop('ls_coords_str', axis=1)
 
-
-        # read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)
-        wb_elevs = GISio.shp2df(self.wb_centroids_w_elevations, index='COMID').drop_duplicates('COMID')
-        wb_elevs = wb_elevs[self.elevs_field] * self.DEM_zmult
-
-        # identify lines that represent lakes
-        # get elevations, up/downcomids, and total lengths for those lines
-        # assign attributes to lakes, then drop the lines
-
-        df['total_line_length'] = 0 # field to store total shoreline length of lakes
-        for wb_comid in self.wblist:
-
-            lines = df[df['WBAREACOMI'] == wb_comid]
-            if wb_comid == 9022741:
-                j=2
-
-            # isolated lakes have no overlapping lines and no routing
-            if len(lines) == 0:
-                df.ix[wb_comid, 'maxElev'] = wb_elevs[wb_comid]
-                df.ix[wb_comid, 'minElev'] = wb_elevs[wb_comid] - 0.01
-                df.ix[wb_comid, 'routing'] = 0
-                continue
-            # get upcomids and downcomid for lake,
-            # by differencing all up/down comids for lines in lake, and comids in the lake
-
-            #df.ix[wb_comid, 'upcomids'] = list(set([c for l in lines.upcomids for c in l]) - set(lines.index))
-            #df.ix[wb_comid, 'dncomid'] = list(set([c for l in lines.dncomid for c in l]) - set(lines.index))
-            df.set_value(wb_comid, 'upcomids', list(set([c for l in lines.upcomids for c in l]) - set(lines.index)))
-            df.set_value(wb_comid, 'dncomid', list(set([c for l in lines.dncomid for c in l]) - set(lines.index)))
-
-            df.ix[wb_comid, 'minElev'] = np.min(lines.minElev)
-            df.ix[wb_comid, 'maxElev'] = np.min(lines.maxElev)
-
-            # update all up/dn comids in lines dataframe that reference the lines inside of the lakes
-            # (replace those references with the comids for the lakes)
-            for comid in lines.index:
-                df.ix[df.FTYPE != 'LakePond', 'dncomid'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].dncomid]
-                df.ix[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
-
-            # get total length of lines representing lake (used later to estimate width)
-            df.loc[wb_comid, 'total_line_length'] = np.sum(lines.LENGTHKM)
-
-            # modifications to routed lakes
-            if df.ix[wb_comid, 'routing'] == 1:
-
-                # enforce gradient; update elevations in downstream comids
-                if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
-                    df.ix[wb_comid, 'minElev'] -= 0.01
-                    for dnid in df.ix[wb_comid, 'dncomid']:
-                        df.ix[dnid, 'maxElev'] -= 0.01
-
-                # move begining/end coordinate of linear ring representing lake to outlet location (to ensure correct routing)
-                # some routed lakes may not have an outlet
-                if len(df.ix[wb_comid, 'dncomid']) > 0:
-                    outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
-
-                    #closest_ind = self.closest_vertex(outlet_coords, df.ix[wb_comid, 'geometry_nf'])
-                    closest_ind = closest_vertex(outlet_coords, df.ix[wb_comid, 'ls_geom'])
-                    '''
-                    X, Y = np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[0]), np.ravel(df.ix[wb_comid, 'geometry_nf'].coords.xy[1])
-                    dX, dY = X - outlet_coords[0], Y - outlet_coords[1]
-                    closest_ind = np.argmin(np.sqrt(dX**2 + dY**2))
-                    '''
-                    # make new set of vertices that start and end at outlet location (and only include one instance of previous start/end!)
-                    new_coords = [outlet_coords] + df.ix[wb_comid, 'ls_coords'][closest_ind+1:] + \
-                                 df.ix[wb_comid, 'ls_coords'][1:closest_ind] + [outlet_coords]
-                    df.set_value(wb_comid, 'ls_coords', new_coords)
-
-            # drop the lines representing the lake from the lines dataframe
-            df = df.drop(lines.index)
+        # method to represent lakes with linesinks
+        df = self.setup_linesink_lakes(df)
 
         print '\nmerging or splitting lines with only two vertices...'
         # find all routed comids with only 1 line; merge with neighboring comids
@@ -538,12 +677,19 @@ class linesinks:
             new_coords = map(tuple, [coords[0], mid, coords[-1]])
             return new_coords
 
-        df['nlines'] = [len(coords) for coords in df.ls_coords]
-        #comids1 = list(df[(df['nlines'] < 3) & (df['routing'] == 1)]['COMID'+lsuffix])
-        comids1 = list(df[(df['nlines'] < 3) & (df['routing'] == 1)].index)
+        df['nlines'] = [len(coords)-1 for coords in df.ls_coords]
+
+        # bisect lines that have only one segment, and are routed
+        ls_coords = df.ls_coords.tolist()
+        singlesegment = ((df['nlines'] < 2) & (df['routing'] == 1)).values
+        df['ls_coords'] = [bisect(line) if singlesegment[i] else line for i, line in enumerate(ls_coords)]
+
+        '''
+        old method that attempted to merge lines
+        comids1 = list(df[(df['nlines'] < 2) & (df['routing'] == 1)].index)
         self.efp.write('\nunrouted comids of length 1 that were dropped:\n')
         for comid in comids1:
-
+            df.loc[comid, 'ls_coords'] = bisect(df.ix[comid, 'ls_coords'])
 
             # get up and down comids/elevations; only consider upcomid/downcomids that are streams (exclude lakes)
             upcomids = [c for c in df.ix[comid, 'upcomids'] if c not in self.wblist]
@@ -557,10 +703,16 @@ class linesinks:
                 j=2
 
             try:
-                # first try to merge with downstream comid
+                # first try to merge with downstream comid if there is one
                 if len(dncomid) > 0:
-                    # only merge if start of downstream comid coincides with last line segment
-                    if df.ix[comid].ls_coords[-1] == df.ix[dncomid[0]].ls_coords[0]:
+
+                    current_end_vertex = df.ix[comid].ls_coords
+                    dn_start_vertex = df.ix[dncomid[0]].ls_coords[0]
+
+                    # only merge if start of downstream comid coincides with last vertex
+                    if current_end_vertex == dn_start_vertex:
+
+                        # coordinates for new line are current coords and downstream coords after start
                         new_coords = df.ix[comid].ls_coords + df.ix[dncomid[0]].ls_coords[1:]
                         df.set_value(dncomid[0], 'ls_coords', new_coords) # update coordinates in dncomid
                         df.loc[dncomid[0], 'maxElev'] = df.ix[comid].maxElev # update max elevation
@@ -569,9 +721,10 @@ class linesinks:
 
                         # record merged comid and replace references to it (as a dncomid)
                         replacement = dncomid[0]
-                        df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
+                        df['dncomid'] = [[replacement if c == comid else c for c in l] for l in df['dncomid']]
 
                         # add upcomids of merged segment to its replacement
+                        are COMIDs that no longer exist being deleted?
                         new_upcomids = list(set(df.ix[replacement, 'upcomids'] + upcomids))
                         new_upcomids.remove(comid)
                         df.set_value(replacement, 'upcomids', new_upcomids)
@@ -615,54 +768,14 @@ class linesinks:
             except:
                 pass
         '''
+        '''
             if merged:
                 # update any references to current comid (clunkly because each row is a list)
                 df['dncomid'] = [[replacement if v == comid else v for v in l] for l in df['dncomid']]
                 df['upcomids'] = [[replacement if v == comid else v for v in l] for l in df['upcomids']]
         '''
-
-        print "adjusting elevations for comids with zero-gradient..."
-
-        comids0 = list(df[df['dStage'] == 0].index)
-        self.efp.write('\nzero-gradient errors:\n')
-        self.efp.write('comid, upcomids, downcomid, elevmax, elevmin\n')
-        zerogradient = []
-
-        for comid in comids0:
-
-            # get up and down comids/elevations
-            upcomids = [u for u in df.ix[df.index == comid, 'upcomids'].item() if u in df.index]
-            upelevsmax = [df.ix[df.index == uid, 'maxElev'].item() for uid in upcomids]
-            dncomid = [d for d in df.ix[df.index == comid, 'dncomid'].item() if d in df.index]
-            dnelevmin = [df.ix[df.index == dnid, 'minElev'].item() for dnid in dncomid]
-
-            # adjust elevations for zero gradient comid if there is room
-            if len(upcomids) == 0:
-                df.loc[comid, 'maxElev'] += 0.01
-            elif len(dncomid) == 0:
-                df.loc[comid, 'minElev'] -= 0.01
-            elif len(upcomids) > 0 and np.min(upelevsmax) > df.ix[comid, 'maxElev']:
-                df.loc[comid, 'maxElev'] = 0.5 * (df.ix[comid, 'maxElev'] + np.min(upelevsmax))
-            elif len(dncomid) > 0 and dnelevmin < df.ix[comid, 'minElev']:
-                df.loc[comid, 'minElev'] = 0.5 * (df.ix[comid, 'minElev'] + dnelevmin)
-
-            # otherwise, downstream and upstream comids are also zero gradient; report to error file
-            else:
-                farfield = df.ix[comid, 'farfield']
-                if not farfield:
-                    self.efp.write('{},{},{},{:.2f},{:.2f}\n'.format(comid, upcomids, dncomid, df.ix[comid, 'maxElev'].item(),
-                              df.ix[comid, 'minElev'].item()))
-                    #df.loc[comid, 'routing'] = 0
-                    #just increase the max elev slightly to get around zero-gradient error
-                    #df.loc[comid, 'maxElev'] += 0.01
-                    zerogradient.append(comid)
-
-        if len(zerogradient) > 0:
-            print "\nWarning!, the following comids had zero gradients:\n{}".format(zerogradient)
-            print "routing for these was turned off. Elevations must be fixed manually"
-        else:
-            print "No zero-gradient linesinks found."
-
+        # attempt to fix linesinks where max and min elevations are the same
+        #df = self.adjust_zero_gradient(df)
 
         # end streams
         # evaluate whether downstream segment is in farfield
@@ -677,7 +790,6 @@ class linesinks:
         # set segments with downstream segment in farfield as End Segments
         df['end_stream'] = len(df) * [0]
         df.loc[downstream_ff, 'end_stream'] = 1 # set
-
 
         # widths for lines
         arbolate_sum_col = [c for c in df.columns if 'arbolate' in c.lower()][0]
@@ -707,63 +819,9 @@ class linesinks:
         isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0 and c not in self.wblist]
         df = df.drop(isolated, axis=0)
 
-        '''
-        print "removing any overlapping lines caused by simplication..."
-        def actually_crosses(A, B, precis=0.0001):
-            """A hybrid spatial predicate that determines if two geometries cross on both sides"""
-            # from http://gis.stackexchange.com/questions/26443/is-there-a-way-to-tell-if-two-linestrings-really-intersect-in-jts-or-geos
-            A = LineString(A) # convert back to shapely linestring for test below
-            B = LineString(B)
-            return (B.crosses(A) and
-                    B.crosses(A.parallel_offset(precis, 'left')) and
-                    B.crosses(A.parallel_offset(precis, 'right')))
+        # fix any lines that cross
+        #df = self.fix_crossing_lines(df)
 
-        pdf = PdfPages('crossing_linesinks.pdf')
-        crossing_lines = []
-        fixed = []
-        lines2drop = []
-        for comid in df.index:
-            if comid in fixed:
-                continue
-            crossed = df.ix[[actually_crosses(df.ix[comid, 'ls_coords'], l) for l in df.ls_coords]]
-            # drop all overlapping lines but the largest
-            crossed = crossed.append(df.ix[comid]).sort('ArbolateSu', ascending=False)
-            if len(crossed) > 1:
-                plt.figure()
-                plt.hold(True)
-                for cid in crossed.index:
-                    plt.plot(LineString(df.ix[cid, 'ls_coords']).coords.xy[0], LineString(df.ix[cid, 'ls_coords']).coords.xy[1])
-                plt.title(str(comid))
-
-
-                # for cases where a lake is being overlapped by a tributary, move the tributary end vertex to outside the lake
-                if 'LakePond' in list(crossed.FTYPE):
-                    crossing_lines = crossed.ix[crossed.FTYPE != 'LakePond'].index
-                    lake_comid = crossed.ix[crossed.FTYPE == 'LakePond'].index[0]
-                    # for all tributaries to the lake (i.e. lines that don't represent lakes)
-                    for line_comid in crossing_lines:
-                        # get point where the line crosses the lake edge (convert from coordinates back to LineString for intersect)
-                        intersection = LineString(df.ix[lake_comid].ls_coords).intersection(LineString(df.ix[line_comid].ls_coords)).xy
-                        # move end of overlapping line to other side of intersection
-                        next_to_last_vertex = df.ix[line_comid].ls_coords[-2]
-                        diff = np.array(next_to_last_vertex) - np.ravel(intersection)
-                        # pick a new endpoint that is between the intersection and next to last
-                        new_endvert = tuple(np.array(next_to_last_vertex) - 0.9 * diff)
-                        new_coords = df.ix[line_comid].ls_coords[:-1] + [new_endvert]
-                        df.set_value(line_comid, 'ls_coords', new_coords)
-                        plt.plot(LineString(df.ix[line_comid, 'ls_coords']).coords.xy[0], LineString(df.ix[line_comid, 'ls_coords']).coords.xy[1])
-
-                # otherwise, if just lines are involved, drop the lines with the lowest Arbolate sums
-                #else:
-                    #df = df.drop(crossed.index[1:])
-
-                # only address each comid once
-                for comid in crossed.index:
-                    fixed.append(comid)
-                pdf.savefig()
-                plt.close()
-        pdf.close()
-        '''
         # names
         df['ls_name'] = len(df)*[None]
         df['ls_name'] = df.apply(name, axis=1)
@@ -804,12 +862,13 @@ class linesinks:
 
         # recreate shapely geometries from coordinates column; drop all other coords/geometries
         #df = df.drop([c for c in df.columns if 'geometry' in c], axis=1)
-        df['geometry'] = df['ls_geom']
-        df = df.drop(['ls_geom', 'ls_coords'], axis=1)
+        df['geometry'] = [LineString(g) for g in df.ls_coords]
+        df = df.drop(['ls_coords'], axis=1)
         #df['geometry'] = df['ls_coords'].map(lambda x: LineString(x))
         #df = df.drop(['ls_coords'], axis=1)
         GISio.df2shp(df, self.outfile_basename.split('.')[0]+'.shp', prj=self.prj)
 
+        self.df = df
         self.efp.close()
         print 'Done!'
 
