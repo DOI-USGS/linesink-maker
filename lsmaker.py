@@ -261,7 +261,7 @@ class linesinks:
 
         print 'removing farfield streams lower than {} order...'.format(self.min_farfield_order)
         # retain all streams not in the farfield or in the farfield and of order > min_farfield_order
-        #df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values > self.min_farfield_order))]
+        df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))]
 
         print 'dropping waterbodies that are not lakes larger than {}...'.format(self.min_waterbody_size)
         wbs = wbs[(wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')]
@@ -312,10 +312,9 @@ class linesinks:
 
     def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None):
 
-        try:
-            self.df
-        except:
-            'No dataframe attribute for linesinks instance. Run preprocess first.'
+        if not hasattr(self, 'df'):
+            print 'No dataframe attribute for linesinks instance. Run preprocess first.'
+            return
 
         if nearfield_tolerance is None:
             nearfield_tolerance = self.nearfield_tolerance
