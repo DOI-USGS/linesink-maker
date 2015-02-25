@@ -78,10 +78,15 @@ LinesinkMakr will open all of the files and combine them.-->
     <farfield_tolerance>500</farfield_tolerance>
     <!-- min_farfield_order:
     minimum stream order to retain in farfield -->
-    <min_farfield_order>2</min_farfield_order> = 2 # minimum stream order to retain in farfield
+    <min_farfield_order>2</min_farfield_order>
     <!-- min_waterbody_size:
     minimum sized waterbodies to retain (km2) -->
-    <min_waterbody_size>1.0</min_waterbody_size> = 1.0 #
+    <min_waterbody_size>1.0</min_waterbody_size>
+    <!-- drop_crossing:
+    Line simplification can lead to some lines crossing.
+    In instances of crossing, remove the line representing this smaller of the two streams
+    (as indicated by a lower arbolate sum value)-->
+    <drop_crossing>True</drop_crossing>
 </Simplification>
 
 <preprocessed_files>
