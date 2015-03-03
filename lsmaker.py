@@ -196,13 +196,59 @@ class linesinks:
             return False
 
     def preprocess_arcpy(self):
-        '''
+        """
         requires arcpy
-        incomplete; does not include projection
-        '''
-        import arcpy
+
+        This method performs the following steps:
+
+        1) clip the NHDPlus flowlines and waterbodies datasets to the model farfield polygon.
+           Save the result of the clipping to new shapefiles, which are the same as those specified
+           in the <preprocessed_files> section of the XML input file.
+        2) Perform an "Erase analysis", to cut-out the model nearfield from the farfield polygon
+           (making the farfield polygon a donut with exterior and interior rings). Save this
+           to file specified as <farfield_multipolygon> in the XML input file.
+        3) Run "FeatureToPoint" on the NHD waterbodies dataset, resulting in a shapefile of points
+           for each waterbody.
+        4) Run "ExtractMultiValuesToPoints" on the waterbody points created in Step 3 and the DEM
+           for the area, to get an elevation value for each waterbody. The name for the resulting
+           point shapefile with elevation attributes should be the same as the name for the clipped
+           waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"
+           added.
+
+        Notes:
+        -----
+        **This method does not perform any projections or transformations.** Therefore all input shapefiles must
+        be in the same projected coordinate system that will be used in the GFLOW GUI.
+
+        Alternatively, these steps can be performed manually prior to running the preprocess() method.
+        """
+        try:
+            import arcpy
+        except:
+            print 'Could not import arcpy, which is required for this method. Alternatively, these steps can' \
+                  'be performed manually prior to running the preprocess() method:\n' \
+                  '1) clip the NHDPlus flowlines and waterbodies datasets to the model farfield polygon. \n' \
+                  '   Save the result of the clipping to new shapefiles, which are the same as those specified\n' \
+                  '   in the <preprocessed_files> section of the XML input file.\n' \
+                  '2) Perform an "Erase analysis", to cut-out the model nearfield from the farfield polygon\n' \
+                  '   (making the farfield polygon a donut with exterior and interior rings). Save this' \
+                  '   to file specified as <farfield_multipolygon> in the XML input file.\n' \
+                  '3) Run "FeatureToPoint" on the NHD waterbodies dataset, resulting in a shapefile of points\n' \
+                  '   for each waterbody.' \
+                  '4) Run "ExtractMultiValuesToPoints" on the waterbody points created in Step 3 and the DEM\n' \
+                  '   for the area, to get an elevation value for each waterbody. The name for the resulting\n ' \
+                  '   point shapefile with elevation attributes should be the same as the name for the clipped\n' \
+                  '   waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"\n' \
+                  '   added.'
+        path = os.path.split(self.flowlines_clipped)[0]
+        flowlines_clipped = os.path.split(self.flowlines_clipped)[1]
+        waterbodies_clipped = os.path.split(self.waterbodies_clipped)[1]
+        farfield_mp = os.path.split(self.farfield_mp)[1]
+        wb_centroids_w_elevations = os.path.split(self.wb_centroids_w_elevations)[1]
+
+
         # initialize the arcpy environment
-        arcpy.env.workspace = self.path
+        arcpy.env.workspace = path
         arcpy.env.overwriteOutput = True
         arcpy.env.qualifiedFieldNames = False
         arcpy.CheckOutExtension("spatial") # Check spatial analyst license
@@ -210,32 +256,48 @@ class linesinks:
         # make the output directory if it doesn't exist yet
         if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
             os.makedirs(self.preprocdir)
+        if len(self.flowlines) > 1:
+            arcpy.Merge_management(self.flowlines, os.path.join(path, 'flowlines_merged.shp'))
+            self.flowlines = os.path.join(path, 'flowlines_merged.shp')
+        else:
+            self.flowlines = self.flowlines[0]
+        if len(self.waterbodies) > 1:
+            arcpy.Merge_management(self.waterbodies, os.path.join(path, 'waterbodies_merged.shp'))
+            self.waterbodies = os.path.join(path, 'waterbodies_merged.shp')
+        else:
+            self.waterbodies = self.waterbodies[0]
 
         print 'clipping {} and {} to {}...'.format(self.flowlines, self.waterbodies, self.farfield)
-        arcpy.Clip_analysis(self.flowlines, self.farfield, self.flowlines_clipped)
-        arcpy.Clip_analysis(self.waterbodies, self.farfield, self.waterbodies_clipped)
+        arcpy.Clip_analysis(self.flowlines, self.farfield, flowlines_clipped)
+        arcpy.Clip_analysis(self.waterbodies, self.farfield, waterbodies_clipped)
         print 'clipped flowlines written to {}; clipped waterbodies written to {}'\
-            .format(self.flowlines_clipped, self.waterbodies_clipped)
+            .format(self.flowlines_clipped, waterbodies_clipped)
 
         print '\nremoving interior from farfield polygon...'
-        arcpy.Erase_analysis(self.farfield, self.nearfield, self.farfield_mp)
-        print 'farfield donut written to {}'.format(self.farfield_mp)
+        arcpy.Erase_analysis(self.farfield, self.nearfield, farfield_mp)
+        print 'farfield donut written to {}'.format(farfield_mp)
 
         print '\ngetting NHD Waterbody elevations from DEM (needed for isolated lakes)'
-        arcpy.FeatureToPoint_management(self.waterbodies_clipped, self.wb_centroids_w_elevations)
-        arcpy.sa.ExtractMultiValuesToPoints(self.wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
-        print 'waterbody elevations written to point dataset {}'.format(self.wb_centroids_w_elevations)
+        arcpy.FeatureToPoint_management(waterbodies_clipped, wb_centroids_w_elevations)
+        arcpy.sa.ExtractMultiValuesToPoints(wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
+        print 'waterbody elevations written to point dataset {}'.format(wb_centroids_w_elevations)
         print '\nDone.'
 
     def preprocess(self, save=True):
-        '''
-        associate NHD tabular information to linework
-        intersect lines with nearfield and farfield domains
-        edit linework
-            - remove farfield streams lower than minimum order
-            - remove lakes smaller than minimum size
-            - convert lakes from polygons to lines; merge with lines
-        '''
+        """
+        This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and
+        the model domain configuration (nearfield, farfield, and any other polygon areas) with the NHDPlus
+        Flowlines and Waterbodies datasets. The following edits are made to the Flowlines and waterbodies:
+        * remove farfield streams lower than <min_farfield_order>
+        * remove waterbodies that aren't lakes, and lakes smaller than <min_waterbody_size>
+        * convert lakes from polygons to lines; merge the lakes with the with flowlines
+
+        Parameters:
+        -----------
+        save: True/False
+            Saves the preprocessed dataset to a shapefile specified by <preprocessed_lines> in the XML input file
+
+        """
 
         # open error reporting file
         self.efp = open(self.error_reporting, 'a')
@@ -324,7 +386,23 @@ class linesinks:
         self.df = df
 
     def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None):
+        """Reduces the number of vertices in the GIS linework representing streams and lakes,
+        to within specified tolerances. The tolerance values represent the maximum distance
+        in the coordinate system units that the simplified feature can deviate from the original feature.
 
+        Parameters:
+        ----------
+        nearfield_tolerance : float
+            Tolerance for the area representing the model nearfield
+        farfield_tolerance : float
+            Tolerance for the area representing the model farfield
+
+        Returns:
+        -------
+        df : DataFrame
+            A copy of the df attribute with a 'ls_geom' column of simplified geometries, and
+            a 'ls_coords' column containing lists of coordinate tuples defining each simplified line.
+        """
         if not hasattr(self, 'df'):
             print 'No dataframe attribute for linesinks instance. Run preprocess first.'
             return
@@ -339,10 +417,6 @@ class linesinks:
         print 'simplifying NHD linework geometries...'
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
-        '''
-        df['geometry_nf'] = df['geometry'].map(lambda x: x.simplify(self.nearfield_tolerance))
-        df['geometry_ff'] = df['geometry'].map(lambda x: x.simplify(self.farfield_tolerance))
-        '''
         df = self.df[['farfield', 'geometry']]
 
         ls_geom = np.array([LineString()] * len(df))
@@ -366,7 +440,20 @@ class linesinks:
         return df
 
     def prototype(self, nftol=[10, 50, 100, 200, 500], fftol=500):
+        """Function to compare multiple simplification distance tolerance values for the model nearfield.
 
+        Parameters:
+        -----------
+        nftol : list
+            Contains the tolerance values to be compared.
+        fftol : numeric
+            Single tolerance value to be used for the farfield in all comparisons.
+
+        Returns:
+        --------
+        A new directory called "prototypes" is made
+
+        """
         if not os.path.isdir('prototypes'):
             os.makedirs('prototypes')
 
@@ -394,7 +481,8 @@ class linesinks:
     def adjust_zero_gradient(self, df, increment=0.01):
 
         dg = Diagnostics(lsm_object=self)
-        comids0 = dg.check4zero_gradient(df)
+        dg.df = df
+        comids0 = dg.check4zero_gradient()
 
         if len(comids0) > 0:
 
@@ -441,7 +529,9 @@ class linesinks:
                         break
 
              # check again for zero-gradient lines
-            comids0 = dg.check4zero_gradient(df)
+            dg.df = df
+            comids0 = dg.check4zero_gradient()
+
             if len(comids0) > 0:
                 for c in comids0:
                     self.efp.write('{} '.format(c))
@@ -782,6 +872,13 @@ class linesinks:
         self.confluences = confluences
         self.df['dStage'] = self.df['maxElev'] - self.df['minElev']
         print 'Done, see confluences attribute.'
+
+    def run_diagnostics(self):
+
+        dg = Diagnostics(lsm_object=self)
+        dg.check_vertices()
+        dg.check4crossing_lines()
+        dg.check4zero_gradient()
 
     def map_outsegs(self):
         '''

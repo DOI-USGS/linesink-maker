@@ -75,11 +75,11 @@ class Diagnostics:
         else:
             print 'passed.'
 
-    def check4zero_gradient(self, df):
+    def check4zero_gradient(self):
 
         print 'Checking for lines with zero gradient...'
-        df['dStage'] = df.maxElev - df.minElev
-        comids0 = list(df[df['dStage'] == 0].index)
+        self.df['dStage'] = self.df.maxElev - self.df.minElev
+        comids0 = list(self.df[self.df['dStage'] == 0].index)
         if len(comids0) > 0:
             print '{} lines with zero gradient found'.format(len(comids0))
         else:
