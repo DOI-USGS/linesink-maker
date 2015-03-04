@@ -90,9 +90,9 @@ from the **example_Nicolte** folder, or from a parent folder:
 ```
 \>ipython notebook
 ```
-and then navigate to the notebook (*.ipynb* file). Or, the notebook can also be viewed here:  
+and then navigate to the notebook (*.ipynb* file). Or, the notebook can be viewed here:  
 <http://nbviewer.ipython.org/github/aleaf/LinesinkMaker/blob/master/example_Nicolet/Nicolet.ipynb>
 
 ###Importing the linesink string file into GFLOW  
-LinesinkMaker outputs a linesink string file of the form <basename>.lss.xml, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor (a editor which support XML code highlighting, such as **Notepad++** or **Text Wrangler** is highlly recommended).  
+LinesinkMaker outputs a linesink string file of the form <basename>.lss.xml, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor (an editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended).  
 LinesinkMaker also outputs a shapefile representation of the linesink network (<basename>.shp), for visualization in a GIS.
