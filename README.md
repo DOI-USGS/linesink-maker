@@ -15,7 +15,7 @@ linesink network.
 #####Required GFLOW version:  
 Requires a version of GFLOW with the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. 
 
-#####Installing requirements
+#####Installing the package requirements:
 An easy way to install these is through a Python distribution such as Anaconda (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, packages can be added using the **conda** package manager. For example: 
  
 ```
@@ -50,11 +50,36 @@ $ python setup.py install
 import lsmaker
 ```
 
-###Running LinesinkMaker
+
+
+##Required input  
+#####From NHDPlus v2:  
+For each major drainage area encompassed by the model (e.g. Area 04 representing the Great Lakes Basin, 07 representing the Upper Mississippi Basin, etc):  
+
+* NHDFlowline.shp  
+* NHDWaterbody.shp  
+* elevslope.dbf  
+* PlusFlowlineVAA.dbf
+
+These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **NHDPlusV21_GL_04_NHDSnapshot_07.7z** and **NHDPlusV21_GL_04_NHDPlusAttributes_08.7z** downloads.
+
+#####Model domain specification:  
+* shapefile of the model nearfield area (where linesinks will be routed and have resistance)  
+* shapefile of the model farfield area (where linesinks will be zero-resistance and not routed)
+
+#####All shapefiles must be in a consistent, projected coordinate system with units of feet or meters.  
+Automatic reprojection to a specified system will be added to the code at some point, but is not implemented yet.  
+
+#####Input file for LinesinkMaker
+The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an XML input file. See the example folders for a template with input instructions.
+
+
+##Running LinesinkMaker
+
 LinesinkMaker can be run from the command line as a script, or interactively in an environment such as **IPython Notebook** (<http://ipython.org/notebook.html>). The **example_Nicolet** and **example_Medford** folders have examples of both approaches.
   
 #####Running from the command line:
-from either of the example folders:  
+First edit the script **make_linesinks.py** so that it points to the correct **XML input file** and then run by calling:  
 
 ```
 \>python make_linesinks.py
