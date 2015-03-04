@@ -1,4 +1,4 @@
-###LinesinkMaker
+#LinesinkMaker
 Python package to construct linesink networks for the analytic element groundwater flow modeling
 program GFLOW (<http://www.haitjema.com/>). 
   
@@ -50,5 +50,24 @@ $ python setup.py install
 import lsmaker
 ```
 
-####Running LinesinkMaker
-LinesinkMaker can be run from the command line as a script, or interactively in an
+###Running LinesinkMaker
+LinesinkMaker can be run from the command line as a script, or interactively in an environment such as **IPython Notebook** (<http://ipython.org/notebook.html>). The **example_Nicolet** and **example_Medford** folders have examples of both approaches.
+  
+#####Running from the command line:
+from either of the example folders:  
+
+```
+\>python make_linesinks.py
+```
+#####Running from IPython Notebooks:  
+from the **example_Nicolte** folder, or from a parent folder:  
+
+```
+\>ipython notebook
+```
+and then navigate to the notebook (*.ipynb* file). Or, the notebook can also be viewed here:  
+<http://nbviewer.ipython.org/github/aleaf/LinesinkMaker/blob/master/example_Nicolet/Nicolet.ipynb>
+
+###Importing the linesink string file into GFLOW  
+LinesinkMaker outputs a linesink string file of the form <basename>.lss.xml, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor (a editor which support XML code highlighting, such as **Notepad++** or **Text Wrangler** is highlly recommended).  
+LinesinkMaker also outputs a shapefile representation of the linesink network (<basename>.shp), for visualization in a GIS.
