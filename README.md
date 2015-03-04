@@ -71,7 +71,8 @@ These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.p
 Automatic reprojection to a specified system will be added to the code at some point, but is not implemented yet.  
 
 #####Input file for LinesinkMaker
-The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an XML input file. See the example folders for a template with input instructions.
+The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an XML input file. See the example folders for a template with input instructions. An editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended for working with this file. 
+
 
 
 ##Running LinesinkMaker
@@ -94,5 +95,5 @@ and then navigate to the notebook (*.ipynb* file). Or, the notebook can be viewe
 <http://nbviewer.ipython.org/github/aleaf/LinesinkMaker/blob/master/example_Nicolet/Nicolet.ipynb>
 
 ###Importing the linesink string file into GFLOW  
-LinesinkMaker outputs a linesink string file of the form <basename>.lss.xml, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor (an editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended).  
+LinesinkMaker outputs a linesink string file of the form <basename>.lss.xml, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor.  
 LinesinkMaker also outputs a shapefile representation of the linesink network (<basename>.shp), for visualization in a GIS.
