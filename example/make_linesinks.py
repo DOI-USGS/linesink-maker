@@ -15,7 +15,7 @@ ls.preprocess_arcpy()
 
 ls.preprocess()
 
-ls.makeLineSinks()
+ls.makeLineSinks(shp='preprocessed/lines.shp')
 
 ls.run_diagnostics()
 
