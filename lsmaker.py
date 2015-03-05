@@ -812,8 +812,9 @@ class linesinks:
         df.ix[df['FTYPE'] == 'LakePond', 'AutoSWIZC'] = 2 # Along surface water boundary
 
         # additional check to drop isolated lines
-        isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0 and c not in self.wblist]
-        df = df.drop(isolated, axis=0)
+        isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0
+                    and c not in self.wblist]
+        #df = df.drop(isolated, axis=0)
 
         # names
         df['ls_name'] = len(df)*[None]
