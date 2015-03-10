@@ -6,17 +6,22 @@ program GFLOW (<http://www.haitjema.com/>).
 * Writes a GFLOW linesink string (lss) XML import file, and a shapefile of the 
 linesink network.
 
-#####Required python packages:  
+#####Required python packages (see below for installation instructions):  
 * lxml
 * fiona
 * shapely
 * pandas
 
-#####Required GFLOW version:  
-Requires a version of GFLOW with the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. 
+###! Software dependency caveats:
+Unfortunately in addition to the above python modules there are two additional software dependencies for the time being that are somewhat problematic:  
 
-#####Installing the package requirements:
-An easy way to install these is through a Python distribution such as Anaconda (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, packages can be added using the **conda** package manager. For example: 
+* **Arcpy**: Linesink maker requires some preprocessing steps that are automated by the preprocess_arcpy() method (see the IPython Notebook and/or make_linesinks.py files for the examples). If you have ArcGIS version 10 or later on your machine, you can make Arcpy available to use by following the steps in the preproc_readme.md file. Alternatively, these steps could be done manually in any GIS software (see the preproc_readme.md for instructions). This dependency will be removed soon in a future version of LinesinkMaker.
+
+* **GFLOW Linesink import capability**:  
+Output from LinesinkMaker is imported into GFLOW using the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. If you already have a GFLOW license and want to try out LinesinkMaker before then, see me a message!
+
+#####Installing the required Python packages:
+An easy way to install these (and to install and manage Python in general) is through a Python distribution such as **Anaconda**, available for free at (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, packages can be added at the command line (on any platform) using the **conda** package manager. For example: 
  
 ```
 $ conda install fiona  
@@ -31,7 +36,7 @@ then
 ```  
 $ pip install shapely  
 ```  
-This fetches the latest version of the package from the **Python Package Index** (<https://pypi.python.org/pypi>).  
+This fetches the latest version of the **shapely** package from the **Python Package Index** (<https://pypi.python.org/pypi>).  
 Alternatively, for a binary installer obtained from <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>:
     
 ```  
@@ -71,7 +76,7 @@ These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.p
 Automatic reprojection to a specified system will be added to the code at some point, but is not implemented yet.  
 
 #####Input file for LinesinkMaker
-The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an XML input file. See the example folders for a template with input instructions. An editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended for working with this file. 
+The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an **XML input file**. See the example folders for templates with input instructions (e.g. **Nicolet_lines.xml**). An editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended for working with this file. 
 
 
 
