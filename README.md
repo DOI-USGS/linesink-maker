@@ -70,6 +70,9 @@ For each major drainage area encompassed by the model (e.g. Area 04 representing
 * PlusFlowlineVAA.dbf
 
 These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **NHDPlusV21_GL_04_NHDSnapshot_07.7z** and **NHDPlusV21_GL_04_NHDPlusAttributes_08.7z** downloads.
+#####A DEM of the model domain:
+A DEM is required to obtain elevations for lakes not connected to the stream network. The DEM is only read by the **preprocess_arcpy()** method, so would not be needed if theses steps are completed manually (**see preproc_readme.md**).
+
 
 #####Model domain specification:  
 * shapefile of the model nearfield area (where linesinks will be routed and have resistance)  
