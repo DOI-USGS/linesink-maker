@@ -106,6 +106,6 @@ and then navigate to the notebook (*.ipynb* file). Or, the notebook can be viewe
 <http://nbviewer.ipython.org/github/aleaf/LinesinkMaker/blob/master/example_Nicolet/Nicolet.ipynb>
 
 ###Importing the linesink string file into GFLOW  
-LinesinkMaker outputs a linesink string file of the form <basename>.lss.xml, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor.  
+LinesinkMaker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor.  
 ###Viewing the linesinks in a GIS
-LinesinkMaker also outputs a shapefile representation of the linesink network (<basename>.shp), for visualization in a GIS.
+LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS.
