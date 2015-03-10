@@ -23,7 +23,7 @@ Unfortunately in addition to the above python modules there are two additional s
 * **GFLOW Linesink import capability**:  
 Output from LinesinkMaker is imported into GFLOW using the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. If you already have a GFLOW license and want to try out LinesinkMaker before then, see me a message!
 
-#####Installing the required Python packages:
+###Installing the required Python packages:
 An easy way to install these (and to install and manage Python in general) is through a Python distribution such as **Anaconda**, available for free at (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, packages can be added at the command line (on any platform) using the **conda** package manager. For example: 
  
 ```
@@ -46,14 +46,14 @@ Alternatively, for a binary installer obtained from <http://www.lfd.uci.edu/~goh
 $ pip install Shapely‑1.5.6‑cp27‑none‑win_amd64.whl
 ```  
 
-#####to install LinesinkMaker:  
+###to install LinesinkMaker:  
 From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*, navigate to the (extracted) folder that contains **setup.py** and run:  
 
 ```
 $ python setup.py install
 ```
 
-#####to import:
+#####to import into a python session:
 ```
 import lsmaker
 ```
