@@ -15,13 +15,13 @@ linesink network.
 ###! Software dependency caveats:
 Unfortunately in addition to the above python modules there are two additional software dependencies for the time being that are somewhat problematic:  
 
-* **Arcpy**: Linesink maker requires some preprocessing steps that are automated by the preprocess_arcpy() method (see the IPython Notebook and/or make_linesinks.py files for the examples).  
+* **Arcpy**: Linesink maker requires some preprocessing steps that are automated by the preprocess_arcpy() method (see the IPython Notebook and/or make_linesinks.py files in the example folders). This dependency will be removed soon in a future version of LinesinkMaker.  
+  
 	* 	If you have ArcGIS version 10 or later on your machine, you can make Arcpy available to use by following the steps in the preproc_readme.md file.
-	* Alternatively, these steps can be done manually in any GIS software. See the preproc_readme.md for instructions. This dependency will be removed soon in a future version of LinesinkMaker.  
-	
+	* Alternatively, these steps can be done manually in any GIS software. See the preproc_readme.md for instructions.	
   
 * **GFLOW Linesink import capability**:  
-Output from LinesinkMaker is imported into GFLOW using the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. If you already have a GFLOW license and want to try out LinesinkMaker before then, see me a message!
+Output from LinesinkMaker is imported into GFLOW using the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. If you already have a GFLOW license and want to try out LinesinkMaker before then, send me a message!
 
 ###Installing the required Python packages:
 An easy way to install these (and to install and manage Python in general) is through a Python distribution such as **Anaconda**, available for free at (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, packages can be added at the command line (on any platform) using the **conda** package manager. For example: 

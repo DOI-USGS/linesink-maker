@@ -33,8 +33,8 @@ class Diagnostics:
             [crosses.add(comids[j]) for j, g in enumerate(geoms) if linesink.crosses(g)]
 
         if len(crosses) > 0:
-            print 'Warning! Crossing linesinks found. These will have to be modified before running GFLOW.\n' \
-                  'See {}'.format(self.diagnostics_file)
+            print 'Warning! Crossing linesinks found. Check these before running GFLOW.\n' \
+                  'See {} for more details'.format(self.diagnostics_file)
             ofp.write('The following line segments cross, and should be fixed manually before running GFLOW:\n')
             for c in crosses:
                 ofp.write('{} '.format(c))
