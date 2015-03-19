@@ -102,6 +102,8 @@ def move_point_along_line(x1, x2, dist):
 
 class linesinks:
 
+    maxlines = 4000
+
     def __init__(self, infile):
 
         try:
@@ -594,6 +596,8 @@ class linesinks:
         for wb_comid in self.wblist:
 
             lines = df[df['WBAREACOMI'] == wb_comid]
+            upcomids = []
+            dncomids = []
 
             # isolated lakes have no overlapping lines and no routing
             if len(lines) == 0:
@@ -615,17 +619,17 @@ class linesinks:
                 # make the lake the down-comid for the upcomids of the lake
                 # (instead of the lines that represented the lake in the flowlines dataset)
                 # do the same for the down-comid of the lake
-                for u in upcomids:
+                for u in [u for u in upcomids if u > 0]: # exclude outlets
                     df.set_value(u, 'dncomid', [wb_comid])
-                for d in dncomids:
+                for d in [d for d in dncomids if d > 0]:
                     df.set_value(d, 'upcomids', [wb_comid])
-
+                '''
                 # update all up/dn comids in lines dataframe that reference the lines inside of the lakes
                 # (replace those references with the comids for the lakes)
                 for comid in lines.index:
                     if comid == 937070193:
                         j=2
-                '''
+
                     # make the lake the down-comid for the upcomids of the lake
                     # (instead of the lines that represented the lake in the flowlines dataset)
                     df.loc[upcomids, 'dncomid'] = [wb_comid]
@@ -641,9 +645,9 @@ class linesinks:
 
                 # enforce gradient in routed lakes; update elevations in downstream comids
                 if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
-                    df.ix[wb_comid, 'minElev'] -= 0.01
+                    df.loc[wb_comid, 'minElev'] -= 0.01
                     for dnid in df.ix[wb_comid, 'dncomid']:
-                        df.ix[dnid, 'maxElev'] -= 0.01
+                        df.loc[dnid, 'maxElev'] -= 0.01
 
             #df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
             #df['upcomids'] = [[u] if not isinstance(u, list) else u for u in df.upcomids]
@@ -652,7 +656,7 @@ class linesinks:
             # do this for both routed and unrouted (farfield) lakes, so that the outlet line won't cross the lake
             # (only tributaries are tested for crossing in step below)
             lake_coords = uniquelist(df.ix[wb_comid, 'ls_coords'])
-            if len(df.ix[wb_comid, 'dncomid']) > 0:
+            if len(df.ix[wb_comid, 'dncomid']) > 0 and dncomids[0] != 0:
                 outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
                 closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
                 lake_coords[closest_ind] = outlet_coords
@@ -672,13 +676,20 @@ class linesinks:
             x = [c for c in upcomids if LineString(df.ix[c, 'ls_coords']).crosses(wb_geom)]
             if len(x) > 0:
                 for c in x:
-                    ls_coords = df.ix[c, 'ls_coords']
-                    intersection_point = np.ravel(LineString(ls_coords).intersection(wb_geom).xy)
+                    ls_coords = list(df.ix[c, 'ls_coords']) # want to copy, to avoid modifying df
+                    # find the first intersection point with the lake
+                    # (for some reason, two very similar coordinates will be occasionally be returned by intersection)
+                    intersection_point = np.array([LineString(ls_coords).intersection(wb_geom).xy[0][0],
+                                                   LineString(ls_coords).intersection(wb_geom).xy[1][0]])
                     # sequentially drop last vertex from line until it no longer crosses the lake
                     crossing = True
                     while crossing:
                         ls_coords.pop(-1)
-                        if len(ls_coords) < 2 or not LineString(ls_coords).crosses(wb_geom):
+                        if len(ls_coords) < 2:
+                            break
+                        # need to test for intersection separately,
+                        # in case len(ls_coords) == 1 (can't make a LineString)
+                        elif LineString(ls_coords).crosses(wb_geom):
                             break
                     # append new end vertex on line that is close to, but not coincident with lake
                     diff = np.array(ls_coords[-1]) - intersection_point
@@ -764,7 +775,7 @@ class linesinks:
             new_coords = map(tuple, [coords[0], mid, coords[-1]])
             return new_coords
 
-        df['nlines'] = [len(coords)-1 for coords in df.ls_coords]
+        df['nlines'] = [len(coords)-1 for i, coords in enumerate(df.ls_coords)]
 
         # bisect lines that have only one segment, and are routed
         ls_coords = df.ls_coords.tolist()
@@ -826,6 +837,8 @@ class linesinks:
 
         print '\nnumber of lines in original NHD linework: {}'.format(npoints_orig)
         print 'number of simplified lines: {}\n'.format(npoints_simp)
+        if npoints_simp > self.maxlines:
+            print "Warning, the number of lines exceeds GFLOW's limit of {}!".format(self.maxlines)
 
         if self.split_by_HUC:
             self.write_lss_by_huc(df)
