@@ -29,22 +29,23 @@ LinesinkMaker runs in Python 2.7. An easy way to install the required packages (
 ```
 $ conda install fiona  
 ```
-Windows users may need to install shapely from a binary installer, which can be obtained from <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>, or via **pip**. Pip can be installed using **conda**:  
+For fiona and shapely, the easiet route for Windows users may the binary files available at <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>. The binaries can be installed using **pip** (see below). Pip can be installed using **conda**:  
 
 ```
 $ conda install pip  
 ```  
 then
-  
-```  
-$ pip install shapely  
-```  
-This fetches the latest version of the **shapely** package from the **Python Package Index** (<https://pypi.python.org/pypi>).  
-Alternatively, for a binary installer obtained from <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>:
     
 ```  
 $ pip install Shapely‑1.5.6‑cp27‑none‑win_amd64.whl
 ```  
+Binaries can also be obtained directly from the **Python Package Index** (<https://pypi.python.org/pypi>), by running ```pip install``` with the package name:
+
+```  
+$ pip install shapely  
+```  
+However, this may not work as well as the first option, as the binary on PyPi may not be as up to date, and also may not include any underlying dependencies. Additional installation instructions are available at the PyPi sites (e.g. <https://pypi.python.org/pypi/Shapely>) and/or on the project GitHub sites (e.g. <https://github.com/Toblerity/Shapely>).
+
 
 ###to install LinesinkMaker:  
 From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*, navigate to the (extracted) folder that contains **setup.py** and run:  
