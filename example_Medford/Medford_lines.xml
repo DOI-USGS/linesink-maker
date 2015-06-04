@@ -62,8 +62,8 @@ simply add additional entries with same XML keyword.
 LinesinkMakr will open all of the files and combine them.-->
 <NHDfiles>
     <flowlines>shps/Medford_flowlines.shp</flowlines>
-    <elevslope>../example/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
-    <PlusFlowVAA>../example/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
+    <elevslope>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
+    <PlusFlowVAA>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
     <waterbodies>shps/Medford_waterbodies.shp</waterbodies>
 </NHDfiles>
 
@@ -73,7 +73,7 @@ LinesinkMakr will open all of the files and combine them.-->
     <nearfield_tolerance>200</nearfield_tolerance>
     <!-- farfield_tolerance:
     maximum distance a simplified line can deviate from the original linework -->
-    <farfield_tolerance>500</farfield_tolerance>
+    <farfield_tolerance>2000</farfield_tolerance>
     <!-- min_farfield_order:
     minimum stream order to retain in farfield -->
     <min_farfield_order>2</min_farfield_order>

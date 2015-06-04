@@ -4,7 +4,8 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import os
 import pandas as pd
-from shapely.geometry import Polygon, LineString
+import fiona
+from shapely.geometry import Polygon, LineString, shape
 from shapely.ops import unary_union
 import math
 import matplotlib.pyplot as plt
@@ -58,6 +59,7 @@ def lake_width(area, total_line_length, lmbda):
 
 def name(x):
     """Abbreviations for naming linesinks from names in NHDPlus
+    GFLOW requires linesink names to be 32 characters or less
     """
     if x.GNIS_NAME:
         # reduce name down with abbreviations
@@ -78,7 +80,7 @@ def name(x):
             name = name.replace(k, v)
     else:
         name = '{} unnamed'.format(x.name)
-    return name
+    return name[:32]
 
 def uniquelist(seq):
     seen = set()
@@ -143,6 +145,7 @@ class linesinks:
         self.HUC_name_field = inpars.findall('.//HUC_name_field')[0].text
 
         # simplification
+        self.refinement_areas = [] # list of n areas within nearfield with additional refinement
         self.nearfield_tolerance = float(inpars.findall('.//nearfield_tolerance')[0].text)
         self.farfield_tolerance = float(inpars.findall('.//farfield_tolerance')[0].text)
         self.min_farfield_order = int(inpars.findall('.//min_farfield_order')[0].text)
@@ -387,7 +390,8 @@ class linesinks:
 
         self.df = df
 
-    def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None):
+    def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None,
+                       nearfield_refinement={}):
         """Reduces the number of vertices in the GIS linework representing streams and lakes,
         to within specified tolerances. The tolerance values represent the maximum distance
         in the coordinate system units that the simplified feature can deviate from the original feature.
@@ -419,7 +423,7 @@ class linesinks:
         print 'simplifying NHD linework geometries...'
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
-        df = self.df[['farfield', 'geometry']]
+        df = self.df[['farfield', 'geometry']].copy()
 
         ls_geom = np.array([LineString()] * len(df))
         domain_tol = [nearfield_tolerance, farfield_tolerance]
@@ -429,7 +433,15 @@ class linesinks:
             # assign geometries to numpy array first and then to df (had trouble assigning with pandas)
             ls_geom[domain] = [g.simplify(domain_tol[i]) for g in df.ix[domain, 'geometry'].tolist()]
 
-        df.loc[:, 'ls_geom'] = ls_geom
+        df['ls_geom'] = ls_geom
+
+        # add columns for additional nearfield refinement areas
+        for shp in nearfield_refinement.keys():
+            if shp not in self.refinement_areas:
+                self.refinement_areas.append(shp)
+            area_name = os.path.split(shp)[-1][:-4]
+            poly = shape(fiona.open(shp).next()['geometry'])
+            df[area_name] = [g.intersects(poly) for g in df.geometry]
 
         # convert geometries to coordinates
         def xy_coords(x):
@@ -437,7 +449,7 @@ class linesinks:
             return xy
 
         # add column of lists, containing linesink coordinates
-        df.loc[:, 'ls_coords'] = df.ls_geom.apply(xy_coords)
+        df['ls_coords'] = df.ls_geom.apply(xy_coords)
 
         return df
 
@@ -679,8 +691,11 @@ class linesinks:
                     ls_coords = list(df.ix[c, 'ls_coords']) # want to copy, to avoid modifying df
                     # find the first intersection point with the lake
                     # (for some reason, two very similar coordinates will be occasionally be returned by intersection)
-                    intersection_point = np.array([LineString(ls_coords).intersection(wb_geom).xy[0][0],
-                                                   LineString(ls_coords).intersection(wb_geom).xy[1][0]])
+                    intersection = LineString(ls_coords).intersection(wb_geom)
+                    if intersection.type == 'MultiPoint':
+                        intersection = intersection.geoms[0].xy
+                    else:
+                        intersection_point = np.array([intersection.xy[0][0], intersection.xy[1][0]])
                     # sequentially drop last vertex from line until it no longer crosses the lake
                     crossing = True
                     while crossing:
@@ -880,7 +895,9 @@ class linesinks:
             cfelev = np.min([endsmin, startmax])
             confluences.loc[i, 'elev'] = cfelev
 
-            self.df.loc[r.upcomids, 'minElev'] = cfelev
+            upcomids = [u for u in r.upcomids if u > 0]
+            if len(upcomids) > 0:
+                self.df.loc[upcomids, 'minElev'] = cfelev
             self.df.loc[i, 'maxElev'] = cfelev
 
         self.confluences = confluences
