@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import os
 import pandas as pd
+import shutil
 import fiona
 from shapely.geometry import Polygon, LineString, shape
 from shapely.ops import unary_union
@@ -245,12 +246,15 @@ class linesinks:
                   '   point shapefile with elevation attributes should be the same as the name for the clipped\n' \
                   '   waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"\n' \
                   '   added.'
-        path = os.path.split(self.flowlines_clipped)[0]
+        path = self.preprocdir
         flowlines_clipped = os.path.split(self.flowlines_clipped)[1]
         waterbodies_clipped = os.path.split(self.waterbodies_clipped)[1]
         farfield_mp = os.path.split(self.farfield_mp)[1]
         wb_centroids_w_elevations = os.path.split(self.wb_centroids_w_elevations)[1]
 
+        # make the output directory if it doesn't exist yet
+        if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
+            os.makedirs(self.preprocdir)
 
         # initialize the arcpy environment
         arcpy.env.workspace = path
@@ -258,9 +262,6 @@ class linesinks:
         arcpy.env.qualifiedFieldNames = False
         arcpy.CheckOutExtension("spatial") # Check spatial analyst license
 
-        # make the output directory if it doesn't exist yet
-        if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
-            os.makedirs(self.preprocdir)
         if len(self.flowlines) > 1:
             arcpy.Merge_management(self.flowlines, os.path.join(path, 'flowlines_merged.shp'))
             self.flowlines = os.path.join(path, 'flowlines_merged.shp')
@@ -273,9 +274,28 @@ class linesinks:
             self.waterbodies = self.waterbodies[0]
 
         print 'clipping {} and {} to {}...'.format(self.flowlines, self.waterbodies, self.farfield)
-        arcpy.Clip_analysis(self.flowlines, self.farfield, flowlines_clipped)
-        arcpy.Clip_analysis(self.waterbodies, self.farfield, waterbodies_clipped)
-        print 'clipped flowlines written to {}; clipped waterbodies written to {}'\
+        arcpy.Clip_analysis(self.flowlines, self.farfield, 'fltmp.shp')
+        arcpy.Clip_analysis(self.waterbodies, self.farfield, 'wbtmp.shp')
+
+        print 'checking projections...'
+        shutil.copy(self.prj, 'GFLOW.prj')
+        self.prj = 'GFLOW.prj'
+
+        for attr in ['nearfield', 'farfield']:
+            shp = self.__dict__[attr]
+            if open(self.prj).readline() != open(shp[:-4] + '.prj').readline():
+                arcpy.Project_management(shp, 'preprocessed/' + shp, self.prj)
+                self.__dict__[attr] = 'preprocessed/' + shp
+                print 'reprojected {} to coordinate system in {}...'.format(self.__dict__[attr], self.prj)
+
+        if open(self.prj).readline() != open(self.flowlines[:-4] + '.prj').readline():
+            print '\nreprojecting {} and {} to coordinate system in {}...'.format(self.flowlines,
+                                                                                  self.waterbodies,
+                                                                                  self.prj)
+            arcpy.Project_management('fltmp.shp', flowlines_clipped, self.prj)
+            arcpy.Project_management('wbtmp.shp', waterbodies_clipped, self.prj)
+        print 'clipped and reprojected flowlines written to {};\n' \
+              'clipped and reprojected waterbodies written to {}'\
             .format(self.flowlines_clipped, waterbodies_clipped)
 
         print '\nremoving interior from farfield polygon...'
@@ -755,7 +775,7 @@ class linesinks:
         #df['ls_geom'] = self.lines_df['ls_geom']
         df['ls_coords'] = self.lines_df['ls_coords']
 
-        self.wblist = df.ix[df.waterbody].index
+        self.wblist = set(df.ix[df.waterbody].index.values.astype(int)).difference({0})
 
         print 'Assigning attributes for GFLOW input...'
 
@@ -819,7 +839,8 @@ class linesinks:
         df['width'] = df[arbolate_sum_col].map(lambda x: width_from_arboate(x, self.lmbda))
 
         # widths for lakes
-        df.ix[df['FTYPE'] == 'LakePond', 'width'] = \
+        if np.any(df['FTYPE'] == 'LakePond'):
+            df.ix[df['FTYPE'] == 'LakePond', 'width'] = \
             np.vectorize(lake_width)(df.ix[df['FTYPE'] == 'LakePond', 'AREASQKM'], df.ix[df['FTYPE'] == 'LakePond', 'total_line_length'], self.lmbda)
 
         # resistance
