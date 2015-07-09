@@ -14,7 +14,7 @@ Notes on linesinkMaker input:
     Note: Currently LinesinkMaker does not do transformations
     So input coordinate projections and output prj should be consistent
     projection file for output shapefiles -->
-    <prj>shps/Medford_ff.prj</prj>
+    <prj>shps/Medford_nf.prj</prj>
     <!-- preprocess:
     Whether or not preprocessing is needed (requires arcpy) -->
     <preprocess>False</preprocess>
@@ -62,8 +62,8 @@ simply add additional entries with same XML keyword.
 LinesinkMakr will open all of the files and combine them.-->
 <NHDfiles>
     <flowlines>shps/Medford_flowlines.shp</flowlines>
-    <elevslope>../example/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
-    <PlusFlowVAA>../example/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
+    <elevslope>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
+    <PlusFlowVAA>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
     <waterbodies>shps/Medford_waterbodies.shp</waterbodies>
 </NHDfiles>
 

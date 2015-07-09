@@ -4,7 +4,9 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import os
 import pandas as pd
-from shapely.geometry import Polygon, LineString
+import shutil
+import fiona
+from shapely.geometry import Polygon, LineString, shape
 from shapely.ops import unary_union
 import math
 import matplotlib.pyplot as plt
@@ -58,6 +60,7 @@ def lake_width(area, total_line_length, lmbda):
 
 def name(x):
     """Abbreviations for naming linesinks from names in NHDPlus
+    GFLOW requires linesink names to be 32 characters or less
     """
     if x.GNIS_NAME:
         # reduce name down with abbreviations
@@ -78,7 +81,7 @@ def name(x):
             name = name.replace(k, v)
     else:
         name = '{} unnamed'.format(x.name)
-    return name
+    return name[:32]
 
 def uniquelist(seq):
     seen = set()
@@ -101,6 +104,8 @@ def move_point_along_line(x1, x2, dist):
     return tuple(x2 - dist * np.sign(diff))
 
 class linesinks:
+
+    maxlines = 4000
 
     def __init__(self, infile):
 
@@ -141,6 +146,7 @@ class linesinks:
         self.HUC_name_field = inpars.findall('.//HUC_name_field')[0].text
 
         # simplification
+        self.refinement_areas = [] # list of n areas within nearfield with additional refinement
         self.nearfield_tolerance = float(inpars.findall('.//nearfield_tolerance')[0].text)
         self.farfield_tolerance = float(inpars.findall('.//farfield_tolerance')[0].text)
         self.min_farfield_order = int(inpars.findall('.//min_farfield_order')[0].text)
@@ -240,12 +246,15 @@ class linesinks:
                   '   point shapefile with elevation attributes should be the same as the name for the clipped\n' \
                   '   waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"\n' \
                   '   added.'
-        path = os.path.split(self.flowlines_clipped)[0]
+        path = self.preprocdir
         flowlines_clipped = os.path.split(self.flowlines_clipped)[1]
         waterbodies_clipped = os.path.split(self.waterbodies_clipped)[1]
         farfield_mp = os.path.split(self.farfield_mp)[1]
         wb_centroids_w_elevations = os.path.split(self.wb_centroids_w_elevations)[1]
 
+        # make the output directory if it doesn't exist yet
+        if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
+            os.makedirs(self.preprocdir)
 
         # initialize the arcpy environment
         arcpy.env.workspace = path
@@ -253,9 +262,6 @@ class linesinks:
         arcpy.env.qualifiedFieldNames = False
         arcpy.CheckOutExtension("spatial") # Check spatial analyst license
 
-        # make the output directory if it doesn't exist yet
-        if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
-            os.makedirs(self.preprocdir)
         if len(self.flowlines) > 1:
             arcpy.Merge_management(self.flowlines, os.path.join(path, 'flowlines_merged.shp'))
             self.flowlines = os.path.join(path, 'flowlines_merged.shp')
@@ -267,11 +273,30 @@ class linesinks:
         else:
             self.waterbodies = self.waterbodies[0]
 
-        print 'clipping {} and {} to {}...'.format(self.flowlines, self.waterbodies, self.farfield)
-        arcpy.Clip_analysis(self.flowlines, self.farfield, flowlines_clipped)
-        arcpy.Clip_analysis(self.waterbodies, self.farfield, waterbodies_clipped)
-        print 'clipped flowlines written to {}; clipped waterbodies written to {}'\
-            .format(self.flowlines_clipped, waterbodies_clipped)
+        # make projection file that is independent of any shapefile
+        arcpy.Delete_management('GFLOW.prj')
+        shutil.copy(self.prj, 'GFLOW.prj')
+        self.prj = 'GFLOW.prj'
+
+        print 'clipping and reprojecting input datasets...'
+        for attr in ['nearfield', 'farfield']:
+            shp = self.__dict__[attr]
+            if open(self.prj).readline() != open(shp[:-4] + '.prj').readline():
+                arcpy.Project_management(shp, 'preprocessed/' + os.path.split(shp)[1], self.prj)
+                self.__dict__[attr] = 'preprocessed/' + os.path.split(shp)[1]
+                print 'reprojected {} to coordinate system in {}...'.format(self.__dict__[attr], self.prj)
+
+        for indata, output in {self.flowlines: flowlines_clipped, self.waterbodies: waterbodies_clipped}.items():
+
+            print 'clipping {} to extent of {}...'.format(indata, self.farfield)
+            arcpy.Clip_analysis(indata, self.farfield, 'tmp.shp')
+
+            if open(self.prj).readline() != open(indata[:-4] + '.prj').readline():
+                print '\nreprojecting {} to coordinate system in {}...'.format(indata, self.prj)
+                arcpy.Project_management('tmp.shp', output, self.prj)
+            else:
+                arcpy.Rename_management('tmp.shp', output)
+            arcpy.Delete_management('tmp.shp')
 
         print '\nremoving interior from farfield polygon...'
         arcpy.Erase_analysis(self.farfield, self.nearfield, farfield_mp)
@@ -385,7 +410,8 @@ class linesinks:
 
         self.df = df
 
-    def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None):
+    def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None,
+                       nearfield_refinement={}):
         """Reduces the number of vertices in the GIS linework representing streams and lakes,
         to within specified tolerances. The tolerance values represent the maximum distance
         in the coordinate system units that the simplified feature can deviate from the original feature.
@@ -417,7 +443,7 @@ class linesinks:
         print 'simplifying NHD linework geometries...'
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
-        df = self.df[['farfield', 'geometry']]
+        df = self.df[['farfield', 'geometry']].copy()
 
         ls_geom = np.array([LineString()] * len(df))
         domain_tol = [nearfield_tolerance, farfield_tolerance]
@@ -427,7 +453,15 @@ class linesinks:
             # assign geometries to numpy array first and then to df (had trouble assigning with pandas)
             ls_geom[domain] = [g.simplify(domain_tol[i]) for g in df.ix[domain, 'geometry'].tolist()]
 
-        df.loc[:, 'ls_geom'] = ls_geom
+        df['ls_geom'] = ls_geom
+
+        # add columns for additional nearfield refinement areas
+        for shp in nearfield_refinement.keys():
+            if shp not in self.refinement_areas:
+                self.refinement_areas.append(shp)
+            area_name = os.path.split(shp)[-1][:-4]
+            poly = shape(fiona.open(shp).next()['geometry'])
+            df[area_name] = [g.intersects(poly) for g in df.geometry]
 
         # convert geometries to coordinates
         def xy_coords(x):
@@ -435,7 +469,7 @@ class linesinks:
             return xy
 
         # add column of lists, containing linesink coordinates
-        df.loc[:, 'ls_coords'] = df.ls_geom.apply(xy_coords)
+        df['ls_coords'] = df.ls_geom.apply(xy_coords)
 
         return df
 
@@ -594,6 +628,8 @@ class linesinks:
         for wb_comid in self.wblist:
 
             lines = df[df['WBAREACOMI'] == wb_comid]
+            upcomids = []
+            dncomids = []
 
             # isolated lakes have no overlapping lines and no routing
             if len(lines) == 0:
@@ -615,17 +651,17 @@ class linesinks:
                 # make the lake the down-comid for the upcomids of the lake
                 # (instead of the lines that represented the lake in the flowlines dataset)
                 # do the same for the down-comid of the lake
-                for u in upcomids:
+                for u in [u for u in upcomids if u > 0]: # exclude outlets
                     df.set_value(u, 'dncomid', [wb_comid])
-                for d in dncomids:
+                for d in [d for d in dncomids if d > 0]:
                     df.set_value(d, 'upcomids', [wb_comid])
-
+                '''
                 # update all up/dn comids in lines dataframe that reference the lines inside of the lakes
                 # (replace those references with the comids for the lakes)
                 for comid in lines.index:
                     if comid == 937070193:
                         j=2
-                '''
+
                     # make the lake the down-comid for the upcomids of the lake
                     # (instead of the lines that represented the lake in the flowlines dataset)
                     df.loc[upcomids, 'dncomid'] = [wb_comid]
@@ -641,9 +677,9 @@ class linesinks:
 
                 # enforce gradient in routed lakes; update elevations in downstream comids
                 if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
-                    df.ix[wb_comid, 'minElev'] -= 0.01
+                    df.loc[wb_comid, 'minElev'] -= 0.01
                     for dnid in df.ix[wb_comid, 'dncomid']:
-                        df.ix[dnid, 'maxElev'] -= 0.01
+                        df.loc[dnid, 'maxElev'] -= 0.01
 
             #df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
             #df['upcomids'] = [[u] if not isinstance(u, list) else u for u in df.upcomids]
@@ -652,7 +688,7 @@ class linesinks:
             # do this for both routed and unrouted (farfield) lakes, so that the outlet line won't cross the lake
             # (only tributaries are tested for crossing in step below)
             lake_coords = uniquelist(df.ix[wb_comid, 'ls_coords'])
-            if len(df.ix[wb_comid, 'dncomid']) > 0:
+            if len(df.ix[wb_comid, 'dncomid']) > 0 and dncomids[0] != 0:
                 outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
                 closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
                 lake_coords[closest_ind] = outlet_coords
@@ -672,13 +708,23 @@ class linesinks:
             x = [c for c in upcomids if LineString(df.ix[c, 'ls_coords']).crosses(wb_geom)]
             if len(x) > 0:
                 for c in x:
-                    ls_coords = df.ix[c, 'ls_coords']
-                    intersection_point = np.ravel(LineString(ls_coords).intersection(wb_geom).xy)
+                    ls_coords = list(df.ix[c, 'ls_coords']) # want to copy, to avoid modifying df
+                    # find the first intersection point with the lake
+                    # (for some reason, two very similar coordinates will be occasionally be returned by intersection)
+                    intersection = LineString(ls_coords).intersection(wb_geom)
+                    if intersection.type == 'MultiPoint':
+                        intersection = intersection.geoms[0].xy
+                    else:
+                        intersection_point = np.array([intersection.xy[0][0], intersection.xy[1][0]])
                     # sequentially drop last vertex from line until it no longer crosses the lake
                     crossing = True
                     while crossing:
                         ls_coords.pop(-1)
-                        if len(ls_coords) < 2 or not LineString(ls_coords).crosses(wb_geom):
+                        if len(ls_coords) < 2:
+                            break
+                        # need to test for intersection separately,
+                        # in case len(ls_coords) == 1 (can't make a LineString)
+                        elif LineString(ls_coords).crosses(wb_geom):
                             break
                     # append new end vertex on line that is close to, but not coincident with lake
                     diff = np.array(ls_coords[-1]) - intersection_point
@@ -720,6 +766,10 @@ class linesinks:
         if shp:
             self.df = GISio.shp2df(shp, index='COMID', true_values=['True'], false_values=['False'])
 
+        # enforce integers columns
+        self.df.index = self.df.index.astype(int)
+        self.df['COMID'] = self.df.COMID.astype(int)
+
         df = self.df
 
         # simplify the lines in the df (dataframe) attribute
@@ -729,7 +779,7 @@ class linesinks:
         #df['ls_geom'] = self.lines_df['ls_geom']
         df['ls_coords'] = self.lines_df['ls_coords']
 
-        self.wblist = df.ix[df.waterbody].index
+        self.wblist = set(df.ix[df.waterbody].index.values.astype(int)).difference({0})
 
         print 'Assigning attributes for GFLOW input...'
 
@@ -764,7 +814,7 @@ class linesinks:
             new_coords = map(tuple, [coords[0], mid, coords[-1]])
             return new_coords
 
-        df['nlines'] = [len(coords)-1 for coords in df.ls_coords]
+        df['nlines'] = [len(coords)-1 for i, coords in enumerate(df.ls_coords)]
 
         # bisect lines that have only one segment, and are routed
         ls_coords = df.ls_coords.tolist()
@@ -793,7 +843,8 @@ class linesinks:
         df['width'] = df[arbolate_sum_col].map(lambda x: width_from_arboate(x, self.lmbda))
 
         # widths for lakes
-        df.ix[df['FTYPE'] == 'LakePond', 'width'] = \
+        if np.any(df['FTYPE'] == 'LakePond'):
+            df.ix[df['FTYPE'] == 'LakePond', 'width'] = \
             np.vectorize(lake_width)(df.ix[df['FTYPE'] == 'LakePond', 'AREASQKM'], df.ix[df['FTYPE'] == 'LakePond', 'total_line_length'], self.lmbda)
 
         # resistance
@@ -826,6 +877,8 @@ class linesinks:
 
         print '\nnumber of lines in original NHD linework: {}'.format(npoints_orig)
         print 'number of simplified lines: {}\n'.format(npoints_simp)
+        if npoints_simp > self.maxlines:
+            print "Warning, the number of lines exceeds GFLOW's limit of {}!".format(self.maxlines)
 
         if self.split_by_HUC:
             self.write_lss_by_huc(df)
@@ -867,7 +920,9 @@ class linesinks:
             cfelev = np.min([endsmin, startmax])
             confluences.loc[i, 'elev'] = cfelev
 
-            self.df.loc[r.upcomids, 'minElev'] = cfelev
+            upcomids = [u for u in r.upcomids if u > 0]
+            if len(upcomids) > 0:
+                self.df.loc[upcomids, 'minElev'] = cfelev
             self.df.loc[i, 'maxElev'] = cfelev
 
         self.confluences = confluences
