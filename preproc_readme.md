@@ -36,3 +36,7 @@ resulting in a shapefile of points for each waterbody.
 #####4) Run "ExtractMultiValuesToPoints" on the waterbody points created in Step 3 
 <http://resources.arcgis.com/en/help/main/10.2/index.html#//009z0000002s000000>  
 to get an elevation value for each waterbody **from the DEM** for the area. The name for the resulting point shapefile with elevation attributes should be the same as the name for the clipped waterbodies shapefile specified in the **XML input file**, but with the suffix **"_points.shp"** added.
+
+###Troubleshooting
+#####Error: Cannot get exclusive schema lock:  
+Close ArcMap if it is open. 

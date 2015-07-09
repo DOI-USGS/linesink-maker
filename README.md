@@ -29,29 +29,33 @@ LinesinkMaker runs in Python 2.7. An easy way to install the required packages (
 ```
 $ conda install fiona  
 ```
-Windows users may need to install shapely from a binary installer, which can be obtained from <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>, or via **pip**. Pip can be installed using **conda**:  
+Fiona and Shapely depend on the GDAL/OGR and GEOS GIS libraries. The easiest way for Windows users to install these packages is with the binary files available at <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>. The binaries can be installed using **pip**, which is a python module for installing packages. Pip can be installed using **conda**:  
 
 ```
 $ conda install pip  
 ```  
-then
-  
-```  
-$ pip install shapely  
-```  
-This fetches the latest version of the **shapely** package from the **Python Package Index** (<https://pypi.python.org/pypi>).  
-Alternatively, for a binary installer obtained from <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>:
+then, once the binary wheel (*.whl) files have been downloaded, they can be installed with pip:  
+(note that this binary is a 64-bit version for python 2.7)
     
 ```  
 $ pip install Shapely‑1.5.6‑cp27‑none‑win_amd64.whl
 ```  
+Binaries can also be obtained directly from the **Python Package Index** (<https://pypi.python.org/pypi>), by running ```pip install``` with the package name:
+
+```  
+$ pip install shapely  
+```  
+Additional installation instructions are available at the PyPi sites (e.g. <https://pypi.python.org/pypi/Shapely>) and/or on the project GitHub sites (e.g. <https://github.com/Toblerity/Shapely>).
+
 
 ###to install LinesinkMaker:  
-From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*, navigate to the (extracted) folder that contains **setup.py** and run:  
+From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker (which should contain **setup.py**) and run:  
 
 ```
 $ python setup.py install
-```
+```  
+(Windows users can launch a command line at the folder by right clicking on the folder icon and then choosing *Open command window here*)  
+
 
 #####to import into a python session:
 ```
