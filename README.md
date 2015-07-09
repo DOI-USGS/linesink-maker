@@ -92,7 +92,8 @@ The input files, and other input settings such as default resistance and line si
 
 ##Running LinesinkMaker
 
-LinesinkMaker can be run from the command line as a script, or interactively in an environment such as **IPython Notebook** (<http://ipython.org/notebook.html>). The **example_Nicolet** and **example_Medford** folders have examples of both approaches.
+LinesinkMaker can be run from the command line as a script, or interactively in an environment such as **IPython Notebook** (<http://ipython.org/notebook.html>). The **example_Nicolet** and **example_Medford** folders have examples of both approaches.  
+**Note:** Both of these examples require a DEM to run (the files are too large to put on GitHub).
   
 #####Running from the command line:
 First edit the script **make_linesinks.py** so that it points to the correct **XML input file** and then run by calling:  
