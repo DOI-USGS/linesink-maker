@@ -11,9 +11,9 @@ import os
 
 ls = lsm.linesinks('Nicolet_lines.xml')
 
-#ls.preprocess_arcpy()
+ls.preprocess_arcpy()
 
-#ls.preprocess()
+ls.preprocess(save=True)
 
 ls.makeLineSinks(shp='preprocessed/lines.shp')
 
