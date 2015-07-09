@@ -766,6 +766,10 @@ class linesinks:
         if shp:
             self.df = GISio.shp2df(shp, index='COMID', true_values=['True'], false_values=['False'])
 
+        # enforce integers columns
+        self.df.index = self.df.index.astype(int)
+        self.df['COMID'] = self.df.COMID.astype(int)
+
         df = self.df
 
         # simplify the lines in the df (dataframe) attribute
