@@ -273,30 +273,30 @@ class linesinks:
         else:
             self.waterbodies = self.waterbodies[0]
 
-        print 'clipping {} and {} to {}...'.format(self.flowlines, self.waterbodies, self.farfield)
-        arcpy.Clip_analysis(self.flowlines, self.farfield, 'fltmp.shp')
-        arcpy.Clip_analysis(self.waterbodies, self.farfield, 'wbtmp.shp')
-
-        print 'checking projections...'
+        # make projection file that is independent of any shapefile
+        arcpy.Delete_management('GFLOW.prj')
         shutil.copy(self.prj, 'GFLOW.prj')
         self.prj = 'GFLOW.prj'
 
+        print 'clipping and reprojecting input datasets...'
         for attr in ['nearfield', 'farfield']:
             shp = self.__dict__[attr]
             if open(self.prj).readline() != open(shp[:-4] + '.prj').readline():
-                arcpy.Project_management(shp, 'preprocessed/' + shp, self.prj)
-                self.__dict__[attr] = 'preprocessed/' + shp
+                arcpy.Project_management(shp, 'preprocessed/' + os.path.split(shp)[1], self.prj)
+                self.__dict__[attr] = 'preprocessed/' + os.path.split(shp)[1]
                 print 'reprojected {} to coordinate system in {}...'.format(self.__dict__[attr], self.prj)
 
-        if open(self.prj).readline() != open(self.flowlines[:-4] + '.prj').readline():
-            print '\nreprojecting {} and {} to coordinate system in {}...'.format(self.flowlines,
-                                                                                  self.waterbodies,
-                                                                                  self.prj)
-            arcpy.Project_management('fltmp.shp', flowlines_clipped, self.prj)
-            arcpy.Project_management('wbtmp.shp', waterbodies_clipped, self.prj)
-        print 'clipped and reprojected flowlines written to {};\n' \
-              'clipped and reprojected waterbodies written to {}'\
-            .format(self.flowlines_clipped, waterbodies_clipped)
+        for indata, output in {self.flowlines: flowlines_clipped, self.waterbodies: waterbodies_clipped}.items():
+
+            print 'clipping {} to extent of {}...'.format(indata, self.farfield)
+            arcpy.Clip_analysis(indata, self.farfield, 'tmp.shp')
+
+            if open(self.prj).readline() != open(indata[:-4] + '.prj').readline():
+                print '\nreprojecting {} to coordinate system in {}...'.format(indata, self.prj)
+                arcpy.Project_management('tmp.shp', output, self.prj)
+            else:
+                arcpy.Rename_management('tmp.shp', output)
+            arcpy.Delete_management('tmp.shp')
 
         print '\nremoving interior from farfield polygon...'
         arcpy.Erase_analysis(self.farfield, self.nearfield, farfield_mp)

@@ -12,7 +12,7 @@ def run():
           version="0.1",
           description="Rapidly construct GFLOW models from NHDPlus v2.",
           author="Andy Leaf",
-          packages=[""],
+          packages=["linesinkmaker"],
           long_descripton=DESCRIPTION,
           )
           
