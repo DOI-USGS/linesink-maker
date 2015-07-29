@@ -678,7 +678,8 @@ class linesinks:
                 # enforce gradient in routed lakes; update elevations in downstream comids
                 if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
                     df.loc[wb_comid, 'minElev'] -= 0.01
-                    for dnid in df.ix[wb_comid, 'dncomid']:
+                    dnids = df.ix[wb_comid, 'dncomid']
+                    for dnid in [d for d in dnids if d > 0]:
                         df.loc[dnid, 'maxElev'] -= 0.01
 
             #df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
