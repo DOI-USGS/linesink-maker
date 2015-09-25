@@ -758,6 +758,8 @@ class linesinks:
 
         df.loc[lines, 'upcomids'] = upcomids
         df.loc[lines, 'dncomid'] = dncomid
+        # enforce list datatype (apparently pandas flattens lists of lists len()=1 on assignment
+        df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
         return df
 
     def makeLineSinks(self, shp=None):
