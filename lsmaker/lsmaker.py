@@ -15,9 +15,10 @@ from shapely.geometry import Polygon, LineString, Point, shape, mapping
 from shapely.ops import unary_union, transform
 import pyproj
 import math
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import GISio
+try:
+    import matplotlib.pyplot as plt
+except:
+    pass
 from diagnostics import *
 
 
@@ -544,6 +545,9 @@ class linesinks:
 
         """
         if self.farfield is None:
+            print('\nNo farfield shapefile supplied.\n'
+                  'Creating farfield using buffer of {:.1f} {} around model nearfield.\n'
+                  .format(self.farfield_buffer, self.BasemapUnits))
             modelareafile = fiona.open(self.nearfield)
             nfarea = shape(modelareafile[0]['geometry'])
             modelarea_farfield = nfarea.buffer(self.farfield_buffer)

@@ -45,7 +45,13 @@ Notes on linesinkMaker input:
     <!-- farfield:
     polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area
     linesinks within this area will be zero resistance (specified head) -->
-    <farfield>shps/Medford_ff.shp</farfield>
+    <farfield></farfield>
+    <!-- farfield_buffer: numeric, default is 10,0000
+    A distance (in GIS units) that defines the extent of model farfield area as a 
+    buffer distance around the nearfield polygon
+    (can be specified in lieu of a polygon shapefile under <farfield>)
+     -->
+    <farfield_buffer>20000</farfield_buffer>
     <!-- nearfield:
     polygon of the model nearfield area, where linesinks will be given resistance and routed -->
     <nearfield>shps/Medford_nf.shp</nearfield>

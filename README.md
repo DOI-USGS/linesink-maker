@@ -8,20 +8,16 @@ linesink network.
 
 #####Required python packages (see below for installation instructions):  
 * lxml
+* urllib2
+* json
 * fiona
 * shapely
 * pandas
+* pyproj
 
-###! Software dependency caveats:
-Unfortunately in addition to the above python modules there are two additional software dependencies for the time being that are somewhat problematic:  
-
-* **Arcpy**: Linesink maker requires some preprocessing steps that are automated by the preprocess_arcpy() method (see the IPython Notebook and/or make_linesinks.py files in the example folders). This dependency will be removed soon in a future version of LinesinkMaker.  
   
-	* 	If you have ArcGIS version 10 or later on your machine, you can make Arcpy available to use by following the steps in the preproc_readme.md file.
-	* Alternatively, these steps can be done manually in any GIS software. See the preproc_readme.md for instructions.	
-  
-* **GFLOW Linesink import capability**:  
-Output from LinesinkMaker is imported into GFLOW using the linesink import feature, which is not included in the version currently available on the GFLOW website (2.1.2). According to Henk Haitjema, the linesink import feature will be part of a new GFLOW release that will be made available soon, possibly as early as late April 2015. If you already have a GFLOW license and want to try out LinesinkMaker before then, send me a message!
+###GFLOW Linesink import capability
+Linesinkmaker requires GFLOW 2.2 or higher, which has the capability of importing linesink string xml files.
 
 ###Installing the required Python packages:
 LinesinkMaker runs in Python 2.7. An easy way to install the required packages (and to install and manage Python in general) is through a Python distribution such as **Anaconda**, available for free at (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, packages can be added at the command line (on any platform) using the **conda** package manager. For example: 
@@ -29,24 +25,7 @@ LinesinkMaker runs in Python 2.7. An easy way to install the required packages (
 ```
 $ conda install fiona  
 ```
-Fiona and Shapely depend on the GDAL/OGR and GEOS GIS libraries. The easiest way for Windows users to install these packages is with the binary files available at <http://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely>. The binaries can be installed using **pip**, which is a python module for installing packages. Pip can be installed using **conda**:  
-
-```
-$ conda install pip  
-```  
-then, once the binary wheel (*.whl) files have been downloaded, they can be installed with pip:  
-(note that this binary is a 64-bit version for python 2.7)
-    
-```  
-$ pip install Shapely‑1.5.6‑cp27‑none‑win_amd64.whl
-```  
-Binaries can also be obtained directly from the **Python Package Index** (<https://pypi.python.org/pypi>), by running ```pip install``` with the package name:
-
-```  
-$ pip install shapely  
-```  
-Additional installation instructions are available at the PyPi sites (e.g. <https://pypi.python.org/pypi/Shapely>) and/or on the project GitHub sites (e.g. <https://github.com/Toblerity/Shapely>).
-
+Fiona, shapely, and pyproj depend on compiled GIS libraries. Instructions for installing these packages with their underlying libraries are given here: <https://github.com/aleaf/SFRmaker/blob/master/pythonGIS_install_readme.md>
 
 ###to install LinesinkMaker:  
 From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker (which should contain **setup.py**) and run:  
@@ -73,17 +52,21 @@ For each major drainage area encompassed by the model (e.g. Area 04 representing
 * elevslope.dbf  
 * PlusFlowlineVAA.dbf
 
-These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **NHDPlusV21_GL_04_NHDSnapshot_07.7z** and **NHDPlusV21_GL_04_NHDPlusAttributes_08.7z** downloads.
-#####A DEM of the model domain:
-A DEM is required to obtain elevations for lakes not connected to the stream network. The DEM is only read by the **preprocess_arcpy()** method, so would not be needed if theses steps are completed manually (**see preproc_readme.md**).
-
+These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **NHDPlusV21_GL_04_NHDSnapshot_07.7z** and **NHDPlusV21_GL_04_NHDPlusAttributes_08.7z** 
+downloads. The NHDPlus files are specified in the XML input file under the tag **\<NHDfiles\>**.
 
 #####Model domain specification:  
 * shapefile of the model nearfield area (where linesinks will be routed and have resistance)  
-* shapefile of the model farfield area (where linesinks will be zero-resistance and not routed)
+   **(required)**
+* shapefile of the model farfield area (where linesinks will be zero-resistance and not routed)  
+ (**optional**; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag **\<farfield_buffer\>**.
+ 
+#####Line simplification
+Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of linesinks are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (**\<nearfield_tolerance\>** and **\<farfield_tolerance\>farfield_tolerance>**). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.
 
-#####All shapefiles must be in a consistent, projected coordinate system with units of feet or meters.  
-Automatic reprojection to a specified system will be added to the code soon, but is not implemented yet.  
+#####Other inputs
+Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the XML input file. See the example XML input files for more details.
+
 
 ##Creating the XML Input file for LinesinkMaker
 The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an **XML input file**. See the example folders for templates with input instructions (e.g. **Nicolet_lines.xml**). An editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended for working with this file. 
@@ -92,25 +75,14 @@ The input files, and other input settings such as default resistance and line si
 
 ##Running LinesinkMaker
 
-LinesinkMaker can be run from the command line as a script, or interactively in an environment such as **IPython Notebook** (<http://ipython.org/notebook.html>). The **example_Nicolet** and **example_Medford** folders have examples of both approaches.  
-**Note:** Both of these examples require a DEM to run (the files are too large to put on GitHub).
-  
-#####Running from the command line:
-First edit the script **make_linesinks.py** so that it points to the correct **XML input file** and then run by calling:  
+LinesinkMaker can be run from the command line by calling the script make_linesinks.py with an XML input file as an argument:
 
 ```
-\>python make_linesinks.py
+\>python make_linesinks.py Medford_lines.xml
 ```
-#####Running from IPython Notebooks:  
-from the **example_Nicolte** folder, or from a parent folder:  
 
-```
-\>ipython notebook
-```
-and then navigate to the notebook (*.ipynb* file). Or, the notebook can be viewed here:  
-<http://nbviewer.ipython.org/github/aleaf/LinesinkMaker/blob/master/example_Nicolet/Nicolet.ipynb>
 
 ###Importing the linesink string file into GFLOW  
 LinesinkMaker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor.  
 ###Viewing the linesinks in a GIS
-LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS.
+LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS. For an example, see **Medford.shp** after running the Medford example.
