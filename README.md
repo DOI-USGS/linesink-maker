@@ -8,8 +8,6 @@ linesink network.
 
 #####Required python packages (see below for installation instructions):  
 * lxml
-* urllib2
-* json
 * fiona
 * shapely
 * pandas
