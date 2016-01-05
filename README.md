@@ -28,7 +28,7 @@ Fiona, shapely, and pyproj depend on compiled GIS libraries.
  <https://github.com/aleaf/SFRmaker/blob/master/pythonGIS_install_readme.md>
 
 ###to install LinesinkMaker:  
-From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker (which should contain **setup.py**) and run:  
+From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker folder (which should contain **setup.py**) and run:  
 
 ```
 $ python setup.py install
