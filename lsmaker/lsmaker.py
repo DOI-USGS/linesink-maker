@@ -6,7 +6,14 @@ import numpy as np
 import os
 import pandas as pd
 import shutil
-import urllib2
+
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
+
 import json
 from functools import partial
 import fiona
@@ -19,7 +26,7 @@ try:
     import matplotlib.pyplot as plt
 except:
     pass
-from diagnostics import *
+from .diagnostics import *
 
 
 # ## Functions #############################
@@ -51,10 +58,11 @@ def get_elevation_from_epqs(lon, lat, units='Feet'):
     """
     url = 'http://nationalmap.gov/epqs/pqs.php?'
     url += 'x={}&y={}&units={}&output=json'.format(lon, lat, units)
-    epqsdata = urllib2.urlopen(url).readline()
-    elev = json.loads(epqsdata)['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation']
+    epqsdata = urlopen(url).readline()
+    elev = json.loads(epqsdata.decode())['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation']
+    #json.loads(epqsdata)
     if not isinstance(elev, float):
-        print('Warning, invalid elevation of {} returned for {}, {}.\nSetting elevation to 0.'.format(elev, lon, lat))
+        print(('Warning, invalid elevation of {} returned for {}, {}.\nSetting elevation to 0.'.format(elev, lon, lat)))
         elev = 0.0
     return elev
 
@@ -71,7 +79,7 @@ def _get_random_point_in_polygon(poly):
 def reproject(geoms, pr1, pr2):
     """Reprojects a list of geometries from coordinate system pr1 to pr2
     (given as proj4 strings)."""
-    print 'reprojecting from {} to {}...'.format(pr1, pr2)
+    print('reprojecting from {} to {}...'.format(pr1, pr2))
     if not isinstance(geoms, list):
         geoms = [geoms]
     pr1 = pyproj.Proj(pr1, errcheck=True, preserve_units=True)
@@ -140,7 +148,7 @@ def name(x):
                'West': 'W'}
 
         name = '{} {}'.format(x.name, x.GNIS_NAME)
-        for k, v in abb.iteritems():
+        for k, v in abb.items():
             name = name.replace(k, v)
     else:
         name = '{} unnamed'.format(x.name)
@@ -178,7 +186,7 @@ class linesinks:
         try:
             inpardat = ET.parse(infile)
         except:
-            raise (InputFileMissing(infile))
+            raise InputFileMissing
 
         inpars = inpardat.getroot()
         self.inpars = inpars
@@ -317,7 +325,7 @@ class linesinks:
         projected in the destination coordinate system."""
         if dest_crs is None:
             dest_crs = self.crs_str
-        print 'reading {}...'.format(shapefile)
+        print('reading {}...'.format(shapefile))
         shp = fiona.open(shapefile)
         geom = shape(shp.next()['geometry'])
         shp_crs_str = to_string(shp.crs)
@@ -362,7 +370,7 @@ class linesinks:
         try:
             import arcpy
         except:
-            print 'Could not import arcpy, which is required for this method. Alternatively, these steps can' \
+            print('Could not import arcpy, which is required for this method. Alternatively, these steps can' \
                   'be performed manually prior to running the preprocess() method:\n' \
                   '1) clip the NHDPlus flowlines and waterbodies datasets to the model farfield polygon. \n' \
                   '   Save the result of the clipping to new shapefiles, which are the same as those specified\n' \
@@ -376,7 +384,7 @@ class linesinks:
                   '   for the area, to get an elevation value for each waterbody. The name for the resulting\n ' \
                   '   point shapefile with elevation attributes should be the same as the name for the clipped\n' \
                   '   waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"\n' \
-                  '   added.'
+                  '   added.')
         path = self.preprocdir
         flowlines_clipped = os.path.split(self.flowlines_clipped)[1]
         waterbodies_clipped = os.path.split(self.waterbodies_clipped)[1]
@@ -409,35 +417,35 @@ class linesinks:
         shutil.copy(self.prj, 'GFLOW.prj')
         self.prj = 'GFLOW.prj'
 
-        print 'clipping and reprojecting input datasets...'
+        print('clipping and reprojecting input datasets...')
         for attr in ['nearfield', 'farfield']:
             shp = self.__dict__[attr]
             if open(self.prj).readline() != open(shp[:-4] + '.prj').readline():
                 arcpy.Project_management(shp, 'preprocessed/' + os.path.split(shp)[1], self.prj)
                 self.__dict__[attr] = 'preprocessed/' + os.path.split(shp)[1]
-                print 'reprojected {} to coordinate system in {}...'.format(self.__dict__[attr], self.prj)
+                print('reprojected {} to coordinate system in {}...'.format(self.__dict__[attr], self.prj))
 
-        for indata, output in {self.flowlines: flowlines_clipped, self.waterbodies: waterbodies_clipped}.items():
+        for indata, output in list({self.flowlines: flowlines_clipped, self.waterbodies: waterbodies_clipped}.items()):
 
-            print 'clipping {} to extent of {}...'.format(indata, self.farfield)
+            print('clipping {} to extent of {}...'.format(indata, self.farfield))
             arcpy.Clip_analysis(indata, self.farfield, 'tmp.shp')
 
             if open(self.prj).readline() != open(indata[:-4] + '.prj').readline():
-                print '\nreprojecting {} to coordinate system in {}...'.format(indata, self.prj)
+                print('\nreprojecting {} to coordinate system in {}...'.format(indata, self.prj))
                 arcpy.Project_management('tmp.shp', output, self.prj)
             else:
                 arcpy.Rename_management('tmp.shp', output)
             arcpy.Delete_management('tmp.shp')
 
-        print '\nremoving interior from farfield polygon...'
+        print('\nremoving interior from farfield polygon...')
         arcpy.Erase_analysis(self.farfield, self.nearfield, farfield_mp)
-        print 'farfield donut written to {}'.format(farfield_mp)
+        print('farfield donut written to {}'.format(farfield_mp))
 
-        print '\ngetting NHD Waterbody elevations from DEM (needed for isolated lakes)'
+        print('\ngetting NHD Waterbody elevations from DEM (needed for isolated lakes)')
         arcpy.FeatureToPoint_management(waterbodies_clipped, wb_centroids_w_elevations)
         arcpy.sa.ExtractMultiValuesToPoints(wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
-        print 'waterbody elevations written to point dataset {}'.format(wb_centroids_w_elevations)
-        print '\nDone.'
+        print('waterbody elevations written to point dataset {}'.format(wb_centroids_w_elevations))
+        print('\nDone.')
 
     def preprocess_python(self):
         """temporary method to take the place of preprocess_arcpy.
@@ -473,7 +481,7 @@ class linesinks:
         self.nf = self.load_poly(self.nearfield)
         self.ff = self.load_poly(self.farfield)
 
-        for attr, shapefiles in {'fl': self.flowlines, 'wb': self.waterbodies}.items():
+        for attr, shapefiles in list({'fl': self.flowlines, 'wb': self.waterbodies}.items()):
             # all flowlines and waterbodies must be in same coordinate system
             # sfrmaker preproc also uses crs from first file in list
             shp_crs_str = to_string(fiona.open(shapefiles[0]).crs)
@@ -483,7 +491,7 @@ class linesinks:
                 self.__dict__[attr]['geometry'] = reproject(self.__dict__[attr].geometry.tolist(), shp_crs_str, self.crs_str)
             # 1816107
             # for now, take intersection (don't truncate flowlines at farfield boundary)
-            print 'clipping to {}...'.format(self.farfield)
+            print('clipping to {}...'.format(self.farfield))
             intersects = np.array([l.intersects(self.ff) for l in self.__dict__[attr].geometry])
 
             self.__dict__[attr] = self.__dict__[attr][intersects].copy()
@@ -497,12 +505,12 @@ class linesinks:
         with fiona.drivers():
             with fiona.open(self.nearfield) as src:
                 with fiona.open(self.farfield_mp, 'w', **src.meta) as output:
-                    print('writing {}'.format(self.farfield_mp))
-                    f = src.next()
+                    print(('writing {}'.format(self.farfield_mp)))
+                    f = next(src)
                     f['geometry'] = mapping(ffdonut)
                     output.write(f)
 
-        print('\ndropping waterbodies smaller than {} km2...'.format(self.min_waterbody_size))
+        print(('\ndropping waterbodies smaller than {} km2...'.format(self.min_waterbody_size)))
         self.wb = self.wb[self.wb.AREASQKM > self.min_waterbody_size].copy()
 
         print('\ngetting elevations for waterbodies not in the stream network')
@@ -545,9 +553,9 @@ class linesinks:
 
         """
         if self.farfield is None:
-            print('\nNo farfield shapefile supplied.\n'
+            print(('\nNo farfield shapefile supplied.\n'
                   'Creating farfield using buffer of {:.1f} {} around model nearfield.\n'
-                  .format(self.farfield_buffer, self.BasemapUnits))
+                  .format(self.farfield_buffer, self.BasemapUnits)))
             modelareafile = fiona.open(self.nearfield)
             nfarea = shape(modelareafile[0]['geometry'])
             modelarea_farfield = nfarea.buffer(self.farfield_buffer)
@@ -569,7 +577,7 @@ class linesinks:
         self.efp = open(self.error_reporting, 'a')
         self.efp.write('\nPreprocessing...\n')
 
-        print '\nAssembling input...'
+        print('\nAssembling input...')
         # read linework shapefile into pandas dataframe
         df = GISio.shp2df(self.flowlines_clipped, index='COMID', index_dtype=int).drop_duplicates('COMID')
         df.drop([c for c in df.columns if c.lower() not in [cc.lower() for cc in self.flowlines_cols]],
@@ -600,18 +608,18 @@ class linesinks:
         ff = GISio.shp2df(self.farfield_mp)
         ffg = ff.iloc[0]['geometry']  # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
-        print '\nidentifying farfield and nearfield linesinks...'
+        print('\nidentifying farfield and nearfield linesinks...')
         df['farfield'] = [line.intersects(ffg) and not line.intersects(nfg) for line in df.geometry]
         wbs['farfield'] = [poly.intersects(ffg) for poly in wbs.geometry]
 
-        print 'removing farfield streams lower than {} order...'.format(self.min_farfield_order)
+        print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
         # retain all streams not in the farfield or in the farfield and of order > min_farfield_order
         df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))]
 
-        print 'dropping waterbodies that are not lakes larger than {}...'.format(self.min_waterbody_size)
+        print('dropping waterbodies that are not lakes larger than {}...'.format(self.min_waterbody_size))
         wbs = wbs[(wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')]
 
-        print 'merging waterbodies with coincident boundaries...'
+        print('merging waterbodies with coincident boundaries...')
         dropped = []
         for wb_comid in wbs.index:
 
@@ -621,7 +629,7 @@ class linesinks:
 
             wb_geometry = wbs.geometry[wb_comid]
             overlapping = wbs.ix[[wb_geometry.intersects(r) for r in wbs.geometry]]
-            basering_comid = overlapping.sort('FTYPE').index[0]  # sort to prioritize features with names
+            basering_comid = overlapping.sort_values('FTYPE').index[0]  # sort to prioritize features with names
 
             # two or more shapes in overlapping signifies a coincident boundary
             if len(overlapping > 1):
@@ -640,16 +648,16 @@ class linesinks:
                 df.loc[df.WBAREACOMI.isin(todrop), 'WBAREACOMI'] = basering_comid
 
         # swap out polygons in lake geometry column with the linear rings that make up their exteriors
-        print 'converting lake exterior polygons to lines...'
+        print('converting lake exterior polygons to lines...')
         wbs['geometry'] = [LineString(g.exterior) for g in wbs.geometry]
         wbs['waterbody'] = [True] * len(wbs)  # boolean variable indicate whether feature is waterbody
 
-        print 'merging flowline and waterbody datasets...'
+        print('merging flowline and waterbody datasets...')
         df['waterbody'] = [False] * len(df)
         df = df.append(wbs)
         df.COMID = df.index
 
-        print '\nDone with preprocessing.'
+        print('\nDone with preprocessing.')
         if save:
             GISio.df2shp(df, self.preprocessed_lines, proj4=self.crs_str)
 
@@ -675,17 +683,17 @@ class linesinks:
             a 'ls_coords' column containing lists of coordinate tuples defining each simplified line.
         """
         if not hasattr(self, 'df'):
-            print 'No dataframe attribute for linesinks instance. Run preprocess first.'
+            print('No dataframe attribute for linesinks instance. Run preprocess first.')
             return
 
         if nearfield_tolerance is None:
             nearfield_tolerance = self.nearfield_tolerance
             farfield_tolerance = self.farfield_tolerance
 
-        if isinstance(self.df.farfield.iloc[0], basestring):
+        if isinstance(self.df.farfield.iloc[0], str):
             self.df.loc[:, 'farfield'] = [True if f.lower() == 'true' else False for f in self.df.farfield]
 
-        print 'simplifying NHD linework geometries...'
+        print('simplifying NHD linework geometries...')
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
         df = self.df[['farfield', 'geometry']].copy()
@@ -700,7 +708,7 @@ class linesinks:
         df['ls_geom'] = ls_geom
 
         # add columns for additional nearfield refinement areas
-        for shp in nearfield_refinement.keys():
+        for shp in list(nearfield_refinement.keys()):
             if shp not in self.refinement_areas:
                 self.refinement_areas.append(shp)
             area_name = os.path.split(shp)[-1][:-4]
@@ -709,7 +717,7 @@ class linesinks:
 
         # convert geometries to coordinates
         def xy_coords(x):
-            xy = zip(x.xy[0], x.xy[1])
+            xy = list(zip(x.xy[0], x.xy[1]))
             return xy
 
         # add column of lists, containing linesink coordinates
@@ -774,7 +782,7 @@ class linesinks:
             self.efp.write('\nzero-gradient adjustments:\n')
             self.efp.write('comid, old_elevmax, old_elevmin, new_elevmax, new_elevmin, downcomid\n')
 
-            print "adjusting elevations for comids with zero-gradient..."
+            print("adjusting elevations for comids with zero-gradient...")
             for comid in comids0:
 
                 outsegs = [o for o in self.outsegs.ix[comid].values if o > 0]
@@ -813,9 +821,9 @@ class linesinks:
             if len(comids0) > 0:
                 for c in comids0:
                     self.efp.write('{} '.format(c))
-                print "\nWarning!, the following comids had zero gradients:\n{}".format(comids0)
-                print "routing for these was turned off. Elevations must be fixed manually.\n" \
-                      "See {}".format(self.error_reporting)
+                print("\nWarning!, the following comids had zero gradients:\n{}".format(comids0))
+                print("routing for these was turned off. Elevations must be fixed manually.\n" \
+                      "See {}".format(self.error_reporting))
         return df
 
     def drop_crossing_lines(self, df):
@@ -1029,7 +1037,7 @@ class linesinks:
 
         self.wblist = set(df.ix[df.waterbody].index.values.astype(int)).difference({0})
 
-        print 'Assigning attributes for GFLOW input...'
+        print('Assigning attributes for GFLOW input...')
 
         # routing
         df['routing'] = len(df) * [1]
@@ -1051,7 +1059,7 @@ class linesinks:
         # method to represent lakes with linesinks
         df = self.setup_linesink_lakes(df)
 
-        print '\nmerging or splitting lines with only two vertices...'
+        print('\nmerging or splitting lines with only two vertices...')
         # find all routed comids with only 1 line; merge with neighboring comids
         # (GFLOW requires two lines for routed streams)
 
@@ -1059,7 +1067,7 @@ class linesinks:
             # add vertex to middle of single line segment
             coords = np.array(coords)
             mid = 0.5 * (coords[0] + coords[-1])
-            new_coords = map(tuple, [coords[0], mid, coords[-1]])
+            new_coords = list(map(tuple, [coords[0], mid, coords[-1]]))
             return new_coords
 
         df['nlines'] = [len(coords) - 1 for i, coords in enumerate(df.ls_coords)]
@@ -1124,10 +1132,10 @@ class linesinks:
         npoints_orig = sum([len(p) - 1 for p in df['geometry'].map(lambda x: x.xy[0])])
         npoints_simp = sum([len(p) - 1 for p in df.ls_coords])
 
-        print '\nnumber of lines in original NHD linework: {}'.format(npoints_orig)
-        print 'number of simplified lines: {}\n'.format(npoints_simp)
+        print('\nnumber of lines in original NHD linework: {}'.format(npoints_orig))
+        print('number of simplified lines: {}\n'.format(npoints_simp))
         if npoints_simp > self.maxlines:
-            print "Warning, the number of lines exceeds GFLOW's limit of {}!".format(self.maxlines)
+            print("Warning, the number of lines exceeds GFLOW's limit of {}!".format(self.maxlines))
 
         if self.split_by_HUC:
             self.write_lss_by_huc(df)
@@ -1147,7 +1155,7 @@ class linesinks:
 
         self.df = df
         self.efp.close()
-        print 'Done!'
+        print('Done!')
 
     def map_confluences(self):
 
@@ -1160,7 +1168,7 @@ class linesinks:
 
         confluences['elev'] = [0] * len(confluences)
         nconfluences = len(confluences)
-        print 'Mapping {} confluences and updating segment min/max elevations...'.format(nconfluences)
+        print('Mapping {} confluences and updating segment min/max elevations...'.format(nconfluences))
         for i, r in confluences.iterrows():
 
             # confluence elevation is the minimum of the ending segments minimums, starting segments maximums
@@ -1176,7 +1184,7 @@ class linesinks:
 
         self.confluences = confluences
         self.df['dStage'] = self.df['maxElev'] - self.df['minElev']
-        print 'Done, see confluences attribute.'
+        print('Done, see confluences attribute.')
 
     def run_diagnostics(self):
 
@@ -1201,13 +1209,13 @@ class linesinks:
                 break
             knt += 1
             if knt > 1000:
-                print 'Circular routing encountered in segment {}'.format(max_outseg)
+                print('Circular routing encountered in segment {}'.format(max_outseg))
                 break
         self.outsegs = outsegsmap
 
     def write_lss_by_huc(self, df):
 
-        print '\nGrouping segments by hydrologic unit...'
+        print('\nGrouping segments by hydrologic unit...')
         # intersect lines with HUCs; then group dataframe by HUCs
         HUCs_df = GISio.shp2df(self.HUC_shp, index=self.HUC_name_field)
         df[self.HUC_name_field] = len(df) * [None]
@@ -1229,7 +1237,7 @@ class linesinks:
 
         nlines = sum([len(p) - 1 for p in df.ls_coords])
 
-        print 'writing {} lines to {}'.format(nlines, outfile)
+        print('writing {} lines to {}'.format(nlines, outfile))
         ofp = open(outfile, 'w')
         ofp.write('<?xml version="1.0"?>\n')
         ofp.write('<LinesinkStringFile version="1">\n')

@@ -348,7 +348,7 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
     del properties['geometry']
 
     # sort the dataframe columns (so that properties coincide)
-    df = df.sort(axis=1)
+    df = df.sort_index(axis=1)
 
     # set projection (or use a prj file, which must be copied after shp is written)
     # alternatively, provide a crs in dictionary form as read using fiona

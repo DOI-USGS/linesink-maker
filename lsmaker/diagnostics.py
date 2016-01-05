@@ -3,7 +3,7 @@ __author__ = 'aleaf'
 import os
 import numpy as np
 from shapely.geometry import LineString
-import GISio
+from . import GISio
 
 class Diagnostics:
 
@@ -15,7 +15,7 @@ class Diagnostics:
             self.df = GISio.shp2df(ls_shapefile, index='COMID')
             self.prj = ls_shapefile[:-4] + '.prj'
         else:
-            print 'Provide either LinesinkMaker object of shapefile as input.'
+            print('Provide either LinesinkMaker object of shapefile as input.')
             return
 
         self.diagnostics_file = 'lsm_diagnostics.txt'
@@ -24,7 +24,7 @@ class Diagnostics:
 
     def check4crossing_lines(self):
         ofp = open(self.diagnostics_file, 'a')
-        print 'Checking for lines that cross...'
+        print('Checking for lines that cross...')
         comids = self.df.index.values
         geoms = self.df.geometry.tolist()
 
@@ -33,23 +33,23 @@ class Diagnostics:
             [crosses.add(comids[j]) for j, g in enumerate(geoms) if linesink.crosses(g)]
 
         if len(crosses) > 0:
-            print 'Warning! Crossing linesinks found. Check these before running GFLOW.\n' \
-                  'See {} for more details'.format(self.diagnostics_file)
+            print('Warning! Crossing linesinks found. Check these before running GFLOW.\n' \
+                  'See {} for more details'.format(self.diagnostics_file))
             ofp.write('The following line segments cross, and should be fixed manually before running GFLOW:\n')
             for c in crosses:
                 ofp.write('{} '.format(c))
             ofp.write('\r\n')
         else:
-            print 'passed.'
+            print('passed.')
         ofp.close()
         return crosses
 
     def check_vertices(self):
-        print 'Checking for duplicate vertices...'
+        print('Checking for duplicate vertices...')
         if 'ls_coords' not in self.df.columns:
             # convert geometries to coordinates
             def xy_coords(x):
-                xy = zip(x.xy[0], x.xy[1])
+                xy = list(zip(x.xy[0], x.xy[1]))
                 return xy
 
             # add column of lists, containing linesink coordinates
@@ -65,23 +65,23 @@ class Diagnostics:
                             for i, crds in enumerate(self.df.ls_coords.tolist())
                             if all_coords.count(crds) > 1]
         if len(duplicate_coords) > 0:
-            print 'Duplicate coordinates found at:\n{}'.format(duplicate_coords)
-            print 'See {}'.format(self.diagnostics_file)
+            print('Duplicate coordinates found at:\n{}'.format(duplicate_coords))
+            print('See {}'.format(self.diagnostics_file))
             ofp = open(self.diagnostics_file, 'a')
             ofp.write('Duplicate coordinates:')
             for crd in duplicate_coords:
                 ofp.write('{} {}\n'.format(crd, self.df.ix[crd, 'ls_coords']))
             ofp.close()
         else:
-            print 'passed.'
+            print('passed.')
 
     def check4zero_gradient(self):
 
-        print 'Checking for lines with zero gradient...'
+        print('Checking for lines with zero gradient...')
         self.df['dStage'] = self.df.maxElev - self.df.minElev
         comids0 = list(self.df[self.df['dStage'] == 0].index)
         if len(comids0) > 0:
-            print '{} lines with zero gradient found'.format(len(comids0))
+            print('{} lines with zero gradient found'.format(len(comids0)))
         else:
-            print 'No zero-gradient lines found.'
+            print('No zero-gradient lines found.')
         return comids0

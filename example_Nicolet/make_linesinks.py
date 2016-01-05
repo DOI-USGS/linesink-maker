@@ -10,7 +10,7 @@ import lsmaker
 try:
     input_file = sys.argv[1]
 except IndexError:
-    print "\nusage is: python make_linesinks.py <input_xml_file>\n"
+    print("\nusage is: python make_linesinks.py <input_xml_file>\n")
     quit()
 
 ls = lsmaker.linesinks(input_file)
