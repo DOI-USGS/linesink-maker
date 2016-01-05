@@ -86,3 +86,8 @@ LinesinkMaker can be run from the command line by calling the script make_linesi
 LinesinkMaker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor.  
 ###Viewing the linesinks in a GIS
 LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS. For an example, see **Medford.shp** after running the Medford example.
+
+###Uninstall
+```
+pip uninstall lsmaker
+```
