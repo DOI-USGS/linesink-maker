@@ -23,7 +23,9 @@ LinesinkMaker runs in Python 2.7. An easy way to install the required packages (
 ```
 $ conda install fiona  
 ```
-Fiona, shapely, and pyproj depend on compiled GIS libraries. Instructions for installing these packages with their underlying libraries are given here: <https://github.com/aleaf/SFRmaker/blob/master/pythonGIS_install_readme.md>
+Fiona, shapely, and pyproj depend on compiled GIS libraries.
+#####Windows users should install these packages following the instructions given here:
+ <https://github.com/aleaf/SFRmaker/blob/master/pythonGIS_install_readme.md>
 
 ###to install LinesinkMaker:  
 From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker (which should contain **setup.py**) and run:  
