@@ -28,7 +28,6 @@ except:
     pass
 from .diagnostics import *
 
-
 # ## Functions #############################
 def get_elevations_from_epqs(points, units='Feet'):
     """From list of shapely points in lat, lon, returns list of elevation values
@@ -181,6 +180,8 @@ def move_point_along_line(x1, x2, dist):
 class linesinks:
     maxlines = 4000
 
+    int_dtype = np.int64
+
     def __init__(self, infile):
 
         try:
@@ -241,37 +242,37 @@ class linesinks:
         # Note: may need to add method to handle case discrepancies
         self.flowlines_cols = ['COMID', 'FCODE', 'FDATE', 'FLOWDIR', 'FTYPE', 'GNIS_ID', 'GNIS_NAME', 'LENGTHKM',
                                'REACHCODE', 'RESOLUTION', 'WBAREACOMI', 'geometry']
-        self.flowlines_cols_dtypes = {'COMID': int,
-                                      'FCODE': int,
+        self.flowlines_cols_dtypes = {'COMID': self.int_dtype,
+                                      'FCODE': self.int_dtype,
                                       'FDATE': str,
                                       'FLOWDIR': str,
                                       'FTYPE': str,
-                                      'GNIS_ID': int,
+                                      'GNIS_ID': self.int_dtype,
                                       'GNIS_NAME': str,
                                       'LENGTHKM': float,
-                                      'REACHCODE': int,
+                                      'REACHCODE': str,
                                       'RESOLUTION': str,
-                                      'WBAREACOMI': int,
+                                      'WBAREACOMI': self.int_dtype,
                                       'geometry': object}
         self.elevslope_cols = ['MINELEVSMO', 'MAXELEVSMO']
         self.elevslope_dtypes = {'MINELEVSMO': float,
-                                 'MAXELEVSMO': float,}
+                                 'MAXELEVSMO': float}
         self.pfvaa_cols = ['ArbolateSu', 'Hydroseq', 'DnHydroseq', 'StreamOrde']
         self.pfvaa_cols_dtypes = {'ArbolateSu': float,
-                                  'Hydroseq': int,
-                                  'DnHydroseq': int,
-                                  'StreamOrde': int}
+                                  'Hydroseq': self.int_dtype,
+                                  'DnHydroseq': self.int_dtype,
+                                  'StreamOrde': np.int64}
         self.wb_cols = ['AREASQKM', 'COMID', 'ELEVATION', 'FCODE', 'FDATE', 'FTYPE', 'GNIS_ID', 'GNIS_NAME',
                         'REACHCODE', 'RESOLUTION', 'geometry']
         self.wb_cols_dtypes = {'AREASQKM': float,
-                               'COMID': int,
+                               'COMID': self.int_dtype,
                                'ELEVATION': float,
-                               'FCODE': int,
+                               'FCODE': self.int_dtype,
                                'FDATE': str,
                                'FTYPE': str,
-                               'GNIS_ID': int,
+                               'GNIS_ID': self.int_dtype,
                                'GNIS_NAME': str,
-                               'REACHCODE': int,
+                               'REACHCODE': str,
                                'RESOLUTION': str,
                                'geometry': object}
         # could do away with above and have one dtypes list
@@ -579,14 +580,14 @@ class linesinks:
 
         print('\nAssembling input...')
         # read linework shapefile into pandas dataframe
-        df = GISio.shp2df(self.flowlines_clipped, index='COMID', index_dtype=int).drop_duplicates('COMID')
+        df = GISio.shp2df(self.flowlines_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
         df.drop([c for c in df.columns if c.lower() not in [cc.lower() for cc in self.flowlines_cols]],
                 axis=1, inplace=True)
         # might want to consider enforcing integer index here if strings cause problems
         clipto = df.index.tolist()
-        elevs = GISio.shp2df(self.elevslope, index='COMID', index_dtype=int, clipto=clipto)
-        pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', index_dtype=int, clipto=clipto)
-        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', index_dtype=int).drop_duplicates('COMID')
+        elevs = GISio.shp2df(self.elevslope, index='COMID', index_dtype=self.int_dtype, clipto=clipto)
+        pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', index_dtype=self.int_dtype, clipto=clipto)
+        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
         wbs.drop([c for c in wbs.columns if c.lower() not in [cc.lower() for cc in self.wb_cols]],
                  axis=1, inplace=True)
         self._enforce_dtypes(wbs)
@@ -868,7 +869,7 @@ class linesinks:
 
         # read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)
         wb_elevs = GISio.shp2df(self.wb_centroids_w_elevations,
-                                index='COMID', index_dtype=int).drop_duplicates('COMID')
+                                index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
         self._enforce_dtypes(wb_elevs)
         wb_elevs = wb_elevs[self.elevs_field] * self.DEM_zmult
 
@@ -1019,12 +1020,15 @@ class linesinks:
         self.efp.write('\nMaking the lines...\n')
 
         if shp:
-            self.df = GISio.shp2df(shp, index='COMID', index_dtype=int, true_values=['True'], false_values=['False'])
+            self.df = GISio.shp2df(shp, index='COMID',
+                                   index_dtype=self.int_dtype,
+                                   true_values=['True'],
+                                   false_values=['False'])
             self._enforce_dtypes(self.df)
 
         # enforce integers columns
-        self.df.index = self.df.index.astype(int)
-        self.df['COMID'] = self.df.COMID.astype(int)
+        self.df.index = self.df.index.astype(self.int_dtype)
+        self.df['COMID'] = self.df.COMID.astype(self.int_dtype)
 
         df = self.df
 
@@ -1035,7 +1039,7 @@ class linesinks:
         #df['ls_geom'] = self.lines_df['ls_geom']
         df['ls_coords'] = self.lines_df['ls_coords']
 
-        self.wblist = set(df.ix[df.waterbody].index.values.astype(int)).difference({0})
+        self.wblist = set(df.ix[df.waterbody].index.values.astype(self.int_dtype)).difference({0})
 
         print('Assigning attributes for GFLOW input...')
 
