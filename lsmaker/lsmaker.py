@@ -219,6 +219,7 @@ class linesinks:
         self.farfield = inpars.findall('.//farfield')[0].text
         self.nearfield = inpars.findall('.//nearfield')[0].text
         self.farfield_buffer = self._get_XMLentry('farfield_buffer', 10000, int)
+        self.clip_farfield = self.tf2flag(self._get_XMLentry('clip_farfield', 'False'))
         self.split_by_HUC = self.tf2flag(inpars.findall('.//split_by_HUC')[0].text)
         self.HUC_shp = inpars.findall('.//HUC_shp')[0].text
         self.HUC_name_field = inpars.findall('.//HUC_name_field')[0].text
@@ -282,8 +283,8 @@ class linesinks:
         self.dtypes.update(self.wb_cols_dtypes)
 
         # preprocessed files
-        self.DEM = inpars.findall('.//DEM')[0].text
-        self.elevs_field = inpars.findall('.//elevs_field')[0].text
+        self.DEM = self._get_XMLentry('DEM', None)
+        self.elevs_field = self._get_XMLentry('elevs_field', 'elev')
         self.DEM_zmult = self._get_XMLentry('DEM_zmult', 1.0, float)
 
         self.flowlines_clipped = self._get_XMLentry('flowlines_clipped', 'flowlines_clipped.shp')
@@ -494,8 +495,17 @@ class linesinks:
             # for now, take intersection (don't truncate flowlines at farfield boundary)
             print('clipping to {}...'.format(self.farfield))
             intersects = np.array([l.intersects(self.ff) for l in self.__dict__[attr].geometry])
-
             self.__dict__[attr] = self.__dict__[attr][intersects].copy()
+        if self.clip_farfield:
+            print('truncating waterbodies at farfield boundary...')
+            # get rid of any islands in the process
+            self.wb['geometry'] = [Polygon(g.exterior).intersection(self.ff) for g in self.wb.geometry]
+            # for multipolygons, retain largest part
+            geoms = self.wb.geometry.values
+            for i, g in enumerate(geoms):
+                if g.type == 'MultiPolygon':
+                    geoms[i] = np.array(g.geoms)[np.argsort([p.area for p in g.geoms])][-1]
+            self.wb['geometry'] = geoms
 
         # for now, write out preprocessed data to maintain structure with arcpy
         GISio.df2shp(self.fl, self.flowlines_clipped, proj4=self.crs_str)
@@ -657,7 +667,12 @@ class linesinks:
         df['waterbody'] = [False] * len(df)
         df = df.append(wbs)
         df.COMID = df.index
-
+        '''
+        if self.clip_farfield:
+            print('clipping farfield features...')
+            df.loc[df.farfield.values, 'geometry'] = [g.intersection(ffg)
+                                                      for g in df.geometry[df.farfield.values]]
+        '''
         print('\nDone with preprocessing.')
         if save:
             GISio.df2shp(df, self.preprocessed_lines, proj4=self.crs_str)
@@ -959,7 +974,7 @@ class linesinks:
 
             # make sure inlets/outlets don't cross lines representing lake
             wb_geom = LineString(df.ix[wb_comid, 'ls_coords'])
-            x = [c for c in upcomids if LineString(df.ix[c, 'ls_coords']).crosses(wb_geom)]
+            x = [c for c in upcomids if c != 0 and LineString(df.ix[c, 'ls_coords']).crosses(wb_geom)]
             if len(x) > 0:
                 for c in x:
                     ls_coords = list(df.ix[c, 'ls_coords'])  # want to copy, to avoid modifying df
@@ -967,7 +982,8 @@ class linesinks:
                     # (for some reason, two very similar coordinates will be occasionally be returned by intersection)
                     intersection = LineString(ls_coords).intersection(wb_geom)
                     if intersection.type == 'MultiPoint':
-                        intersection = intersection.geoms[0].xy
+                        intersection_point = np.array([intersection.geoms[0].xy[0][0],
+                                                       intersection.geoms[0].xy[1][0]])
                     else:
                         intersection_point = np.array([intersection.xy[0][0], intersection.xy[1][0]])
                     # sequentially drop last vertex from line until it no longer crosses the lake
@@ -1079,7 +1095,8 @@ class linesinks:
         # bisect lines that have only one segment, and are routed
         ls_coords = df.ls_coords.tolist()
         singlesegment = ((df['nlines'] < 2) & (df['routing'] == 1)).values
-        df['ls_coords'] = [bisect(line) if singlesegment[i] else line for i, line in enumerate(ls_coords)]
+        df['ls_coords'] = [bisect(line) if singlesegment[i]
+                           else line for i, line in enumerate(ls_coords)]
 
         # fix linesinks where max and min elevations are the same
         df = self.adjust_zero_gradient(df)
