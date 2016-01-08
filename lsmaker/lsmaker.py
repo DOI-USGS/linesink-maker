@@ -29,6 +29,78 @@ except:
 from .diagnostics import *
 
 # ## Functions #############################
+def add_projection(line, point):
+    """Add vertex to line at point,
+    if the closest point on the line isn't an end.
+
+    Parameters
+    ----------
+    line : LineString
+    point : Point
+
+    Returns
+    -------
+    newline : LineString
+        Line with point added, or original line, if point coincides with end.
+    """
+    l = line
+    mp = point
+    distance = l.project(mp)
+    if distance <= 0.0 or distance >= line.length:
+        return line
+    coords = list(l.coords)
+    for i, p in enumerate(l.coords):
+        pd = l.project(Point(p))
+        if pd == distance:
+            return line
+        elif pd > distance:
+            return LineString(coords[:i] + [(mp.x, mp.y)] + coords[i:])
+
+def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
+    """Add vertices to linesinks at locations of testpoints
+    (so that modeled flow observations are correct)
+
+    Parameters
+    ----------
+    lssdf : DataFrame
+        DataFrame of linesink strings. Must contain 'geometry' column
+        of shapely LineStrings defining geometries of linesink strings,
+        in same coordinate system as testpoints.
+
+    tpgeoms : list
+        List of testpoint geometries.
+
+    tol : float
+        Tolerance, in coordinate system units, for considering lines
+        near the testpoints.
+
+    Returns
+    -------
+    geoms : list of geometries
+        New geometry column with added vertices.
+
+    """
+    df = lssdf.copy()
+
+    for mp in tpgeoms:
+
+        # find all lines within tolerance
+        nearby = np.array([l.intersects(mp.buffer(tol)) for l in df.geometry])
+        ldf = df[nearby].copy()
+
+        # choose closest if two or more nearby lines
+        if len(ldf) > 1:
+            ldf['dist'] = [ll.interpolate(ll.project(mp)) for ll in ldf.geometry.values]
+            ldf.sort_values('dist', inplace=True)
+
+        # if at least one line is nearby
+        if len(ldf) > 0:
+            ind = ldf.index[0]
+            l = ldf.geometry.values[0]
+            newline = add_projection(l, mp)
+            df.set_value(ind, 'geometry', newline)
+    return df.geometry.tolist()
+
 def get_elevations_from_epqs(points, units='Feet'):
     """From list of shapely points in lat, lon, returns list of elevation values
     """
@@ -182,6 +254,33 @@ class linesinks:
 
     int_dtype = np.int64
 
+    GFLOW_field_names = {'Label',
+                         'HeadSpecified',
+                         'StartingHead',
+                         'EndingHead',
+                         'Resistance',
+                         'Width',
+                         'Depth',
+                         'Routing',
+                         'EndStream',
+                         'OverlandFlow',
+                         'EndInflow',
+                         'ScenResistance',
+                         'Drain',
+                         'ScenFluxName',
+                         'Gallery',
+                         'TotalDischarge',
+                         'InletStream',
+                         'OutletStream',
+                         'OutletTable',
+                         'Lake',
+                         'Precipitation',
+                         'Evapotranspiration
+                         'Farfield',
+                         'chkScenario',
+                         'AutoSWIZC',
+                         'DefaultResistance'}
+
     def __init__(self, infile):
 
         try:
@@ -303,6 +402,8 @@ class linesinks:
         self.efp = open(self.error_reporting, 'w')
 
         # attributes
+        self.df = pd.DataFrame() # working dataframe for translating NHDPlus data to linesink strings
+        self.lss = pd.DataFrame() # dataframe of GFLOW linesink strings (with attributes)
         self.outsegs = pd.DataFrame()
         self.confluences = pd.DataFrame()
 
@@ -1233,6 +1334,62 @@ class linesinks:
                 print('Circular routing encountered in segment {}'.format(max_outseg))
                 break
         self.outsegs = outsegsmap
+
+    def read_lss(self, lss_xml):
+        """read a linesink string (lss) XML file exported by GFLOW"""
+        xml = ET.parse(lss_xml)
+        root = xml.getroot()
+        for attr in ['ComputationalUnits', 'BasemapUnits']:
+            self.__dict__[attr] = root.findall(attr)[0].text
+
+        # read fields into dictionary, then DataFrame
+        d = {}
+        for field in ['Label',
+                      'HeadSpecified',
+                      'StartingHead',
+                      'EndingHead',
+                      'Resistance',
+                      'Width',
+                      'Depth',
+                      'Routing',
+                      'EndStream',
+                      'OverlandFlow',
+                      'EndInflow',
+                      'ScenResistance',
+                      'Drain',
+                      'ScenFluxName',
+                      'Gallery',
+                      'TotalDischarge',
+                      'InletStream',
+                      'OutletStream',
+                      'OutletTable',
+                      'Lake',
+                      'Precipitation',
+                      'Evapotranspiration',
+                      'Farfield',
+                      'chkScenario',
+                      'AutoSWIZC',
+                      'DefaultResistance']:
+            d[field] = [i.text for i in root.iter(field)]
+
+        # read in the vertices
+        def tolss(ls):
+            X = np.array([v.find('X').text for v in ls.find('Vertices').findall('Vertex')], dtype=float)
+            Y = np.array([v.find('Y').text for v in ls.find('Vertices').findall('Vertex')], dtype=float)
+            return LineString(zip(X, Y))
+        d['geometry'] = [tolss(ls) for ls in root.iter('LinesinkString')]
+
+        df = pd.DataFrame(d)
+        # convert labels back to COMIDs for the index; assign unique values otherwise
+        comids = []
+        for i, r in df.iterrows():
+            try:
+                comids.append(int(r.Label.split()[0].strip()))
+            except ValueError:
+                comids.append(i)
+        df.index = comids
+        return df
+
 
     def write_lss_by_huc(self, df):
 
