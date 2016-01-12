@@ -90,7 +90,8 @@ def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
 
         # choose closest if two or more nearby lines
         if len(ldf) > 1:
-            ldf['dist'] = [ll.interpolate(ll.project(mp)) for ll in ldf.geometry.values]
+            ldf['dist'] = [mp.distance(ll.interpolate(ll.project(mp)))
+                           for ll in ldf.geometry.values]
             ldf.sort_values('dist', inplace=True)
 
         # if at least one line is nearby
@@ -254,32 +255,32 @@ class linesinks:
 
     int_dtype = np.int64
 
-    GFLOW_field_names = {'Label',
-                         'HeadSpecified',
-                         'StartingHead',
-                         'EndingHead',
-                         'Resistance',
-                         'Width',
-                         'Depth',
-                         'Routing',
-                         'EndStream',
-                         'OverlandFlow',
-                         'EndInflow',
-                         'ScenResistance',
-                         'Drain',
-                         'ScenFluxName',
-                         'Gallery',
-                         'TotalDischarge',
-                         'InletStream',
-                         'OutletStream',
-                         'OutletTable',
-                         'Lake',
-                         'Precipitation',
-                         'Evapotranspiration
-                         'Farfield',
-                         'chkScenario',
-                         'AutoSWIZC',
-                         'DefaultResistance'}
+    dtypes = {'Label': str,
+                    'HeadSpecified': float,
+                    'StartingHead': float,
+                    'EndingHead': float,
+                    'Resistance': float,
+                    'Width': float,
+                    'Depth': float,
+                    'Routing': np.int64,
+                    'EndStream': np.int64,
+                    'OverlandFlow': np.int64,
+                    'EndInflow': np.int64,
+                    'ScenResistance': str,
+                    'Drain': np.int64,
+                    'ScenFluxName': str,
+                    'Gallery': np.int64,
+                    'TotalDischarge': np.int64,
+                    'InletStream': np.int64,
+                    'OutletStream': np.int64,
+                    'OutletTable': str,
+                    'Lake': np.int64,
+                    'Precipitation': float,
+                    'Evapotranspiration': float,
+                    'Farfield': bool,
+                    'chkScenario': bool,
+                    'AutoSWIZC': np.int64,
+                    'DefaultResistance': float}
 
     def __init__(self, infile):
 
@@ -376,7 +377,7 @@ class linesinks:
                                'RESOLUTION': str,
                                'geometry': object}
         # could do away with above and have one dtypes list
-        self.dtypes = self.flowlines_cols_dtypes
+        self.dtypes.update(self.flowlines_cols_dtypes)
         self.dtypes.update(self.elevslope_dtypes)
         self.dtypes.update(self.pfvaa_cols_dtypes)
         self.dtypes.update(self.wb_cols_dtypes)
@@ -1266,16 +1267,8 @@ class linesinks:
 
         # write shapefile of results
         # convert lists in dn and upcomid columns to strings (for writing to shp)
-        df['dncomid'] = df['dncomid'].map(lambda x: ' '.join([str(c) for c in x]))  # handles empties
-        df['upcomids'] = df['upcomids'].map(lambda x: ' '.join([str(c) for c in x]))
-
-        # recreate shapely geometries from coordinates column; drop all other coords/geometries
-        df['geometry'] = [LineString(g) for g in df.ls_coords]
-        df = df.drop(['ls_coords'], axis=1)
-
-        GISio.df2shp(df, self.outfile_basename.split('.')[0] + '.shp', proj4=self.crs_str)
-
         self.df = df
+        self.write_shapefile()
         self.efp.close()
         print('Done!')
 
@@ -1370,7 +1363,8 @@ class linesinks:
                       'chkScenario',
                       'AutoSWIZC',
                       'DefaultResistance']:
-            d[field] = [i.text for i in root.iter(field)]
+            d[field] = np.array([i.text for i in root.iter(field)],
+                                dtype=self.dtypes[field])
 
         # read in the vertices
         def tolss(ls):
@@ -1388,6 +1382,20 @@ class linesinks:
             except ValueError:
                 comids.append(i)
         df.index = comids
+
+        # rename fields to be consistent with those used in Linesinkmaker
+        # (should eventually just change lsmaker names to conform)
+        df.rename(columns={'DefaultResistance': 'resistance',
+                           'Depth': 'depth',
+                           'EndStream': 'end_stream',
+                           'EndingHead': 'minElev',
+                           'Farfield': 'farfield',
+                           'Label': 'ls_name',
+                           'Resistance': 'reistance',
+                           'Routing': 'routing',
+                           'StartingHead': 'maxElev',
+                           'Width': 'width'}, inplace=True)
+        df['ls_coords'] = [list(g.coords) for g in df.geometry]
         return df
 
 
@@ -1412,6 +1420,7 @@ class linesinks:
     def write_lss(self, df, outfile):
         """write GFLOW linesink XML (lss) file from dataframe df
         """
+        df = df.copy()
 
         nlines = sum([len(p) - 1 for p in df.ls_coords])
 
@@ -1464,6 +1473,20 @@ class linesinks:
         ofp.write('</LinesinkStringFile>')
         ofp.close()
 
+    def write_shapefile(self, outfile=None):
+        if outfile is None:
+            outfile = self.outfile_basename.split('.')[0] + '.shp'
+        df = self.df.copy()
+
+        for routid in {'dncomid', 'upcomids'}.intersection(set(df.columns)):
+            df[routid] = df[routid].map(lambda x: ' '.join([str(c) for c in x]))  # handles empties
+
+        # recreate shapely geometries from coordinates column; drop all other coords/geometries
+        if 'geometry' not in df.columns and 'ls_coords' in df.columns:
+            df['geometry'] = [LineString(g) for g in df.ls_coords]
+            df = df.drop(['ls_coords'], axis=1)
+
+        GISio.df2shp(df, outfile, proj4=self.crs_str)
 
 class InputFileMissing(Exception):
     def __init__(self, infile):
