@@ -10,14 +10,6 @@ Notes on linesinkMaker input:
     <!-- working_dir:
     full path to working folder where intermediate and output will be generated. -->
     <working_dir></working_dir>
-    <!-- prj:
-    Note: Currently LinesinkMaker does not do transformations
-    So input coordinate projections and output prj should be consistent
-    projection file for output shapefiles -->
-    <prj>shps/Nicolet_north_NF.prj</prj>
-    <!-- preprocess:
-    Whether or not preprocessing is needed (requires arcpy) -->
-    <preprocess>False</preprocess>
     <!-- zmult:
     elevation units multiplier (from NHDPlus cm to model units) -->
     <zmult>0.03280839895013123</zmult>
@@ -88,18 +80,6 @@ LinesinkMakr will open all of the files and combine them.-->
     (as indicated by a lower arbolate sum value)-->
     <drop_crossing>True</drop_crossing>
 </Simplification>
-
-<preprocessed_files>
-    <DEM>D:/ATLData/GFL files/Nicolet/basemaps/10mdem</DEM>
-    <DEM_zmult>3.280839895013123</DEM_zmult>
-    <!-- elevs_field:
-    field in wb_centroids_w_elevations containing elevations -->
-    <elevs_field>DEM_m</elevs_field>
-    <flowlines_clipped>preprocessed/flowlines_clipped.shp</flowlines_clipped>
-    <waterbodies_clipped>preprocessed/waterbodies_clipped.shp</waterbodies_clipped>
-    <farfield_multipolygon>preprocessed/ff_cutout.shp</farfield_multipolygon>
-    <preprocessed_lines>preprocessed/lines.shp</preprocessed_lines>
-</preprocessed_files>
 
 <outputs>
     <outfile_basename>Nicolet</outfile_basename>

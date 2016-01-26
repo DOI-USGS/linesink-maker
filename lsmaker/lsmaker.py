@@ -308,7 +308,7 @@ class linesinks:
         self.H = float(inpars.findall('.//H')[0].text)  # aquifer thickness in model units
         self.k = float(inpars.findall('.//k')[0].text)  # hydraulic conductivity of the aquifer in model units
         self.lmbda = np.sqrt(10 * 100 * 0.3)
-        self.ScenResistance = inpars.findall('.//ScenResistance')[0].text
+        self.ScenResistance = self._get_XMLentry('ScenResistance', 'linesink')
         self.global_stream_depth = 3  # streambed thickness
         self.ComputationalUnits = inpars.findall('.//ComputationalUnits')[
             0].text  # 'Feet' or 'Meters'; for XML output file
@@ -1363,7 +1363,16 @@ class linesinks:
                       'chkScenario',
                       'AutoSWIZC',
                       'DefaultResistance']:
-            d[field] = np.array([i.text for i in root.iter(field)],
+            if self.dtypes[field] == bool:
+                try:
+                    v = np.array([i.text for i in root.iter(field)],
+                                 dtype=self.int_dtype)
+                    d[field] = v.astype(bool)
+                except:
+                    d[field] = np.array([self.tf2flag(i.text) for i in root.iter(field)])
+
+            else:
+                d[field] = np.array([i.text for i in root.iter(field)],
                                 dtype=self.dtypes[field])
 
         # read in the vertices
