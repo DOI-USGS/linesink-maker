@@ -301,9 +301,7 @@ class linesinks:
             self.path = os.getcwd()
 
         # global settings
-        self.preproc = self.tf2flag(inpars.findall('.//preprocess')[0].text)
-        self.z_mult = float(
-            inpars.findall('.//zmult')[0].text)  # elevation units multiplier (from NHDPlus cm to model units)
+        self.preproc = self.tf2flag(self._get_XMLentry('preproc', 'True'))
         self.resistance = float(inpars.findall('.//resistance')[0].text)  # (days); c in documentation
         self.H = float(inpars.findall('.//H')[0].text)  # aquifer thickness in model units
         self.k = float(inpars.findall('.//k')[0].text)  # hydraulic conductivity of the aquifer in model units
@@ -313,16 +311,18 @@ class linesinks:
         self.ComputationalUnits = inpars.findall('.//ComputationalUnits')[
             0].text  # 'Feet' or 'Meters'; for XML output file
         self.BasemapUnits = inpars.findall('.//BasemapUnits')[0].text
-        self.prj = inpars.findall('.//prj')[0].text
+        # elevation units multiplier (from NHDPlus cm to model units)
+        self.z_mult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
 
         # model domain
         self.farfield = inpars.findall('.//farfield')[0].text
         self.nearfield = inpars.findall('.//nearfield')[0].text
+        self.prj = self._get_XMLentry('prj', self.nearfield[:-4] +'.prj')
         self.farfield_buffer = self._get_XMLentry('farfield_buffer', 10000, int)
         self.clip_farfield = self.tf2flag(self._get_XMLentry('clip_farfield', 'False'))
-        self.split_by_HUC = self.tf2flag(inpars.findall('.//split_by_HUC')[0].text)
-        self.HUC_shp = inpars.findall('.//HUC_shp')[0].text
-        self.HUC_name_field = inpars.findall('.//HUC_name_field')[0].text
+        self.split_by_HUC = self.tf2flag(self._get_XMLentry('split_by_HUC', 'False'))
+        self.HUC_shp = self._get_XMLentry('HUC_shp', None)
+        self.HUC_name_field = self.tf2flag(self._get_XMLentry('HUC_name_field', 'False'))
         self.crs = fiona.open(self.nearfield).crs # fiona-style coordinate system (proj4 string as dictionary)
         self.crs_str = to_string(self.crs) # self.crs, in proj4 string format
 
@@ -387,10 +387,10 @@ class linesinks:
         self.elevs_field = self._get_XMLentry('elevs_field', 'elev')
         self.DEM_zmult = self._get_XMLentry('DEM_zmult', 1.0, float)
 
-        self.flowlines_clipped = self._get_XMLentry('flowlines_clipped', 'flowlines_clipped.shp')
-        self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped', 'waterbodies_clipped.shp')
-        self.farfield_mp = self._get_XMLentry('farfield_multipolygon', 'ff_cutout.shp')
-        self.preprocessed_lines = self._get_XMLentry('preprocessed_lines', 'lines.shp')
+        self.flowlines_clipped = self._get_XMLentry('flowlines_clipped', 'preprocessed/flowlines_clipped.shp')
+        self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped', 'preprocessed/waterbodies_clipped.shp')
+        self.farfield_mp = self._get_XMLentry('farfield_multipolygon', 'preprocessed/ff_cutout.shp')
+        self.preprocessed_lines = self._get_XMLentry('lines', 'preprocessed/lines.shp')
         self.preprocdir = os.path.split(self.flowlines_clipped)[0]
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[
@@ -1137,12 +1137,17 @@ class linesinks:
         self.efp = open(self.error_reporting, 'a')
         self.efp.write('\nMaking the lines...\n')
 
-        if shp:
+        if shp is None:
+            shp = self.preprocessed_lines
+
+        try:
             self.df = GISio.shp2df(shp, index='COMID',
                                    index_dtype=self.int_dtype,
                                    true_values=['True'],
                                    false_values=['False'])
             self._enforce_dtypes(self.df)
+        except:
+            self.preprocess(save=True)
 
         # enforce integers columns
         self.df.index = self.df.index.astype(self.int_dtype)
@@ -1473,7 +1478,7 @@ class linesinks:
         ofp.write('</LinesinkStringFile>')
         ofp.close()
 
-    def write_shapefile(self, outfile=None):
+    def write_shapefile(self, outfile=None, use_ls_coords=True):
         if outfile is None:
             outfile = self.outfile_basename.split('.')[0] + '.shp'
         df = self.df.copy()
@@ -1482,7 +1487,7 @@ class linesinks:
             df[routid] = df[routid].map(lambda x: ' '.join([str(c) for c in x]))  # handles empties
 
         # recreate shapely geometries from coordinates column; drop all other coords/geometries
-        if 'geometry' not in df.columns and 'ls_coords' in df.columns:
+        if use_ls_coords and 'ls_coords' in df.columns:
             df['geometry'] = [LineString(g) for g in df.ls_coords]
             df = df.drop(['ls_coords'], axis=1)
 
