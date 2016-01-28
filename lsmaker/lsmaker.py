@@ -332,6 +332,7 @@ class linesinks:
         self.farfield_tolerance = float(inpars.findall('.//farfield_tolerance')[0].text)
         self.min_farfield_order = int(inpars.findall('.//min_farfield_order')[0].text)
         self.min_waterbody_size = float(inpars.findall('.//min_waterbody_size')[0].text)
+        self.min_farfield_wb_size = self._get_XMLentry('min_farfield_waterbody_size', 1.0, float)
         self.drop_crossing = self.tf2flag(inpars.findall('.//drop_crossing')[0].text)
 
         # NHD files
@@ -390,7 +391,7 @@ class linesinks:
         self.flowlines_clipped = self._get_XMLentry('flowlines_clipped', 'preprocessed/flowlines_clipped.shp')
         self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped', 'preprocessed/waterbodies_clipped.shp')
         self.farfield_mp = self._get_XMLentry('farfield_multipolygon', 'preprocessed/ff_cutout.shp')
-        self.preprocessed_lines = self._get_XMLentry('lines', 'preprocessed/lines.shp')
+        self.preprocessed_lines = self._get_XMLentry('preprocessed_lines', 'preprocessed/lines.shp')
         self.preprocdir = os.path.split(self.flowlines_clipped)[0]
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[
@@ -623,8 +624,8 @@ class linesinks:
                     f['geometry'] = mapping(ffdonut)
                     output.write(f)
 
-        print(('\ndropping waterbodies smaller than {} km2...'.format(self.min_waterbody_size)))
-        self.wb = self.wb[self.wb.AREASQKM > self.min_waterbody_size].copy()
+        #print(('\ndropping waterbodies smaller than {} km2...'.format(self.min_waterbody_size)))
+        #self.wb = self.wb[self.wb.AREASQKM > self.min_waterbody_size].copy()
 
         print('\ngetting elevations for waterbodies not in the stream network')
         #isolated_wb = set(self.wb.COMID).difference(self.fl.WBAREACOMI).difference({0, -9998})
@@ -726,11 +727,14 @@ class linesinks:
         wbs['farfield'] = [poly.intersects(ffg) for poly in wbs.geometry]
 
         print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
-        # retain all streams not in the farfield or in the farfield and of order > min_farfield_order
+        # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
         df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))]
 
-        print('dropping waterbodies that are not lakes larger than {}...'.format(self.min_waterbody_size))
-        wbs = wbs[(wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')]
+        print('dropping waterbodies from nearfield that are not lakes larger than {}...'.format(self.min_waterbody_size))
+        wbs = wbs[~wbs.farfield.values & (wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')]
+
+        print('dropping waterbodies from farfield that are not lakes larger than {}...'.format(self.min_farfield_wb_size))
+        wbs = wbs[wbs.farfield.values & (wbs.AREASQKM > self.min_farfield_wb_size) & (wbs.FTYPE == 'LakePond')]
 
         print('merging waterbodies with coincident boundaries...')
         dropped = []
