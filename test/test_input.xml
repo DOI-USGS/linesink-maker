@@ -1,0 +1,100 @@
+<linesinkInput>
+<!--
+Notes on linesinkMaker input:
+    All shps should be in (same) model coordinate units (e.g. ft.)
+    If model domain contains a major divide, need to merge relevant NHD datasets
+        (e.g. 04 and 07) prior to running this script
+    Put in paths to input/output files as-is (i.e. no double \)
+-->
+<GlobalSettings>
+    <!-- working_dir:
+    full path to working folder where intermediate and output will be generated. -->
+    <working_dir></working_dir>
+    <!-- prj:
+    Note: Currently LinesinkMaker does not do transformations
+    So input coordinate projections and output prj should be consistent
+    projection file for output shapefiles -->
+    <prj>testarea.prj</prj>
+    <!-- preprocess:
+    Whether or not preprocessing is needed (requires arcpy) -->
+    <preprocess>False</preprocess>
+    <!-- zmult:
+    elevation units multiplier (from NHDPlus cm to model units) -->
+    <zmult>0.03280839895013123</zmult>
+    <!-- resistance:
+    global resistance value to apply to all resistance linesinks (c in GFLOW documentation) -->
+    <resistance>0.3</resistance>
+    <!-- H:
+    aquifer thickness in model units -->
+    <H>100</H>
+    <!-- k:
+    Hydraulic conductivity in model units -->
+    <k>10</k>
+    <!-- ScenResistance:
+    name for global resistance parameter to assign to linesinks-->
+    <ScenResistance>Rlinesink</ScenResistance>
+    <!-- ComputationalUnits: ('Feet' or 'Meters')
+    model units-->
+    <ComputationalUnits>Feet</ComputationalUnits>
+    <!-- BasemapUnits: ('Feet' or 'Meters')
+    Units of the model basemaps-->
+    <BasemapUnits>Meters</BasemapUnits>
+</GlobalSettings>
+
+<modelDomain>
+    <!-- farfield:
+    polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area
+    linesinks within this area will be zero resistance (specified head) -->
+    <farfield></farfield>
+    <!-- farfield_buffer: numeric, default is 10,0000
+    A distance (in GIS units) that defines the extent of model farfield area as a 
+    buffer distance around the nearfield polygon
+    (can be specified in lieu of a polygon shapefile under <farfield>)
+     -->
+    <farfield_buffer>1000</farfield_buffer>
+    <!-- nearfield:
+    polygon of the model nearfield area, where linesinks will be given resistance and routed -->
+    <nearfield>testarea.shp</nearfield>
+    <!-- split_by_HUC:
+    option to split out linesinks by HUC, writing one lss file per HUC -->
+    <split_by_HUC>False</split_by_HUC>
+    <HUC_shp>None</HUC_shp>
+    <HUC_name_field>None</HUC_name_field>
+</modelDomain>
+<!-- NHDfiles:
+input .shp and .dbf files from NHDPlus. To include multiple files
+(e.g. multiple flowlines files spanning multiple drainage areas)
+simply add additional entries with same XML keyword.
+LinesinkMakr will open all of the files and combine them.-->
+<NHDfiles>
+    <flowlines>../example_Medford/shps/Medford_flowlines.shp</flowlines>
+    <elevslope>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
+    <PlusFlowVAA>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
+    <waterbodies>../example_Medford/shps/Medford_waterbodies.shp</waterbodies>
+</NHDfiles>
+
+<Simplification>
+    <!-- nearfield_tolerance:
+    maximum distance a simplified line can deviate from the original linework -->
+    <nearfield_tolerance>100</nearfield_tolerance>
+    <!-- farfield_tolerance:
+    maximum distance a simplified line can deviate from the original linework -->
+    <farfield_tolerance>200</farfield_tolerance>
+    <!-- min_farfield_order:
+    minimum stream order to retain in farfield -->
+    <min_farfield_order>2</min_farfield_order>
+    <!-- min_waterbody_size:
+    minimum sized waterbodies to retain (km2) -->
+    <min_waterbody_size>.001</min_waterbody_size>
+    <!-- drop_crossing:
+    Line simplification can lead to some lines crossing.
+    In instances of crossing, remove the line representing this smaller of the two streams
+    (as indicated by a lower arbolate sum value)-->
+    <drop_crossing>True</drop_crossing>
+</Simplification>
+
+<outputs>
+    <outfile_basename>test</outfile_basename>
+    <error_reporting>linesinkMaker_errors.txt</error_reporting>
+</outputs>
+</linesinkInput>
