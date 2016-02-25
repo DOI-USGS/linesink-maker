@@ -633,7 +633,7 @@ class linesinks:
                     f['geometry'] = mapping(ffdonut)
                     output.write(f)
 
-        if self.routed_area is not None and self.nearfield is not None:
+        if self.routed_area is not None and self.routed_area != self.nearfield:
             print('\nmaking donut polygon of routed area (with nearfield area removed)...')
             if not self.nf.within(self.ra):
                 raise ValueError('Nearfield area must be within routed area!')
@@ -687,12 +687,13 @@ class linesinks:
 
         if self.routed_area is None:
             self.routed_area = self.nearfield
+            self.routed_area_tolerance = self.nearfield_tolerance
         if self.nearfield is None and self.routed_area is None:
             raise InputFileMissing('Need to supply shapefile of routed area or nearfield.')
 
         if self.farfield is None:
             print(('\nNo farfield shapefile supplied.\n'
-                  'Creating farfield using buffer of {:.1f} {} around model nearfield.\n'
+                  'Creating farfield using buffer of {:.1f} {} around routed area.\n'
                   .format(self.farfield_buffer, self.BasemapUnits)))
             modelareafile = fiona.open(self.routed_area)
             nfarea = shape(modelareafile[0]['geometry'])
@@ -744,7 +745,7 @@ class linesinks:
         # read in nearfield and farfield boundaries
         nf = GISio.shp2df(self.nearfield)
         nfg = nf.iloc[0]['geometry']  # polygon representing nearfield
-        if self.routed_area != self.nearfield:
+        if self.routed_area is not None and self.routed_area != self.nearfield:
             ra = GISio.shp2df(self.routed_mp)
             rag = ra.iloc[0]['geometry']
         else:
@@ -755,7 +756,7 @@ class linesinks:
 
         print('\nidentifying farfield and nearfield linesinks...')
         df['farfield'] = [line.intersects(ffg) and not line.intersects(rag) for line in df.geometry]
-        wbs['farfield'] = [poly.intersects(ffg) for poly in wbs.geometry]
+        wbs['farfield'] = [poly.intersects(ffg) and not poly.intersects(rag) for poly in wbs.geometry]
         df['routed'] = [line.intersects(rag) for line in df.geometry]
         wbs['routed'] = [poly.intersects(rag) for poly in wbs.geometry]
         df['nearfield'] = [line.intersects(nfg) for line in df.geometry]
@@ -769,8 +770,8 @@ class linesinks:
         if self.drop_intermittent:
             print('removing intermittent streams from routed area outside of nearfield...')
             # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
-            retain = farfield_retain & ~(df.routed.values & ~df.nearfield.values & (df.FCODE == self.fcodes['Intermittent']).values)
-        df = df[retain].copy()
+            farfield_retain = farfield_retain & ~(df.routed.values & ~df.nearfield.values & (df.FCODE == self.fcodes['Intermittent']).values)
+        df = df[farfield_retain].copy()
 
         print('dropping waterbodies from routed area that are not lakes larger than {}...'.format(self.min_waterbody_size))
         nearfield_wbs = wbs.nearfield.values & (wbs.AREASQKM > self.min_nearfield_wb_size) & (wbs.FTYPE == 'LakePond')
@@ -874,6 +875,7 @@ class linesinks:
         simplification = {'nf': df.nearfield.values,
                           'ra': df.routed.values & ~df.nearfield.values & ~df.farfield.values,
                           'ff': df.farfield.values}
+        [simplification.pop(k) for k, v in tols.items() if v is None]
 
         for k, within in simplification.items():
             # simplify the linesinks in the domain; add simplified geometries to global geometry column
@@ -892,6 +894,8 @@ class linesinks:
 
         # add column of lists, containing linesink coordinates
         df['ls_coords'] = [list(g.coords) for g in df.ls_geom]
+
+        assert np.all(np.array([len(c) for c in df.ls_coords]) > 0) # shouldn't be an empty coordinates
 
         return df
 
@@ -1016,7 +1020,8 @@ class linesinks:
                 upcomids += r.upcomids
                 dncomid += r.dncomid
 
-            upcomids, dncomid = list(set(upcomids)), list(set(dncomid))
+            upcomids = list(set(upcomids).difference({0}))
+            dncomid = list(set(dncomid).difference({0}))
 
             keep_comid = alld.index[0]
             df.set_value(keep_comid, 'upcomids', upcomids)
@@ -1220,8 +1225,6 @@ class linesinks:
 
         # routing
         df['routing'] = df['routed'].astype(int)
-        #df['routing'] = len(df) * [1]
-        #df.loc[df['farfield'], 'routing'] = 0  # turn off all routing in farfield (conversely, nearfield is all routed)
 
         # linesink elevations (lakes won't be populated yet)
         min_elev_col = [c for c in df.columns if 'minelev' in c.lower()][0]

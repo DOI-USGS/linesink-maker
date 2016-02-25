@@ -40,11 +40,34 @@ def run_test():
 
     # 585 lines should be written
     # sum with nf at 50, routed area at 100, ff at 200, dropping ephemeral streams
-    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 683
+    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 684
     # sum with whole routed area at 100, ff at 200:
     #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 578
     #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 585 # number of lines with single nearfield
 
+    # test input with no distinction between nf and routed area
+    ls = lsmaker.linesinks(input_file)
+
+def run_test2():
+    if not os.path.isdir('output'):
+        os.makedirs('output')
+    input_file = 'test_input.xml'
+    ls = lsmaker.linesinks(input_file)
+    ls.nearfield = 'input/testarea.shp'
+    ls.routed_area = None
+    ls.routed_area_tolerance = None
+    ls.drop_intermittent = False
+    ls.nearfield_tolerance = 100
+    ls.farfield_tolerance = 200
+    ls.outfile_basename = 'output/test2'
+
+    ls.preprocess(save=True)
+
+    ls.makeLineSinks()
+
+    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 586 # not sure why this is 586 vs. 585 above
+    # likewise number above changed from 683 to 684 after debugging
 
 if __name__ == '__main__':
     run_test()
+    run_test2()

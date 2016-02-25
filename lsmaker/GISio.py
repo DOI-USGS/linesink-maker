@@ -1,7 +1,7 @@
 # suppress annoying pandas openpyxl warning
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
-
+import os
 import numpy as np
 import fiona
 from shapely.geometry import Point, shape, asLineString, mapping
@@ -72,7 +72,8 @@ def get_proj4(prj):
     proj4 = srs.ExportToProj4()
     return proj4
 
-def shp2df(shplist, index=None, index_dtype=None, clipto=[], true_values=None, false_values=None, \
+def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
+           true_values=None, false_values=None,
            skip_empty_geom=True):
     """Read shapefile into pandas DataFrame.
 
@@ -87,6 +88,8 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], true_values=None, f
         but pandas reads it as strings, converts to integer)
     clipto : list
         limit what is brought in to items in index of clipto (requires index)
+    filter : tuple (xmin, ymin, xmax, ymax)
+        bounding box to filter which records are read from the shapefile.
     true_values : list
         same as argument for pandas read_csv
     false_values : list
@@ -103,7 +106,10 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], true_values=None, f
     """
     if isinstance(shplist, str):
         shplist = [shplist]
-
+    if not isinstance(true_values, list):
+        true_values = [true_values]
+    if not isinstance(false_values, list):
+        false_values = [false_values]
     if len(clipto) > 0 and index:
         clip = True
     else:
@@ -122,15 +128,20 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], true_values=None, f
         attributes = []
         # for reading in shapefiles
         if shp_obj.schema['geometry'] != 'None':
-            for line in shp_obj:
 
-                props = line['properties']
-                # limit what is brought in to items in index of clipto
-                if clip:
+            if clip: # limit what is brought in to items in index of clipto
+                for line in shp_obj.filter(bbox=filter):
+                    props = line['properties']
                     if not props[index] in clipto:
                         continue
-                props['geometry'] = line.get('geometry', None)
-                attributes.append(props)
+                    props['geometry'] = line.get('geometry', None)
+                    attributes.append(props)
+            else:
+                for line in shp_obj.filter(bbox=filter):
+
+                    props = line['properties']
+                    props['geometry'] = line.get('geometry', None)
+                    attributes.append(props)
             print('--> building dataframe... (may take a while for large shapefiles)')
             shp_df = pd.DataFrame(attributes)
 
@@ -148,14 +159,16 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], true_values=None, f
 
         # for reading in DBF files (just like shps, but without geometry)
         else:
-            for line in shp_obj:
-
-                props = line['properties']
-                # limit what is brought in to items in index of clipto
-                if clip:
+            if clip: # limit what is brought in to items in index of clipto
+                for line in shp_obj:
+                    props = line['properties']
                     if not props[index] in clipto:
                         continue
-                attributes.append(props)
+                    attributes.append(props)
+            else:
+                for line in shp_obj:
+                    props = line['properties']
+                    attributes.append(props)
             print('--> building dataframe... (may take a while for large shapefiles)')
             shp_df = pd.DataFrame(attributes)
 
@@ -178,58 +191,38 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], true_values=None, f
             for f in false_values:
                 replace_boolean[f] = False
 
-            # only remap columns that have values to be replaced
-            cols = [c for c in df.columns if c != 'geometry']
-            for c in cols:
-                if len(set(df[c]).intersection(set(true_values))) > 0:
-                    df[c] = df[c].map(replace_boolean)
+        # only remap columns that have values to be replaced
+        cols = [c for c in df.columns if c != 'geometry']
+        for c in cols:
+            if len(set(replace_boolean.keys()).intersection(set(df[c]))) > 0:
+                df[c] = df[c].map(replace_boolean)
         
     return df
-    
 
-def shp_properties2(df):
-    # convert dtypes in dataframe to 32 bit
-    #i = -1
-    for i, dtype in enumerate(df.dtypes.tolist()):
-        #i += 1
-        if dtype == np.dtype('float64') or df.columns[i] == 'geometry':
-            continue
-        # need to convert integers to 16-bit for shapefile format
-        #elif dtype == np.dtype('int64') or dtype == np.dtype('int32'):
-        elif 'float' in dtype.name:
-            df[df.columns[i]] = df[df.columns[i]].astype('float64')
-        elif dtype == np.dtype('int64'):
-            df[df.columns[i]] = df[df.columns[i]].astype('int32')
-        elif dtype == np.dtype('bool'):
-            df[df.columns[i]] = df[df.columns[i]].astype('str')
-        # convert all other datatypes (e.g. tuples) to strings
-        else:
-            df[df.columns[i]] = df[df.columns[i]].astype('str')
-    # strip dtypes just down to 'float' or 'int'
-    dtypes = [''.join([c for c in d.name if not c.isdigit()]) for d in list(df.dtypes)]
-    #dtypes = [d.name for d in list(df.dtypes)]
-    # also exchange any 'object' dtype for 'str'
-    dtypes = [d.replace('object', 'str') for d in dtypes]
-    properties = dict(list(zip(df.columns, dtypes)))
-    return properties
 
 def shp_properties(df):
 
-    # remap 64 bit integers to 32 bit
-    int64 = (df.dtypes == 'int64')
-    df.loc[:, int64] = df.loc[:, int64].astype('int32')
+    newdtypes = {'bool': 'str',
+                 'object': 'str',
+                 'datetime64[ns]': 'str'}
 
-    # remap floats
-    floats = np.array(['float' in d.name for d in df.dtypes])
-    df.loc[:, floats] = df.loc[:, floats].astype('float64')
-
-    # remap everything else to strings
-    to_strings = (df.dtypes != 'int64') & (df.dtypes != 'float64') & (df.columns != 'geometry')
-    df.loc[:, to_strings] = df.loc[:, to_strings].astype('str')
+    # fiona/OGR doesn't like numpy ints
+    # shapefile doesn't support 64 bit ints,
+    # but apparently leaving the ints alone is more reliable
+    # than intentionally downcasting them to 32 bit
+    # pandas is smart enough to figure it out on .to_dict()?
+    for c in df.columns:
+        if c != 'geometry':
+            df[c] = df[c].astype(newdtypes.get(df.dtypes[c].name,
+                                               df.dtypes[c].name))
 
     # strip dtypes to just 'float', 'int' or 'str'
-    dtypes = [''.join([c for c in d.name if not c.isdigit()]) for d in list(df.dtypes)]
-    dtypes = [d.replace('object', 'str') for d in dtypes]
+    def stripandreplace(s):
+        return ''.join([i for i in s
+                        if not i.isdigit()]).replace('object', 'str')
+    dtypes = [stripandreplace(df[c].dtype.name)
+              if c != 'geometry'
+              else df[c].dtype.name for c in df.columns]
     properties = dict(list(zip(df.columns, dtypes)))
     return properties
 
@@ -316,6 +309,9 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
     proj4: pyproj style projection string definition
     crs: crs attribute (dictionary) as read by fiona
     '''
+    # first check if output path exists
+    if os.path.split(shpname)[0] != '' and not os.path.isdir(os.path.split(shpname)[0]):
+        raise IOError("Output folder doesn't exist")
 
     df = dataframe.copy() # make a copy so the supplied dataframe isn't edited
 
@@ -327,12 +323,10 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
     # assign none for geometry, to write a dbf file from dataframe
     if 'geometry' not in df.columns:
         df['geometry'] = None
-        
-    # include index in shapefile as an attribute field
-    if index:
-        if df.index.name is None:
-            df.index.name = 'index'
-        df[df.index.name] = df.index
+
+    # reset the index to integer index to enforce ordering
+    # retain index as attribute field if index=True
+    df.reset_index(inplace=True, drop=not index)
 
     # enforce character limit for names! (otherwise fiona marks it zero)
     # somewhat kludgey, but should work for duplicates up to 99
@@ -346,9 +340,6 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
 
     properties = shp_properties(df)
     del properties['geometry']
-
-    # sort the dataframe columns (so that properties coincide)
-    df = df.sort_index(axis=1)
 
     # set projection (or use a prj file, which must be copied after shp is written)
     # alternatively, provide a crs in dictionary form as read using fiona
@@ -367,14 +358,15 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
         
     if df.iloc[0]['geometry'] is not None:
         Type = df.iloc[0]['geometry'].type
+        mapped = [mapping(g) for g in df.geometry]
     else:
-        Type = None
+        Type = 'None'
+        mapped = [None] * len(df)
         
     schema = {'geometry': Type, 'properties': properties}
     length = len(df)
 
-    props = df.drop('geometry', axis=1).to_dict(orient='records')
-    mapped = [mapping(g) for g in df.geometry]
+    props = df.drop('geometry', axis=1).astype(object).to_dict(orient='records')
     print('writing {}...'.format(shpname))
     with fiona.collection(shpname, "w", driver="ESRI Shapefile", crs=crs, schema=schema) as output:
         for i in range(length):
@@ -444,7 +436,7 @@ def get_values_at_points(rasterfile, points):
     ----------
     rasterfile : str
         Filename of raster.
-    pos : tuple or list of tuples
+    points : tuple or list of tuples
         Points at which to sample raster.
 
     Returns
@@ -525,6 +517,12 @@ def flatten_3Dshp(shp, outshape=None):
 	# poop it back out
 	df2shp(df, outshape, '2D', shp[:-4]+'.prj')
 	
-
+def _is_None(value):
+    if isinstance(value, str) and value.lower() == 'none':
+        return True
+    elif value is None:
+        return True
+    else:
+        return False
 	
 	
