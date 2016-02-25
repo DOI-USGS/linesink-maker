@@ -29,9 +29,8 @@ def run_test():
     # test that lake has correct COMID and all upstream tribs are accounted for
     assert ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'COMID'].values[0] == 13102555
     assert np.array_equal(
-            ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'upcomids'].values[0],
-            np.array([13102899, 13102915, 13103263, 13102907, 13102927])
-    )
+            np.array(sorted(ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'upcomids'].values[0])),
+            np.array(sorted([13102899, 13102915, 13103263, 13102907, 13102927])))
     # test for correct routing; also tests that dncomids are lists (instead of integers)
     assert ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'dncomid'].values[0][0] == 13103287
     assert np.abs(ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'maxElev'].values[0] - 1256.85) < 0.01
