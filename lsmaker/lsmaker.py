@@ -284,6 +284,10 @@ class linesinks:
                     'AutoSWIZC': np.int64,
                     'DefaultResistance': float}
 
+    fcodes = {'Perennial': 46006,
+              'Intermittent': 46003,
+              'Uncategorized': 46000}
+
     def __init__(self, infile):
 
         try:
@@ -317,8 +321,9 @@ class linesinks:
         self.z_mult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
 
         # model domain
-        self.farfield = inpars.findall('.//farfield')[0].text
-        self.nearfield = inpars.findall('.//nearfield')[0].text
+        self.farfield = self._get_XMLentry('farfield', None)
+        self.routed_area = self._get_XMLentry('routed_area', None)
+        self.nearfield = self._get_XMLentry('nearfield', None)
         self.prj = self._get_XMLentry('prj', self.nearfield[:-4] +'.prj')
         self.farfield_buffer = self._get_XMLentry('farfield_buffer', 10000, int)
         self.clip_farfield = self.tf2flag(self._get_XMLentry('clip_farfield', 'False'))
@@ -329,13 +334,16 @@ class linesinks:
         self.crs_str = to_string(self.crs) # self.crs, in proj4 string format
 
         # simplification
-        self.refinement_areas = []  # list of n areas within nearfield with additional refinement
+        self.refinement_areas = []  # list of n areas within routed area with additional refinement
         self.nearfield_tolerance = self._get_XMLentry('nearfield_tolerance', 100, int)
+        self.routed_area_tolerance = self._get_XMLentry('routed_area_tolerance', 100, int)
         self.farfield_tolerance = self._get_XMLentry('farfield_tolerance', 300, int)
         self.min_farfield_order = self._get_XMLentry('min_farfield_order', 2, int)
+        self.min_nearfield_wb_size = self._get_XMLentry('min_nearfield_waterbody_size', 1.0, float)
         self.min_waterbody_size = self._get_XMLentry('min_waterbody_size', 1.0, float)
         self.min_farfield_wb_size = self._get_XMLentry('min_farfield_waterbody_size',
                                                        self.min_waterbody_size, float)
+        self.drop_intermittent = self.tf2flag(self._get_XMLentry('drop_intermittent', 'False'))
         self.drop_crossing = self.tf2flag(self._get_XMLentry('drop_crossing', 'False'))
 
         # NHD files
@@ -393,6 +401,7 @@ class linesinks:
 
         self.flowlines_clipped = self._get_XMLentry('flowlines_clipped', 'preprocessed/flowlines_clipped.shp')
         self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped', 'preprocessed/waterbodies_clipped.shp')
+        self.routed_mp = self._get_XMLentry('routed_area_multipolygon', 'preprocessed/ra_cutout.shp')
         self.farfield_mp = self._get_XMLentry('farfield_multipolygon', 'preprocessed/ff_cutout.shp')
         self.preprocessed_lines = self._get_XMLentry('preprocessed_lines', 'preprocessed/lines.shp')
         self.preprocdir = os.path.split(self.flowlines_clipped)[0]
@@ -414,7 +423,8 @@ class linesinks:
 
     def _get_XMLentry(self, XMLentry, default_name, dtype=str):
         try:
-            return dtype(self.inpars.findall('.//{}'.format(XMLentry))[0].text)
+            txt = self.inpars.findall('.//{}'.format(XMLentry))[0].text
+            return dtype(txt) if txt is not None else None
         except:
             return default_name
 
@@ -582,6 +592,7 @@ class linesinks:
         print('clipping and reprojecting input datasets...')
 
         self.nf = self.load_poly(self.nearfield)
+        self.ra = self.load_poly(self.routed_area)
         self.ff = self.load_poly(self.farfield)
 
         for attr, shapefiles in list({'fl': self.flowlines, 'wb': self.waterbodies}.items()):
@@ -612,15 +623,29 @@ class linesinks:
         GISio.df2shp(self.fl, self.flowlines_clipped, proj4=self.crs_str)
         GISio.df2shp(self.wb, self.waterbodies_clipped, proj4=self.crs_str)
 
-        print('\nmaking donut polygon of farfield (with nearfield area removed)...')
-        ffdonut = self.ff.difference(self.nf)
+        print('\nmaking donut polygon of farfield (with routed area removed)...')
+        ffdonut = self.ff.difference(self.ra)
         with fiona.drivers():
-            with fiona.open(self.nearfield) as src:
+            with fiona.open(self.routed_area) as src:
                 with fiona.open(self.farfield_mp, 'w', **src.meta) as output:
                     print(('writing {}'.format(self.farfield_mp)))
                     f = next(src)
                     f['geometry'] = mapping(ffdonut)
                     output.write(f)
+
+        if self.routed_area is not None and self.nearfield is not None:
+            print('\nmaking donut polygon of routed area (with nearfield area removed)...')
+            if not self.nf.within(self.ra):
+                raise ValueError('Nearfield area must be within routed area!')
+
+            donut = self.ra.difference(self.nf)
+            with fiona.drivers():
+                with fiona.open(self.nearfield) as src:
+                    with fiona.open(self.routed_mp, 'w', **src.meta) as output:
+                        print(('writing {}'.format(self.routed_mp)))
+                        f = next(src)
+                        f['geometry'] = mapping(donut)
+                        output.write(f)
 
         print('\ngetting elevations for waterbodies not in the stream network')
         # get elevations for all waterbodies for the time being.
@@ -659,11 +684,17 @@ class linesinks:
             Saves the preprocessed dataset to a shapefile specified by <preprocessed_lines> in the XML input file
 
         """
+
+        if self.routed_area is None:
+            self.routed_area = self.nearfield
+        if self.nearfield is None and self.routed_area is None:
+            raise InputFileMissing('Need to supply shapefile of routed area or nearfield.')
+
         if self.farfield is None:
             print(('\nNo farfield shapefile supplied.\n'
                   'Creating farfield using buffer of {:.1f} {} around model nearfield.\n'
                   .format(self.farfield_buffer, self.BasemapUnits)))
-            modelareafile = fiona.open(self.nearfield)
+            modelareafile = fiona.open(self.routed_area)
             nfarea = shape(modelareafile[0]['geometry'])
             modelarea_farfield = nfarea.buffer(self.farfield_buffer)
             self.farfield = self.nearfield[:-4] + '_ff.shp'
@@ -674,6 +705,7 @@ class linesinks:
             output.write({'properties': modelareafile[0]['properties'],
                           'geometry': mapping(modelarea_farfield)})
             output.close()
+
 
         if use_arcpy:
             self.preprocess_arcpy()
@@ -712,25 +744,43 @@ class linesinks:
         # read in nearfield and farfield boundaries
         nf = GISio.shp2df(self.nearfield)
         nfg = nf.iloc[0]['geometry']  # polygon representing nearfield
+        if self.routed_area != self.nearfield:
+            ra = GISio.shp2df(self.routed_mp)
+            rag = ra.iloc[0]['geometry']
+        else:
+            rag = nfg
+            nfg = Polygon() # no nearfield specified
         ff = GISio.shp2df(self.farfield_mp)
         ffg = ff.iloc[0]['geometry']  # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
         print('\nidentifying farfield and nearfield linesinks...')
-        df['farfield'] = [line.intersects(ffg) and not line.intersects(nfg) for line in df.geometry]
+        df['farfield'] = [line.intersects(ffg) and not line.intersects(rag) for line in df.geometry]
         wbs['farfield'] = [poly.intersects(ffg) for poly in wbs.geometry]
+        df['routed'] = [line.intersects(rag) for line in df.geometry]
+        wbs['routed'] = [poly.intersects(rag) for poly in wbs.geometry]
+        df['nearfield'] = [line.intersects(nfg) for line in df.geometry]
+        wbs['nearfield'] = [poly.intersects(nfg) for poly in wbs.geometry]
 
         print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
         # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
         df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))]
 
-        print('dropping waterbodies from nearfield that are not lakes larger than {}...'.format(self.min_waterbody_size))
-        nearfield_wbs = ~wbs.farfield.values & (wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')
+        farfield_retain = ~(df.farfield.values & (df.FCODE == self.fcodes['Intermittent']).values) # drop intermittent streams from farfield
+        if self.drop_intermittent:
+            print('removing intermittent streams from routed area outside of nearfield...')
+            # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
+            retain = farfield_retain & ~(df.routed.values & ~df.nearfield.values & (df.FCODE == self.fcodes['Intermittent']).values)
+        df = df[retain].copy()
+
+        print('dropping waterbodies from routed area that are not lakes larger than {}...'.format(self.min_waterbody_size))
+        nearfield_wbs = wbs.nearfield.values & (wbs.AREASQKM > self.min_nearfield_wb_size) & (wbs.FTYPE == 'LakePond')
+        routedarea_wbs = wbs.routed.values & (wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')
         farfield_wbs = wbs.farfield.values & (wbs.AREASQKM > self.min_farfield_wb_size) & (wbs.FTYPE == 'LakePond')
 
         print('dropping waterbodies from nearfield that are not lakes larger than {}...\n'
               'dropping waterbodies from farfield that are not lakes larger than {}...'.format(self.min_waterbody_size,
                                                                                                self.min_farfield_wb_size))
-        wbs = wbs[nearfield_wbs |    farfield_wbs]
+        wbs = wbs[nearfield_wbs | routedarea_wbs | farfield_wbs]
 
         print('merging waterbodies with coincident boundaries...')
         dropped = []
@@ -781,7 +831,7 @@ class linesinks:
 
         self.df = df
 
-    def simplify_lines(self, nearfield_tolerance=None, farfield_tolerance=None,
+    def simplify_lines(self, nearfield_tolerance=None, routed_area_tolerance=None, farfield_tolerance=None,
                        nearfield_refinement={}):
         """Reduces the number of vertices in the GIS linework representing streams and lakes,
         to within specified tolerances. The tolerance values represent the maximum distance
@@ -806,22 +856,29 @@ class linesinks:
 
         if nearfield_tolerance is None:
             nearfield_tolerance = self.nearfield_tolerance
+            routed_area_tolerance = self.routed_area_tolerance
             farfield_tolerance = self.farfield_tolerance
 
-        if isinstance(self.df.farfield.iloc[0], str):
-            self.df.loc[:, 'farfield'] = [True if f.lower() == 'true' else False for f in self.df.farfield]
+        #if isinstance(self.df.farfield.iloc[0], str):
+        #    self.df.loc[:, 'farfield'] = [True if f.lower() == 'true' else False for f in self.df.farfield]
 
         print('simplifying NHD linework geometries...')
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
-        df = self.df[['farfield', 'geometry']].copy()
+        df = self.df[['farfield', 'routed', 'nearfield', 'geometry']].copy()
 
         ls_geom = np.array([LineString()] * len(df))
-        domain_tol = [nearfield_tolerance, farfield_tolerance]
-        for i, domain in enumerate([np.invert(df.farfield).values, df.farfield.values]):
+        tols = {'nf': nearfield_tolerance,
+                'ra': routed_area_tolerance,
+                'ff': farfield_tolerance}
+        simplification = {'nf': df.nearfield.values,
+                          'ra': df.routed.values & ~df.nearfield.values & ~df.farfield.values,
+                          'ff': df.farfield.values}
+
+        for k, within in simplification.items():
             # simplify the linesinks in the domain; add simplified geometries to global geometry column
             # assign geometries to numpy array first and then to df (had trouble assigning with pandas)
-            ls_geom[domain] = [g.simplify(domain_tol[i]) for g in df.ix[domain, 'geometry'].tolist()]
+            ls_geom[within] = [g.simplify(tols[k]) for g in df.ix[within, 'geometry'].tolist()]
 
         df['ls_geom'] = ls_geom
 
@@ -833,13 +890,8 @@ class linesinks:
             poly = shape(fiona.open(shp).next()['geometry'])
             df[area_name] = [g.intersects(poly) for g in df.geometry]
 
-        # convert geometries to coordinates
-        def xy_coords(x):
-            xy = list(zip(x.xy[0], x.xy[1]))
-            return xy
-
         # add column of lists, containing linesink coordinates
-        df['ls_coords'] = df.ls_geom.apply(xy_coords)
+        df['ls_coords'] = [list(g.coords) for g in df.ls_geom]
 
         return df
 
@@ -1167,8 +1219,9 @@ class linesinks:
         print('Assigning attributes for GFLOW input...')
 
         # routing
-        df['routing'] = len(df) * [1]
-        df.loc[df['farfield'], 'routing'] = 0  # turn off all routing in farfield (conversely, nearfield is all routed)
+        df['routing'] = df['routed'].astype(int)
+        #df['routing'] = len(df) * [1]
+        #df.loc[df['farfield'], 'routing'] = 0  # turn off all routing in farfield (conversely, nearfield is all routed)
 
         # linesink elevations (lakes won't be populated yet)
         min_elev_col = [c for c in df.columns if 'minelev' in c.lower()][0]

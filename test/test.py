@@ -11,9 +11,9 @@ def run_test():
     ls = lsmaker.linesinks(input_file)
 
     #verify that input is being read correctly
-    assert ls.nearfield == 'input/testarea.shp'
+    assert ls.nearfield == 'input/testnearfield.shp'
     assert ls.farfield_buffer == 1000
-    assert ls.nearfield_tolerance == 100
+    assert ls.nearfield_tolerance == 50
     assert ls.farfield_tolerance == 200
     assert ls.min_farfield_order == 2
     assert ls.min_waterbody_size == 0.001
@@ -40,7 +40,11 @@ def run_test():
     assert np.abs(ls.df.ix[ls.df.GNIS_NAME == 'Lost Lake', 'maxElev'].values[0] - 1330.05) < 0.01
 
     # 585 lines should be written
-    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 585
+    # sum with nf at 50, routed area at 100, ff at 200, dropping ephemeral streams
+    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 683
+    # sum with whole routed area at 100, ff at 200:
+    #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 578
+    #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 585 # number of lines with single nearfield
 
 
 if __name__ == '__main__':

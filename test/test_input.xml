@@ -55,9 +55,12 @@ Notes on linesinkMaker input:
     (can be specified in lieu of a polygon shapefile under <farfield>)
      -->
     <farfield_buffer>1000</farfield_buffer>
-    <!-- nearfield:
+    <!-- routed_area:
     polygon of the model nearfield area, where linesinks will be given resistance and routed -->
-    <nearfield>input/testarea.shp</nearfield>
+    <routed_area>input/testarea.shp</routed_area>
+    <!-- nearfield:
+    polygon of area of focus within routed area (optional) -->
+    <nearfield>input/testnearfield.shp</nearfield>
     <!-- split_by_HUC:
     option to split out linesinks by HUC, writing one lss file per HUC -->
     <split_by_HUC>False</split_by_HUC>
@@ -79,7 +82,10 @@ LinesinkMakr will open all of the files and combine them.-->
 <Simplification>
     <!-- nearfield_tolerance:
     maximum distance a simplified line can deviate from the original linework -->
-    <nearfield_tolerance>100</nearfield_tolerance>
+    <nearfield_tolerance>50</nearfield_tolerance>
+    <!-- routed_area_tolerance:
+    maximum distance a simplified line can deviate from the original linework -->
+    <routed_area_tolerance>100</routed_area_tolerance>
     <!-- farfield_tolerance:
     maximum distance a simplified line can deviate from the original linework -->
     <farfield_tolerance>200</farfield_tolerance>
@@ -87,11 +93,17 @@ LinesinkMakr will open all of the files and combine them.-->
     minimum stream order to retain in farfield -->
     <min_farfield_order>2</min_farfield_order>
     <!-- min_waterbody_size:
-    minimum sized waterbodies to retain (km2) -->
+    minimum sized waterbodies to retain in routed area (km2) -->
     <min_waterbody_size>.001</min_waterbody_size>
+    <!-- min_nearfield_waterbody_size:
+    minimum size of waterbodies to retain in nearfield (km2) -->
+    <min_nearfield_waterbody_size>.001</min_nearfield_waterbody_size>
     <!-- min_farfield_waterbody_size:
     minimum size of waterbodies to retain in farfield (km2) -->
     <min_farfield_waterbody_size>.001</min_farfield_waterbody_size>
+    <!-- drop_intermittent:
+    Drop ephemeral streams from routed area outside of nearfield -->
+    <drop_intermittent>True</drop_intermittent>
 </Simplification>
 
 <outputs>
