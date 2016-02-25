@@ -14,7 +14,7 @@ Notes on linesinkMaker input:
     Note: Currently LinesinkMaker does not do transformations
     So input coordinate projections and output prj should be consistent
     projection file for output shapefiles -->
-    <prj>testarea.prj</prj>
+    <prj>input/testarea.prj</prj>
     <!-- preprocess:
     Whether or not preprocessing is needed (requires arcpy) -->
     <preprocess>False</preprocess>
@@ -30,6 +30,9 @@ Notes on linesinkMaker input:
     <!-- k:
     Hydraulic conductivity in model units -->
     <k>10</k>
+    <!-- global_streambed_thickness:
+    Streambed thickness depth value to assign to all linesinks-->
+    <global_streambed_thickness>3</global_streambed_thickness>
     <!-- ScenResistance:
     name for global resistance parameter to assign to linesinks-->
     <ScenResistance>Rlinesink</ScenResistance>
@@ -54,7 +57,7 @@ Notes on linesinkMaker input:
     <farfield_buffer>1000</farfield_buffer>
     <!-- nearfield:
     polygon of the model nearfield area, where linesinks will be given resistance and routed -->
-    <nearfield>testarea.shp</nearfield>
+    <nearfield>input/testarea.shp</nearfield>
     <!-- split_by_HUC:
     option to split out linesinks by HUC, writing one lss file per HUC -->
     <split_by_HUC>False</split_by_HUC>
@@ -67,10 +70,10 @@ input .shp and .dbf files from NHDPlus. To include multiple files
 simply add additional entries with same XML keyword.
 LinesinkMakr will open all of the files and combine them.-->
 <NHDfiles>
-    <flowlines>../example_Medford/shps/Medford_flowlines.shp</flowlines>
-    <elevslope>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
-    <PlusFlowVAA>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
-    <waterbodies>../example_Medford/shps/Medford_waterbodies.shp</waterbodies>
+    <flowlines>input/flowlines_clipped.shp</flowlines>
+    <elevslope>input/elevslope.dbf</elevslope>
+    <PlusFlowVAA>input/PlusFlowlineVAA.dbf</PlusFlowVAA>
+    <waterbodies>input/waterbodies_clipped.shp</waterbodies>
 </NHDfiles>
 
 <Simplification>
@@ -86,15 +89,13 @@ LinesinkMakr will open all of the files and combine them.-->
     <!-- min_waterbody_size:
     minimum sized waterbodies to retain (km2) -->
     <min_waterbody_size>.001</min_waterbody_size>
-    <!-- drop_crossing:
-    Line simplification can lead to some lines crossing.
-    In instances of crossing, remove the line representing this smaller of the two streams
-    (as indicated by a lower arbolate sum value)-->
-    <drop_crossing>True</drop_crossing>
+    <!-- min_farfield_waterbody_size:
+    minimum size of waterbodies to retain in farfield (km2) -->
+    <min_farfield_waterbody_size>.001</min_farfield_waterbody_size>
 </Simplification>
 
 <outputs>
-    <outfile_basename>test</outfile_basename>
-    <error_reporting>linesinkMaker_errors.txt</error_reporting>
+    <outfile_basename>output/test</outfile_basename>
+    <error_reporting>output/linesinkMaker_errors.txt</error_reporting>
 </outputs>
 </linesinkInput>

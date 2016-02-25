@@ -111,7 +111,9 @@ def get_elevations_from_epqs(points, units='Feet'):
     except:
         e = sys.exc_info()[0]
         print(e)
-        print('Problem accessing Elevation Point Query Service. Need an internet connection to get elevations.')
+        print('Problem accessing Elevation Point Query Service. '
+              'Need an internet connection to get seepage lake elevations.')
+        quit()
     return elevations
 
 
@@ -302,15 +304,15 @@ class linesinks:
 
         # global settings
         self.preproc = self.tf2flag(self._get_XMLentry('preproc', 'True'))
-        self.resistance = float(inpars.findall('.//resistance')[0].text)  # (days); c in documentation
-        self.H = float(inpars.findall('.//H')[0].text)  # aquifer thickness in model units
-        self.k = float(inpars.findall('.//k')[0].text)  # hydraulic conductivity of the aquifer in model units
-        self.lmbda = np.sqrt(10 * 100 * 0.3)
+        self.resistance = self._get_XMLentry('resistance', 0.3, float)  # (days); c in documentation
+        self.H = self._get_XMLentry('H', 100, float) # aquifer thickness in model units
+        self.k = self._get_XMLentry('k', 10, float)  # hydraulic conductivity of the aquifer in model units
+        self.lmbda = np.sqrt(self.k * self.H * self.resistance)
         self.ScenResistance = self._get_XMLentry('ScenResistance', 'linesink')
-        self.global_stream_depth = 3  # streambed thickness
-        self.ComputationalUnits = inpars.findall('.//ComputationalUnits')[
-            0].text  # 'Feet' or 'Meters'; for XML output file
-        self.BasemapUnits = inpars.findall('.//BasemapUnits')[0].text
+        self.global_streambed_thickness = self._get_XMLentry('global_streambed_thickness',
+                                                             3, float)  # streambed thickness
+        self.ComputationalUnits = self._get_XMLentry('ComputationalUnits', 'Feet') # 'Feet' or 'Meters'; for XML output file
+        self.BasemapUnits = self._get_XMLentry('BasemapUnits', 'Meters')
         # elevation units multiplier (from NHDPlus cm to model units)
         self.z_mult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
 
@@ -328,12 +330,13 @@ class linesinks:
 
         # simplification
         self.refinement_areas = []  # list of n areas within nearfield with additional refinement
-        self.nearfield_tolerance = float(inpars.findall('.//nearfield_tolerance')[0].text)
-        self.farfield_tolerance = float(inpars.findall('.//farfield_tolerance')[0].text)
-        self.min_farfield_order = int(inpars.findall('.//min_farfield_order')[0].text)
-        self.min_waterbody_size = float(inpars.findall('.//min_waterbody_size')[0].text)
-        self.min_farfield_wb_size = self._get_XMLentry('min_farfield_waterbody_size', 1.0, float)
-        self.drop_crossing = self.tf2flag(inpars.findall('.//drop_crossing')[0].text)
+        self.nearfield_tolerance = self._get_XMLentry('nearfield_tolerance', 100, int)
+        self.farfield_tolerance = self._get_XMLentry('farfield_tolerance', 300, int)
+        self.min_farfield_order = self._get_XMLentry('min_farfield_order', 2, int)
+        self.min_waterbody_size = self._get_XMLentry('min_waterbody_size', 1.0, float)
+        self.min_farfield_wb_size = self._get_XMLentry('min_farfield_waterbody_size',
+                                                       self.min_waterbody_size, float)
+        self.drop_crossing = self.tf2flag(self._get_XMLentry('drop_crossing', 'False'))
 
         # NHD files
         self.flowlines = [f.text for f in inpars.findall('.//flowlines')]
@@ -557,11 +560,6 @@ class linesinks:
         Will eventually combine with preprocess to reduce I/O
         This method also removes the need for a DEM, by getting lake elevations from the National Map Elevation Point Query Service
         """
-        path = self.preprocdir
-        flowlines_clipped = os.path.split(self.flowlines_clipped)[1]
-        waterbodies_clipped = os.path.split(self.waterbodies_clipped)[1]
-        farfield_mp = os.path.split(self.farfield_mp)[1]
-        wb_centroids_w_elevations = os.path.split(self.wb_centroids_w_elevations)[1]
 
         # make the output directory if it doesn't exist yet
         if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
@@ -624,12 +622,7 @@ class linesinks:
                     f['geometry'] = mapping(ffdonut)
                     output.write(f)
 
-        #print(('\ndropping waterbodies smaller than {} km2...'.format(self.min_waterbody_size)))
-        #self.wb = self.wb[self.wb.AREASQKM > self.min_waterbody_size].copy()
-
         print('\ngetting elevations for waterbodies not in the stream network')
-        #isolated_wb = set(self.wb.COMID).difference(self.fl.WBAREACOMI).difference({0, -9998})
-        #isolated_wb = self.wb.ix[self.wb.COMID.isin(isolated_wb)]
         # get elevations for all waterbodies for the time being.
         # otherwise waterbodies associated with first-order streams may be dropped from farfield,
         # but still waterbodies list, causing a key error in the lakes setup
@@ -731,10 +724,13 @@ class linesinks:
         df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))]
 
         print('dropping waterbodies from nearfield that are not lakes larger than {}...'.format(self.min_waterbody_size))
-        wbs = wbs[~wbs.farfield.values & (wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')]
+        nearfield_wbs = ~wbs.farfield.values & (wbs.AREASQKM > self.min_waterbody_size) & (wbs.FTYPE == 'LakePond')
+        farfield_wbs = wbs.farfield.values & (wbs.AREASQKM > self.min_farfield_wb_size) & (wbs.FTYPE == 'LakePond')
 
-        print('dropping waterbodies from farfield that are not lakes larger than {}...'.format(self.min_farfield_wb_size))
-        wbs = wbs[wbs.farfield.values & (wbs.AREASQKM > self.min_farfield_wb_size) & (wbs.FTYPE == 'LakePond')]
+        print('dropping waterbodies from nearfield that are not lakes larger than {}...\n'
+              'dropping waterbodies from farfield that are not lakes larger than {}...'.format(self.min_waterbody_size,
+                                                                                               self.min_farfield_wb_size))
+        wbs = wbs[nearfield_wbs |    farfield_wbs]
 
         print('merging waterbodies with coincident boundaries...')
         dropped = []
@@ -1241,7 +1237,7 @@ class linesinks:
         df.loc[df['farfield'], 'resistance'] = 0
 
         # depth
-        df['depth'] = self.global_stream_depth
+        df['depth'] = self.global_streambed_thickness
 
         # resistance parameter (scenario)
         df['ScenResistance'] = self.ScenResistance
