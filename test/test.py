@@ -1,9 +1,12 @@
 import sys
 sys.path.insert(0, '../linesinkmaker')
+import os
 import numpy as np
 import lsmaker
 
 def run_test():
+    if not os.path.isdir('output'):
+        os.makedirs('output')
     input_file = 'test_input.xml'
     ls = lsmaker.linesinks(input_file)
 
