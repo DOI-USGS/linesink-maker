@@ -1224,7 +1224,9 @@ class linesinks:
         print('Assigning attributes for GFLOW input...')
 
         # routing
-        df['routing'] = df['routed'].astype(int)
+        # need to reformulate simplification so that "routed" means all routed linesinks,
+        # not just those between the nearfield and farfield
+        df['routing'] = (df.routed.values | df.nearfield.values).astype(int)
 
         # linesink elevations (lakes won't be populated yet)
         min_elev_col = [c for c in df.columns if 'minelev' in c.lower()][0]

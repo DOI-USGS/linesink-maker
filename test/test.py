@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, '../linesinkmaker')
 import os
 import numpy as np
+from shapely.geometry import LineString
 import lsmaker
 
 def run_test():
@@ -11,10 +12,14 @@ def run_test():
     ls = lsmaker.linesinks(input_file)
 
     #verify that input is being read correctly
+    nearfield_tol = 50
+    routed_area_tol = 100
+    farfield_tol = 200
     assert ls.nearfield == 'input/testnearfield.shp'
     assert ls.farfield_buffer == 1000
-    assert ls.nearfield_tolerance == 50
-    assert ls.farfield_tolerance == 200
+    assert ls.nearfield_tolerance == nearfield_tol
+    assert ls.routed_area_tolerance == routed_area_tol
+    assert ls.farfield_tolerance == farfield_tol
     assert ls.min_farfield_order == 2
     assert ls.min_waterbody_size == 0.001
     assert ls.min_farfield_wb_size == 0.001
@@ -31,22 +36,44 @@ def run_test():
     assert np.array_equal(
             np.array(sorted(ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'upcomids'].values[0])),
             np.array(sorted([13102899, 13102915, 13103263, 13102907, 13102927])))
+
     # test for correct routing; also tests that dncomids are lists (instead of integers)
-    assert ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'dncomid'].values[0][0] == 13103287
-    assert np.abs(ls.df.ix[ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir', 'maxElev'].values[0] - 1256.85) < 0.01
+    i = ls.df.GNIS_NAME == 'Chequamegon Waters 125 Reservoir'
+    assert ls.df.ix[i, 'dncomid'].values[0][0] == 13103287
+    assert np.abs(ls.df.ix[i, 'maxElev'].values[0] - 1256.85) < 0.01
+    assert ls.df.ix[i, 'routing'].values[0] == 1
+
     assert 'Lost Lake' in ls.df.GNIS_NAME.values
-    assert ls.df.ix[ls.df.GNIS_NAME == 'Lost Lake', 'farfield'].values[0] # this one should be in the farfield
-    assert np.abs(ls.df.ix[ls.df.GNIS_NAME == 'Lost Lake', 'maxElev'].values[0] - 1330.05) < 0.01
+    i = ls.df.GNIS_NAME == 'Lost Lake'
+    assert ls.df.ix[i, 'farfield'].values[0] # this one should be in the farfield
+    assert np.abs(ls.df.ix[i, 'maxElev'].values[0] - 1330.05) < 0.01
+    assert ls.df.ix[i, 'routing'].values[0] == 0
 
     # 585 lines should be written
     # sum with nf at 50, routed area at 100, ff at 200, dropping ephemeral streams
-    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 684
+    #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 684
     # sum with whole routed area at 100, ff at 200:
     #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 578
     #assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 585 # number of lines with single nearfield
 
-    # test input with no distinction between nf and routed area
-    ls = lsmaker.linesinks(input_file)
+    # check for correct level of simplification
+    def check_simplification(df, i, tol):
+        orig = np.array(df.geometry[i].values[0].coords)
+        simp = np.array(df[i].ls_coords.values[0])
+        simp2 = np.array(LineString(orig).simplify(tol).coords)
+        assert np.array_equal(simp, simp2)
+
+    check_simplification(ls.df,
+                         ls.df.COMID == 13102931, # Johns Creek
+                         nearfield_tol)
+    check_simplification(ls.df,
+                         ls.df.COMID == 13103273, #South Fork Yellow River
+                         routed_area_tol)
+    check_simplification(ls.df,
+                         ls.df.COMID == 13132153, #Black River
+                         farfield_tol)
+
+
 
 def run_test2():
     if not os.path.isdir('output'):
