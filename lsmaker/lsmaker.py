@@ -13,7 +13,7 @@ try:
 except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
-
+import requests
 import json
 from functools import partial
 import fiona
@@ -106,14 +106,7 @@ def get_elevations_from_epqs(points, units='Feet'):
     """From list of shapely points in lat, lon, returns list of elevation values
     """
     print('querying National Map Elevation Point Query Service...')
-    try:
-        elevations = [get_elevation_from_epqs(p.x, p.y, units=units) for p in points]
-    except:
-        e = sys.exc_info()[0]
-        print(e)
-        print('Problem accessing Elevation Point Query Service. '
-              'Need an internet connection to get seepage lake elevations.')
-        quit()
+    elevations = [get_elevation_from_epqs(p.x, p.y, units=units) for p in points]
     return elevations
 
 
@@ -132,10 +125,17 @@ def get_elevation_from_epqs(lon, lat, units='Feet'):
     """
     url = 'http://nationalmap.gov/epqs/pqs.php?'
     url += 'x={}&y={}&units={}&output=json'.format(lon, lat, units)
-    epqsdata = urlopen(url).readline()
-    elev = json.loads(epqsdata.decode())['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation']
-    #json.loads(epqsdata)
-    if not isinstance(elev, float):
+    try:
+        #epqsdata = urlopen(url).readline()
+        response = requests.get(url)
+        elev = json.loads(response.text)['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation']
+    except:
+        e = sys.exc_info()
+        print(e)
+        print('Problem accessing Elevation Point Query Service. '
+              'Need an internet connection to get seepage lake elevations.')
+        elev = 0.0
+    if not isinstance(elev, float) or isinstance(elev, int):
         print(('Warning, invalid elevation of {} returned for {}, {}.\nSetting elevation to 0.'.format(elev, lon, lat)))
         elev = 0.0
     return elev

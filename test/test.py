@@ -1,9 +1,11 @@
 import sys
 sys.path.insert(0, '../linesinkmaker')
+import warnings
 import os
 import numpy as np
-from shapely.geometry import LineString
+from shapely.geometry import LineString, Point
 import lsmaker
+from lsmaker import get_elevation_from_epqs, get_elevations_from_epqs
 
 
 def test_deps():
@@ -15,6 +17,7 @@ def test_deps():
         # Fall back to Python 2's urllib2
         from urllib2 import urlopen
 
+    import requests
     import json
     from functools import partial
     import fiona
@@ -32,8 +35,8 @@ def test_deps():
                         schema={'geometry': 'Point',
                                 'properties': {'Id': 'int:6'}},
                         driver='ESRI Shapefile')
-    output.write({'properties': 0,
-                  'geometry': mapping(Point([0, 0]))})
+    output.write({'properties': {'Id': 0},
+                  'geometry': mapping(Point(0, 0))})
     output.close()
 
     # verify that projection file was written
@@ -129,7 +132,17 @@ def test2():
     assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 586 # not sure why this is 586 vs. 585 above
     # likewise number above changed from 683 to 684 after debugging
 
+def test_epqs():
+    elev = get_elevation_from_epqs(-91.5, 46.8, units='Feet')
+    elev = float(elev)
+    if np.abs(602-elev) > 1:
+        warnings.warn('Bad elevation value of {}'.format(elev))
+    elevs = get_elevations_from_epqs([Point(-91.5, 46.8)] * 100, units='Feet')
+    j=2
+
 if __name__ == '__main__':
     test_deps()
+    test_epqs()
     test1()
     test2()
+

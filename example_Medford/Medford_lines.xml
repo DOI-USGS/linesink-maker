@@ -51,7 +51,7 @@ Notes on linesinkMaker input:
     buffer distance around the nearfield polygon
     (can be specified in lieu of a polygon shapefile under <farfield>)
      -->
-    <farfield_buffer>20000</farfield_buffer>
+    <farfield_buffer>30000</farfield_buffer>
     <!-- nearfield:
     polygon of the model nearfield area, where linesinks will be given resistance and routed -->
     <nearfield>shps/Medford_nf.shp</nearfield>
