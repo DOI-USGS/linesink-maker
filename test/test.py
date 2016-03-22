@@ -5,7 +5,41 @@ import numpy as np
 from shapely.geometry import LineString
 import lsmaker
 
-def run_test():
+
+def test_deps():
+    """test the imports"""
+    try:
+        # For Python 3.0 and later
+        from urllib.request import urlopen
+    except ImportError:
+        # Fall back to Python 2's urllib2
+        from urllib2 import urlopen
+
+    import json
+    from functools import partial
+    import fiona
+    from fiona.crs import to_string
+    from shapely.geometry import Polygon, LineString, Point, shape, mapping
+    from shapely.ops import unary_union, transform
+    import pyproj
+    import math
+
+    if not os.path.exists('tmp'):
+        os.makedirs('tmp')
+
+    output = fiona.open('tmp/test.shp', 'w',
+                        crs={'init': 'epsg:26715'},
+                        schema={'geometry': 'Point',
+                                'properties': {'Id': 'int:6'}},
+                        driver='ESRI Shapefile')
+    output.write({'properties': 0,
+                  'geometry': mapping(Point([0, 0]))})
+    output.close()
+
+    # verify that projection file was written
+    assert os.stat('tmp/test.prj').st_size > 0
+
+def test1():
     if not os.path.isdir('output'):
         os.makedirs('output')
     input_file = 'test_input.xml'
@@ -75,7 +109,7 @@ def run_test():
 
 
 
-def run_test2():
+def test2():
     if not os.path.isdir('output'):
         os.makedirs('output')
     input_file = 'test_input.xml'
@@ -96,5 +130,6 @@ def run_test2():
     # likewise number above changed from 683 to 684 after debugging
 
 if __name__ == '__main__':
-    run_test()
-    run_test2()
+    test_deps()
+    test1()
+    test2()
