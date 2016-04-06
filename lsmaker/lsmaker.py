@@ -129,11 +129,13 @@ def get_elevation_from_epqs(lon, lat, units='Feet'):
         #epqsdata = urlopen(url).readline()
         response = requests.get(url)
         elev = json.loads(response.text)['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation']
+        print(lat, lon, elev, units)
     except:
         e = sys.exc_info()
         print(e)
         print('Problem accessing Elevation Point Query Service. '
-              'Need an internet connection to get seepage lake elevations.')
+              'Need an internet connection to get seepage lake elevations.'
+              "\nIf your internet is working, running the script again may work; sometime the EPQS can be temperamental")
         elev = 0.0
     if not isinstance(elev, float) or isinstance(elev, int):
         print(('Warning, invalid elevation of {} returned for {}, {}.\nSetting elevation to 0.'.format(elev, lon, lat)))
