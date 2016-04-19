@@ -95,7 +95,7 @@ LinesinkMaker also outputs a shapefile representation of the linesink network (*
   
 ```python
 
-from GFLOWresults import write_streamflow_shapefile
+from lsmaker.utils.GFLOWresults import write_streamflow_shapefile
 
 write_streamflow_shapefile('GFLOW_output.xtr', outshp='output.shp', solver_x0=0, solve_y0=0, coords_mult=0.3048, epsg=None)  
 ```
