@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
-from GISio import df2shp
+#from GISio import df2shp
 
 def get_ls_skiprows_nrows(xtr):
     with open(xtr) as f:
@@ -121,7 +121,7 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     df[['x1', 'x2']] = df[['x1', 'x2']] * coords_mult + solver_x0
     df[['y1', 'y2']] = df[['y1', 'y2']] * coords_mult + solver_y0
     df['geometry'] = [LineString([(r.x1, r.y1), (r.x2, r.y2)]) for i, r in df.iterrows()]
-    df2shp(df, outshp, epsg=epsg)
+    GISio.df2shp(df, outshp, epsg=epsg)
 
 class surferGrid:
     def __init__(self, grdfile=None, data=None):

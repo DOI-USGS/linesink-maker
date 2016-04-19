@@ -7,6 +7,9 @@ from shapely.geometry import LineString, Point
 import lsmaker
 from lsmaker import get_elevation_from_epqs, get_elevations_from_epqs
 
+def test_imports():
+    from lsmaker import GISio
+    from lsmaker.utils.GFLOWresults import write_streamflow_shapefile
 
 def test_deps():
     """test the imports"""
@@ -141,6 +144,7 @@ def test_epqs():
     j=2
 
 if __name__ == '__main__':
+    test_imports()
     test_deps()
     test_epqs()
     test1()
