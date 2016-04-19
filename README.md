@@ -101,7 +101,7 @@ write_streamflow_shapefile('GFLOW_output.xtr', outshp='output.shp', solver_x0=0,
 ```
 where:  
 
-* 'GFLOW_output.xtr' output by GFLOW
+* 'GFLOW_output.xtr' is the xtr file output by GFLOW
 * **outshp** is the name of the shapefile to write  
 * **solver_x0** amd **solve_y0** are the model offset (To get (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer, 
     then View > Base Tables > Model.)
