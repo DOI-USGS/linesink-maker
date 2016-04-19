@@ -87,6 +87,27 @@ LinesinkMaker outputs a linesink string file of the form **\<basename>.lss.xml**
 ###Viewing the linesinks in a GIS
 LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS. For an example, see **Medford.shp** after running the Medford example.
 
+##Exporting and Visualizing GFLOW output
+
+**GFLOWresults.py** (under **utils**) has methods for visualizing output  
+####Baseflow  
+  
+  
+```python
+
+from GFLOWresults import write_streamflow_shapefile
+
+write_streamflow_shapefile('GFLOW_output.xtr', outshp='output.shp', solver_x0=0, solve_y0=0, coords_mult=0.3048, epsg=None)  
+```
+where:  
+
+* 'GFLOW_output.xtr' is the xtr file output by GFLOW
+* **outshp** is the name of the shapefile to write  
+* **solver_x0** amd **solve_y0** are the model offset (To get (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer, 
+    then View > Base Tables > Model.)
+* **coords_mult** is 0.3048 if the model computation unit is feet and the GIS unit is meters  
+* **epsg** is the epsg code for the GIS coordinates (for example, 26716 for UTM 27 zone 16)
+
 ###Uninstall
 ```
 pip uninstall lsmaker
