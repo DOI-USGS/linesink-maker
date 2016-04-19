@@ -5,6 +5,10 @@ import numpy as np
 from shapely.geometry import LineString
 import lsmaker
 
+def test_imports():
+    from lsmaker import GISio
+    from lsmaker.utils.GFLOWresults import write_streamflow_shapefile
+
 def run_test():
     if not os.path.isdir('output'):
         os.makedirs('output')
@@ -96,5 +100,6 @@ def run_test2():
     # likewise number above changed from 683 to 684 after debugging
 
 if __name__ == '__main__':
+    test_imports()
     run_test()
     run_test2()
