@@ -44,6 +44,9 @@ import lsmaker
 
 
 ##Required input  
+
+#### Note: 
+#####all shapefile input should include projection information (*.prj files), and be in a standard coordinate system that is recognized by the proj4 library (e.g. lat/lon or UTM meters; length units of feet are not recommended!)
 #####From NHDPlus v2:  
 For each major drainage area encompassed by the model (e.g. Area 04 representing the Great Lakes Basin, 07 representing the Upper Mississippi Basin, etc):  
 
@@ -60,7 +63,8 @@ downloads. The NHDPlus files are specified in the XML input file under the tag *
    **(required)**
 * shapefile of the model farfield area (where linesinks will be zero-resistance and not routed)  
  (**optional**; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag **\<farfield_buffer\>**.
- 
+
+
 #####Line simplification
 Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of linesinks are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (**\<nearfield_tolerance\>** and **\<farfield_tolerance\>farfield_tolerance>**). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.
 

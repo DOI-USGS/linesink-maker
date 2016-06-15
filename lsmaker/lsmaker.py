@@ -622,6 +622,10 @@ class linesinks:
             self.wb['geometry'] = geoms
 
         # for now, write out preprocessed data to maintain structure with arcpy
+        for df in ['fl', 'wb']:
+            if len(self.__dict__[df]) == 0:
+                raise EmptyDataFrame()
+
         GISio.df2shp(self.fl, self.flowlines_clipped, proj4=self.crs_str)
         GISio.df2shp(self.wb, self.waterbodies_clipped, proj4=self.crs_str)
 
@@ -1568,3 +1572,10 @@ class InputFileMissing(Exception):
 
     def __str__(self):
         return ('\n\nCould not open or parse input file {0}.\nCheck for errors in XML formatting.'.format(self.infile))
+
+class EmptyDataFrame(Exception):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return ('\n\nEmpty DataFrame!')
