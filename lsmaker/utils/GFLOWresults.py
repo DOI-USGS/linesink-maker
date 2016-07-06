@@ -1,10 +1,10 @@
 import sys
 sys.path.append('../lsmaker')
 import os
+import shutil
 import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
-#from GISio import df2shp
 
 def get_ls_skiprows_nrows(xtr):
     with open(xtr) as f:
@@ -40,6 +40,70 @@ def get_linesink_results(xtr):
     
     return pd.read_csv(xtr, skiprows=ls_skiprows, nrows=nrows, header=None, names=names)
 
+
+def plot_flooding(grdfile, dem, epsg,
+                  outpath='',
+                  clipto=None,
+                  solver_x0=0, solver_y0=0, scale_xy=0.3048,
+                  dem_mult=1):
+
+    from GISops import project_raster, clip_raster, _to_geojson
+    try:
+        import rasterio
+        from rasterio import transform
+        from rasterio.warp import reproject, Resampling
+        from rasterio.tools.mask import mask
+    except ImportError:
+        print('This method requires Rasterio')
+        return
+
+    # make a temporary folder to house all the cruft
+    tmpath = outpath + '/tmp/'
+    if not os.path.isdir(tmpath):
+        os.makedirs(tmpath)
+
+    # convert the heads surfer grid to raster
+    solver_x0 = solver_x0
+    solver_y0 = solver_y0
+    wtfile = os.path.join(outpath, 'heads_prj.tiff')
+    print('reading {}...'.format(grdfile))
+    hds = surferGrid(grdfile)
+    hds.scale_xy(scale_xy)
+    hds.offset_xy(solver_x0, solver_y0)
+    hds.write_raster(wtfile, epsg=epsg)
+
+    clipto = _to_geojson(clipto) # convert input to geojson
+    clipped_dem = tmpath + 'dem_cp.tif'
+    clip_raster(dem, clipto, clipped_dem)
+
+    out = os.path.join(tmpath, 'heads_rs.tif')
+    demcp = os.path.join(tmpath, 'dem_cp.tif')
+    out2 = os.path.join(tmpath, 'heads_cp.tif')
+
+    with rasterio.open(dem) as demobj:
+        project_raster(wtfile, out, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=demobj.res)
+        clip_raster(dem, clipto, demcp)
+        clip_raster(out, clipto, out2)
+
+    with rasterio.open(demcp) as demcpobj:
+        with rasterio.open(out2) as hds:
+            dtw = demcpobj.read(1) - hds.read(1)
+            dtw[dtw < -1e4] = np.nan
+            fld = dtw.copy()
+            fld[fld > 0] = np.nan
+            out_meta = demcpobj.meta.copy()
+            out_meta.update({'dtype': 'float64', 'compress': 'LZW'})
+
+            out_dtw = outpath+'/dtw.tif'
+            out_fld = outpath+'/flooding.tif'
+            with rasterio.open(out_dtw, "w", **out_meta) as dest:
+                dest.write(dtw, 1)
+                print('wrote {}'.format(out_dtw))
+            with rasterio.open(out_fld, "w", **out_meta) as dest:
+                dest.write(fld, 1)
+                print('wrote {}'.format(out_fld))
+    # garbage cleanup
+    shutil.rmtree(tmpath)
 
 def plot_flooding_arcpy(grdfile, dem,
                         outpath='flooding',
@@ -114,6 +178,7 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     To get the solve origin (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer, 
     then View > Base Tables > Model.
     """
+    from GISio import df2shp
     if outshp is None:
         outshp = '{}_streamflow.shp'.format(xtr[:-4])
     df = get_linesink_results(xtr)
@@ -121,7 +186,7 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     df[['x1', 'x2']] = df[['x1', 'x2']] * coords_mult + solver_x0
     df[['y1', 'y2']] = df[['y1', 'y2']] * coords_mult + solver_y0
     df['geometry'] = [LineString([(r.x1, r.y1), (r.x2, r.y2)]) for i, r in df.iterrows()]
-    GISio.df2shp(df, outshp, epsg=epsg)
+    df2shp(df, outshp, epsg=epsg)
 
 class surferGrid:
     def __init__(self, grdfile=None, data=None):
@@ -140,11 +205,11 @@ class surferGrid:
 
     def _read_grd_header(self, grdfile):
         with open(grdfile) as input:
-            self.header = input.next()
-            self.nrow, self.ncol = map(int, input.next().strip().split())
-            self.xmin, self.xmax = map(float, input.next().strip().split())
-            self.ymin, self.ymax = map(float, input.next().strip().split())
-            self.zmin, self.zmax = map(float, input.next().strip().split())
+            self.header = next(input)
+            self.nrow, self.ncol = map(int, next(input).strip().split())
+            self.xmin, self.xmax = map(float, next(input).strip().split())
+            self.ymin, self.ymax = map(float, next(input).strip().split())
+            self.zmin, self.zmax = map(float, next(input).strip().split())
 
     def scale_xy(self, mult=1):
         self.xmin *= mult

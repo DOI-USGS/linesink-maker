@@ -10,10 +10,11 @@ import shutil
 try:
     # For Python 3.0 and later
     from urllib.request import urlopen
+    import requests
 except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
-import requests
+
 import json
 from functools import partial
 import fiona
@@ -290,8 +291,14 @@ class linesinks:
               'Intermittent': 46003,
               'Uncategorized': 46000}
 
-    def __init__(self, infile):
+    def __init__(self, infile=None, GFLOW_lss_xml=None):
 
+        if infile is not None:
+            self.read_lsmaker_xml(infile)
+        elif GFLOW_lss_xml is not None:
+            self.df = self.read_lss(GFLOW_lss_xml)
+
+    def read_lsmaker_xml(self, infile):
         try:
             inpardat = ET.parse(infile)
         except:
@@ -1496,6 +1503,8 @@ class linesinks:
         """
         df = df.copy()
 
+        df['chkScenario'] = [s.lower() for s in df.chkScenario.astype(str)]
+
         nlines = sum([len(p) - 1 for p in df.ls_coords])
 
         print('writing {} lines to {}'.format(nlines, outfile))
@@ -1530,7 +1539,7 @@ class linesinks:
             ofp.write('\t\t<Precipitation>0</Precipitation>\n')
             ofp.write('\t\t<Evapotranspiration>0</Evapotranspiration>\n')
             ofp.write('\t\t<Farfield>{:.0f}</Farfield>\n'.format(df.ix[comid, 'farfield']))
-            ofp.write('\t\t<chkScenario>true</chkScenario>\n')  # include linesink in PEST 'scenarios'
+            ofp.write('\t\t<chkScenario>{}</chkScenario>\n'.format(df.ix[comid, 'chkScenario'])) # include linesink in PEST 'scenarios'
             ofp.write('\t\t<AutoSWIZC>{:.0f}</AutoSWIZC>\n'.format(df.ix[comid, 'AutoSWIZC']))
             ofp.write('\t\t<DefaultResistance>{:.2f}</DefaultResistance>\n'.format(df.ix[comid, 'resistance']))
             ofp.write('\t\t<Vertices>\n')
