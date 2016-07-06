@@ -73,8 +73,6 @@ def plot_flooding(grdfile, dem, epsg,
     hds.write_raster(wtfile, epsg=epsg)
 
     clipto = _to_geojson(clipto) # convert input to geojson
-    clipped_dem = tmpath + 'dem_cp.tif'
-    clip_raster(dem, clipto, clipped_dem)
 
     out = os.path.join(tmpath, 'heads_rs.tif')
     demcp = os.path.join(tmpath, 'dem_cp.tif')
