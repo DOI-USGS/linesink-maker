@@ -72,6 +72,7 @@ def plot_flooding(grdfile, dem, epsg,
     hds.offset_xy(solver_x0, solver_y0)
     hds.write_raster(wtfile, epsg=epsg)
 
+    # clipto must be a list (should add conversion if not)
     clipto = _to_geojson(clipto) # convert input to geojson
 
     out = os.path.join(tmpath, 'heads_rs.tif')
@@ -85,12 +86,19 @@ def plot_flooding(grdfile, dem, epsg,
 
     with rasterio.open(demcp) as demcpobj:
         with rasterio.open(out2) as hds:
-            dtw = demcpobj.read(1) - hds.read(1)
+            # rasters might be of slightly different shape after clipping
+            # (depending on original offset(s)?)
+            # slice both to minimum dimmensions
+            demarr, hdsarr = demcpobj.read(1), hds.read(1)
+            h = np.min((demcpobj.height, hds.height))
+            w = np.min((demcpobj.width, hds.width))
+            dtw = demarr[:h, :w] - hdsarr[:h, :w]
             dtw[dtw < -1e4] = np.nan
             fld = dtw.copy()
             fld[fld > 0] = np.nan
             out_meta = demcpobj.meta.copy()
-            out_meta.update({'dtype': 'float64', 'compress': 'LZW'})
+            out_meta.update({'dtype': 'float64', 'compress': 'LZW',
+                             'width': w, 'height': h})
 
             out_dtw = outpath+'/dtw.tif'
             out_fld = outpath+'/flooding.tif'
