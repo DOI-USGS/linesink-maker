@@ -49,6 +49,7 @@ def write_heads_raster(grdfile, outraster='heads.tiff',
     hds.offset_xy(solver_x0, solver_y0)
     hds.write_raster(outraster, epsg=epsg)
 
+
 def plot_flooding(grdfile, dem, epsg,
                   outpath='',
                   clipto=None,
@@ -74,11 +75,9 @@ def plot_flooding(grdfile, dem, epsg,
     solver_x0 = solver_x0
     solver_y0 = solver_y0
     wtfile = os.path.join(outpath, 'heads_prj.tiff')
-    print('reading {}...'.format(grdfile))
-    hds = surferGrid(grdfile)
-    hds.scale_xy(scale_xy)
-    hds.offset_xy(solver_x0, solver_y0)
-    hds.write_raster(wtfile, epsg=epsg)
+    write_heads_raster(grdfile, wtfile,
+                       solver_x0=solver_x0, solver_y0=solver_y0,
+                       scale_xy=scale_xy, epsg=epsg)
 
     # clipto must be a list (should add conversion if not)
     clipto = _to_geojson(clipto) # convert input to geojson
@@ -218,6 +217,7 @@ class surferGrid:
             self.read_grd(grdfile)
 
     def _read_grd_header(self, grdfile):
+        print('reading {}...'.format(grdfile))
         with open(grdfile) as input:
             self.header = next(input)
             self.nrow, self.ncol = map(int, next(input).strip().split())
