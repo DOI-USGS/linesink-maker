@@ -12,7 +12,7 @@ def test_imports():
     from lsmaker.utils.GFLOWresults import write_streamflow_shapefile
 
 def test_deps():
-    """test the imports"""
+    """test the dependencies"""
     try:
         # For Python 3.0 and later
         from urllib.request import urlopen
