@@ -41,6 +41,14 @@ def get_linesink_results(xtr):
     return pd.read_csv(xtr, skiprows=ls_skiprows, nrows=nrows, header=None, names=names)
 
 
+def write_heads_raster(grdfile, outraster='heads.tiff',
+                       solver_x0=0, solver_y0=0, scale_xy=.3048,
+                       epsg=26715):
+    hds = surferGrid(grdfile)
+    hds.scale_xy(scale_xy)
+    hds.offset_xy(solver_x0, solver_y0)
+    hds.write_raster(outraster, epsg=epsg)
+
 def plot_flooding(grdfile, dem, epsg,
                   outpath='',
                   clipto=None,
