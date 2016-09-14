@@ -138,7 +138,9 @@ def get_elevation_from_epqs(lon, lat, units='Feet'):
               'Need an internet connection to get seepage lake elevations.'
               "\nIf your internet is working, running the script again may work; sometime the EPQS can be temperamental")
         elev = 0.0
-    if not isinstance(elev, float) or isinstance(elev, int):
+    try:
+        elev = float(elev)
+    except:
         print(('Warning, invalid elevation of {} returned for {}, {}.\nSetting elevation to 0.'.format(elev, lon, lat)))
         elev = 0.0
     return elev
@@ -356,10 +358,11 @@ class linesinks:
         self.drop_crossing = self.tf2flag(self._get_XMLentry('drop_crossing', 'False'))
 
         # NHD files
-        self.flowlines = [f.text for f in inpars.findall('.//flowlines')]
-        self.elevslope = [f.text for f in inpars.findall('.//elevslope')]
-        self.PlusFlowVAA = [f.text for f in inpars.findall('.//PlusFlowVAA')]
-        self.waterbodies = [f.text for f in inpars.findall('.//waterbodies')]
+        self.flowlines = self._get_XMLentry('flowlines', [], str, raise_error=True)
+        self.elevslope = self._get_XMLentry('elevslope', [], str, raise_error=True)
+        self.PlusFlowVAA = self._get_XMLentry('PlusFlowVAA', [], str, raise_error=True)
+        self.waterbodies = self._get_XMLentry('waterbodies', [], str, raise_error=True)
+
         # columns to retain in NHD files (when joining to GIS lines)
         # Note: may need to add method to handle case discrepancies
         self.flowlines_cols = ['COMID', 'FCODE', 'FDATE', 'FLOWDIR', 'FTYPE', 'GNIS_ID', 'GNIS_NAME', 'LENGTHKM',
@@ -430,12 +433,21 @@ class linesinks:
         self.outsegs = pd.DataFrame()
         self.confluences = pd.DataFrame()
 
-    def _get_XMLentry(self, XMLentry, default_name, dtype=str):
+    def _get_XMLentry(self, XMLentry, default, dtype=str, raise_error=False):
         try:
-            txt = self.inpars.findall('.//{}'.format(XMLentry))[0].text
-            return dtype(txt) if txt is not None else None
+            tmp = self.inpars.findall('.//{}'.format(XMLentry))
+            if len(tmp) == 1 and not isinstance(default, list):
+                txt = tmp[0].text
+                return dtype(txt) if txt is not None else None
+            elif len(tmp) >= 1:
+                return [dtype(s.text) for s in tmp]
+            else:
+                raise Exception()
         except:
-            return default_name
+            if not raise_error:
+                return default
+            else:
+                raise IOError('Nothing specified for {} in input XML file!'.format(XMLentry))
 
     def _enforce_dtypes(self, df):
         """Ensure that dataframe column dtypes are correct."""

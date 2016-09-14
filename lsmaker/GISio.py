@@ -2,6 +2,7 @@
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 import os
+from collections import OrderedDict
 import numpy as np
 import fiona
 from shapely.geometry import Point, shape, asLineString, mapping
@@ -106,9 +107,9 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
     """
     if isinstance(shplist, str):
         shplist = [shplist]
-    if not isinstance(true_values, list):
+    if not isinstance(true_values, list) and true_values is not None:
         true_values = [true_values]
-    if not isinstance(false_values, list):
+    if not isinstance(false_values, list)  and false_values is not None:
         false_values = [false_values]
     if len(clipto) > 0 and index:
         clip = True
@@ -144,6 +145,9 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
                     attributes.append(props)
             print('--> building dataframe... (may take a while for large shapefiles)')
             shp_df = pd.DataFrame(attributes)
+            # reorder fields in the DataFrame to match the input shapefile
+            if len(attributes) > 0:
+                shp_df = shp_df[list(attributes[0].keys())]
 
             # handle null geometries
             geoms = shp_df.geometry.tolist()
@@ -167,10 +171,12 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
                     attributes.append(props)
             else:
                 for line in shp_obj:
-                    props = line['properties']
-                    attributes.append(props)
+                    attributes.append(line['properties'])
             print('--> building dataframe... (may take a while for large shapefiles)')
             shp_df = pd.DataFrame(attributes)
+            # reorder fields in the DataFrame to match the input shapefile
+            if len(attributes) > 0:
+                shp_df = shp_df[list(attributes[0].keys())]
 
         shp_obj.close()
         if len(shp_df) == 0:
@@ -184,18 +190,18 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         df = df.append(shp_df)
 
         # convert any t/f columns to numpy boolean data
-        if true_values or false_values:
+        if true_values is not None or false_values is not None:
             replace_boolean = {}
             for t in true_values:
                 replace_boolean[t] = True
             for f in false_values:
                 replace_boolean[f] = False
 
-        # only remap columns that have values to be replaced
-        cols = [c for c in df.columns if c != 'geometry']
-        for c in cols:
-            if len(set(replace_boolean.keys()).intersection(set(df[c]))) > 0:
-                df[c] = df[c].map(replace_boolean)
+            # only remap columns that have values to be replaced
+            cols = [c for c in df.columns if c != 'geometry']
+            for c in cols:
+                if len(set(replace_boolean.keys()).intersection(set(df[c]))) > 0:
+                    df[c] = df[c].map(replace_boolean)
         
     return df
 
@@ -215,6 +221,9 @@ def shp_properties(df):
         if c != 'geometry':
             df[c] = df[c].astype(newdtypes.get(df.dtypes[c].name,
                                                df.dtypes[c].name))
+        if 'int' in df.dtypes[c].name:
+            if np.max(np.abs(df[c])) > 2**31 -1:
+                df[c] = df[c].astype(str)
 
     # strip dtypes to just 'float', 'int' or 'str'
     def stripandreplace(s):
@@ -223,7 +232,7 @@ def shp_properties(df):
     dtypes = [stripandreplace(df[c].dtype.name)
               if c != 'geometry'
               else df[c].dtype.name for c in df.columns]
-    properties = dict(list(zip(df.columns, dtypes)))
+    properties = OrderedDict(list(zip(df.columns, dtypes)))
     return properties
 
 
@@ -297,12 +306,19 @@ def pointsdf2shp(dataframe, shpname, X='X', Y='Y', index=False,  prj=None, epsg=
     df2shp(dataframe, shpname, 'geometry', index, prj, epsg, proj4, crs)
 
 
-def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, epsg=None, proj4=None, crs=None):
+def df2shp(dataframe, shpname, geo_column='geometry', index=False,
+           retain_order=False,
+           prj=None, epsg=None, proj4=None, crs=None):
     '''
     Write a DataFrame to a shapefile
     dataframe: dataframe to write to shapefile
     geo_column: optional column containing geometry to write - default is 'geometry'
     index: If true, write out the dataframe index as a column
+    retain_order : boolean
+        Retain column order in dataframe, using an OrderedDict. Shapefile will
+        take about twice as long to write, since OrderedDict output is not
+        supported by the pandas DataFrame object.
+
     --->there are four ways to specify the projection....choose one
     prj: <file>.prj filename (string)
     epsg: EPSG identifier (integer)
@@ -313,6 +329,10 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
     if os.path.split(shpname)[0] != '' and not os.path.isdir(os.path.split(shpname)[0]):
         raise IOError("Output folder doesn't exist")
 
+    # check for empty dataframe
+    if len(dataframe) == 0:
+        raise IndexError("DataFrame is empty!")
+
     df = dataframe.copy() # make a copy so the supplied dataframe isn't edited
 
     # reassign geometry column if geo_column is special (e.g. something other than "geometry")
@@ -321,8 +341,11 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
         df.drop(geo_column, axis=1, inplace=True)
 
     # assign none for geometry, to write a dbf file from dataframe
+    Type = None
     if 'geometry' not in df.columns:
         df['geometry'] = None
+        Type = 'None'
+        mapped = [None] * len(df)
 
     # reset the index to integer index to enforce ordering
     # retain index as attribute field if index=True
@@ -355,18 +378,22 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False, prj=None, eps
         pass
     else:
         pass
-        
-    if df.iloc[0]['geometry'] is not None:
-        Type = df.iloc[0]['geometry'].type
+
+    if Type != 'None':
+        for g in df.geometry:
+            try:
+                Type = g.type
+            except:
+                continue
         mapped = [mapping(g) for g in df.geometry]
-    else:
-        Type = 'None'
-        mapped = [None] * len(df)
         
     schema = {'geometry': Type, 'properties': properties}
     length = len(df)
 
-    props = df.drop('geometry', axis=1).astype(object).to_dict(orient='records')
+    if not retain_order:
+        props = df.drop('geometry', axis=1).astype(object).to_dict(orient='records')
+    else:
+        props = [OrderedDict(r) for i, r in df.drop('geometry', axis=1).astype(object).iterrows()]
     print('writing {}...'.format(shpname))
     with fiona.collection(shpname, "w", driver="ESRI Shapefile", crs=crs, schema=schema) as output:
         for i in range(length):

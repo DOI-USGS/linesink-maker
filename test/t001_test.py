@@ -45,6 +45,9 @@ def test_deps():
     # verify that projection file was written
     assert os.stat('tmp/test.prj').st_size > 0
 
+    shp_obj = fiona.open('tmp/test.shp')
+    shp_obj.schema
+
 def test1():
     if not os.path.isdir('output'):
         os.makedirs('output')
@@ -141,7 +144,6 @@ def test_epqs():
     if np.abs(602-elev) > 1:
         warnings.warn('Bad elevation value of {}'.format(elev))
     elevs = get_elevations_from_epqs([Point(-91.5, 46.8)] * 100, units='Feet')
-    j=2
 
 if __name__ == '__main__':
     test_imports()
