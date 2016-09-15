@@ -1,5 +1,6 @@
 import sys
 sys.path.append('../lsmaker')
+sys.path.insert(0, '../../GIS_utils')
 import os
 import shutil
 import numpy as np
@@ -54,14 +55,44 @@ def plot_flooding(grdfile, dem, epsg,
                   outpath='',
                   clipto=None,
                   solver_x0=0, solver_y0=0, scale_xy=0.3048,
-                  dem_mult=1):
+                  dem_mult=1, resolution=(30, 30)):
+    """Compare heads simulated by GFLOW to land surface.
 
+    Parameters
+    ----------
+    gridfile : str
+        Surfer .GRD file output by GFLOW GUI after a solution.
+        Note that the raw .GRD file output by the GUI will be in
+        model units, hence scale_xy would be 0.3048 if the model
+        is in feet and GIS in meters. If the surfer grid
+        was exported by the GFLOW GUI (under Tools > Export),
+        the GFLOW has already done any conversion, so scale_xy should be 1.
+    dem : str
+        DEM raster file.
+    epsg : str
+        EPSG code. Must be consistent with coordinate system of clipto feature.
+    clipto : str, or list
+        Feature(s) defining the extent of the output flooding and depth to water rasters.
+        Can be a shapefile or list of shapely or geojson objects.
+    solver_x0 : float
+    solver_y0 : float
+        To get the solve origin (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer,
+        then View > Base Tables > Model.
+    scale_xy : float
+        Multiplier to convert GFLOW coordinates to GIS coordinates. See notes above regarding .GRD file.
+    dem_mult : float
+        Multiplier from DEM elevation units to GFLOW units.
+    resolution : tuple of length 2
+        (x, y) resolution of output rasters. Must be chosen carefully with coordinate system.
+        Default is (30, 30).
+    """
     from GISops import project_raster, clip_raster, _to_geojson
     try:
         import rasterio
         from rasterio import transform
         from rasterio.warp import reproject, Resampling
         from rasterio.tools.mask import mask
+        from rasterio.crs import CRS
     except ImportError:
         print('This method requires Rasterio')
         return
@@ -74,7 +105,7 @@ def plot_flooding(grdfile, dem, epsg,
     # convert the heads surfer grid to raster
     solver_x0 = solver_x0
     solver_y0 = solver_y0
-    wtfile = os.path.join(outpath, 'heads_prj.tiff')
+    wtfile = os.path.join(outpath, 'heads_prj.tif')
     write_heads_raster(grdfile, wtfile,
                        solver_x0=solver_x0, solver_y0=solver_y0,
                        scale_xy=scale_xy, epsg=epsg)
@@ -82,24 +113,25 @@ def plot_flooding(grdfile, dem, epsg,
     # clipto must be a list (should add conversion if not)
     clipto = _to_geojson(clipto) # convert input to geojson
 
-    out = os.path.join(tmpath, 'heads_rs.tif')
-    demcp = os.path.join(tmpath, 'dem_cp.tif')
-    out2 = os.path.join(tmpath, 'heads_cp.tif')
+    heads_rs = os.path.join(tmpath, 'heads_rs.tif')
+    dem_rs = os.path.join(tmpath, 'dem_rs.tif')
+    dem_cp = os.path.join(tmpath, 'dem_cp.tif')
+    heads_cp = os.path.join(tmpath, 'heads_cp.tif')
 
-    with rasterio.open(dem) as demobj:
-        project_raster(wtfile, out, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=demobj.res)
-        clip_raster(dem, clipto, demcp)
-        clip_raster(out, clipto, out2)
+    project_raster(wtfile, heads_rs, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
+    project_raster(dem, dem_rs, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
+    clip_raster(dem_rs, clipto, dem_cp)
+    clip_raster(heads_rs, clipto, heads_cp)
 
-    with rasterio.open(demcp) as demcpobj:
-        with rasterio.open(out2) as hds:
+    with rasterio.open(dem_cp) as demcpobj:
+        with rasterio.open(heads_cp) as hds:
             # rasters might be of slightly different shape after clipping
             # (depending on original offset(s)?)
             # slice both to minimum dimmensions
             demarr, hdsarr = demcpobj.read(1), hds.read(1)
             h = np.min((demcpobj.height, hds.height))
             w = np.min((demcpobj.width, hds.width))
-            dtw = demarr[:h, :w] - hdsarr[:h, :w]
+            dtw = demarr[:h, :w] * dem_mult - hdsarr[:h, :w]
             dtw[dtw < -1e4] = np.nan
             fld = dtw.copy()
             fld[fld > 0] = np.nan
@@ -282,3 +314,4 @@ class surferGrid:
                                transform=tfm,
                                crs=crs) as dst:
                 dst.write_band(1, np.flipud(self.data))
+        print('wrote {}.'.format(fname))
