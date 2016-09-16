@@ -52,6 +52,7 @@ def write_heads_raster(grdfile, outraster='heads.tiff',
 
 
 def plot_flooding(grdfile, dem, epsg,
+                  aquifer_bottom=None,
                   outpath='',
                   clipto=None,
                   solver_x0=0, solver_y0=0, scale_xy=0.3048,
@@ -71,6 +72,10 @@ def plot_flooding(grdfile, dem, epsg,
         DEM raster file.
     epsg : str
         EPSG code. Must be consistent with coordinate system of clipto feature.
+    aquifer_bottom : str
+        Raster file of aquifer bottom elevations. Used to compute saturated thickness.
+    outpath : str
+        folder for saving the output rasters
     clipto : str, or list
         Feature(s) defining the extent of the output flooding and depth to water rasters.
         Can be a shapefile or list of shapely or geojson objects.
@@ -116,12 +121,18 @@ def plot_flooding(grdfile, dem, epsg,
     heads_rs = os.path.join(tmpath, 'heads_rs.tif')
     dem_rs = os.path.join(tmpath, 'dem_rs.tif')
     dem_cp = os.path.join(tmpath, 'dem_cp.tif')
-    heads_cp = os.path.join(tmpath, 'heads_cp.tif')
+    heads_cp = outpath+'/heads_cp.tif'#os.path.join(tmpath, 'heads_cp.tif')
+    aq_bot_rs = os.path.join(tmpath, 'botm_rs.tif')
+    aq_bot_cp = os.path.join(tmpath, 'botm_cp.tif')
 
     project_raster(wtfile, heads_rs, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
     project_raster(dem, dem_rs, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
     clip_raster(dem_rs, clipto, dem_cp)
     clip_raster(heads_rs, clipto, heads_cp)
+    if aquifer_bottom is not None:
+        project_raster(aquifer_bottom, aq_bot_rs, dst_crs='epsg:{}'.format(epsg),
+                       resampling=1, resolution=resolution)
+        clip_raster(aq_bot_rs, clipto, aq_bot_cp)
 
     with rasterio.open(dem_cp) as demcpobj:
         with rasterio.open(heads_cp) as hds:
@@ -141,12 +152,33 @@ def plot_flooding(grdfile, dem, epsg,
 
             out_dtw = outpath+'/dtw.tif'
             out_fld = outpath+'/flooding.tif'
+            out_sth = outpath+'/sat_thickness.tif'
             with rasterio.open(out_dtw, "w", **out_meta) as dest:
                 dest.write(dtw, 1)
                 print('wrote {}'.format(out_dtw))
             with rasterio.open(out_fld, "w", **out_meta) as dest:
                 dest.write(fld, 1)
                 print('wrote {}'.format(out_fld))
+            # compute and write sat. thickness
+            if aquifer_bottom is not None:
+                with rasterio.open(aq_bot_cp) as aqbot:
+                    h = np.min((h, aqbot.height))
+                    w = np.min((w, aqbot.width))
+                    botm = aqbot.read(1)
+                    botm = botm[:h, :w]
+                    # force aquifer bottom to be no higher than land surface
+                    botm[botm > demarr[:h, :w]] = demarr[botm > demarr[:h, :w]]
+                    sat_thickness = hdsarr[:h, :w] - botm[:h, :w]
+                    # where there is flooding, limit sat. thickness to surficial deposit thickness
+                    sat_thickness[dtw[:h, :w] < 0] = demarr[dtw[:h, :w] < 0] - botm[dtw[:h, :w] < 0]
+                    sat_thickness[sat_thickness > 1e4] = np.nan # no data values
+                    # set negative values resulting from flooding where botm = land surface to 0
+                    sat_thickness[sat_thickness < 0] = 0
+                    out_meta.update({'width': w, 'height': h})
+                    with rasterio.open(out_sth, "w", **out_meta) as dest:
+                        dest.write(sat_thickness, 1)
+                        print('wrote {}'.format(out_sth))
+
     # garbage cleanup
     shutil.rmtree(tmpath)
 

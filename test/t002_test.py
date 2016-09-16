@@ -38,6 +38,7 @@ def test_plot_flooding_NS():
     path = 'D:/ATLData/USFS/Nicolet/Nicolet_south/'
     grd = path + 'NS1.GRD'
     dem = path + '../dem/dem_utm_ft'
+    aquifer_bottom = path + '../from_WGNHS/Bedrock/TopoToR_Nico12.tif'
     output_folder = path + '../NS1_results/'
     if not os.path.isdir(output_folder):
         os.makedirs(output_folder)
@@ -45,6 +46,7 @@ def test_plot_flooding_NS():
     output_flooded_heads_file = output_folder + 'flooding'
     farfield = path + '../shps/Nicolet_south_ff.shp'
     lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=farfield,
+                                aquifer_bottom=aquifer_bottom,
                                       outpath=output_flooded_heads_file,
                                       solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
                                       dem_mult=1)
