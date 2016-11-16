@@ -324,6 +324,7 @@ class linesinks:
         self.k = self._get_XMLentry('k', 10, float)  # hydraulic conductivity of the aquifer in model units
         self.lmbda = np.sqrt(self.k * self.H * self.resistance)
         self.ScenResistance = self._get_XMLentry('ScenResistance', 'linesink')
+        self.chkScenario = self._get_XMLentry('chkScenario', 'True')
         self.global_streambed_thickness = self._get_XMLentry('global_streambed_thickness',
                                                              3, float)  # streambed thickness
         self.ComputationalUnits = self._get_XMLentry('ComputationalUnits', 'Feet') # 'Feet' or 'Meters'; for XML output file
@@ -1325,6 +1326,9 @@ class linesinks:
         # resistance parameter (scenario)
         df['ScenResistance'] = self.ScenResistance
         df.loc[df['farfield'], 'ScenResistance'] = '__NONE__'
+
+        # check box for "include in Scenario" in the GUI
+        df['chkScenario'] = self.chkScenario
 
         # linesink location
         df.ix[df['FTYPE'] != 'LakePond', 'AutoSWIZC'] = 1  # Along stream centerline

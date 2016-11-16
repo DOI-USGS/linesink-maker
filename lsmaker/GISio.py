@@ -128,7 +128,8 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
 
         attributes = []
         # for reading in shapefiles
-        if shp_obj.schema['geometry'] != 'None':
+        meta = shp_obj.meta
+        if meta['schema']['geometry'] != 'None':
 
             if clip: # limit what is brought in to items in index of clipto
                 for line in shp_obj.filter(bbox=filter):
