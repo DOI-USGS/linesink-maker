@@ -32,6 +32,9 @@ Notes on linesinkMaker input:
     <k>10</k>
     <!-- ScenResistance:
     name for global resistance parameter to assign to linesinks-->
+    <!-- global_streambed_thickness:
+    Streambed thickness depth value to assign to all linesinks-->
+    <global_streambed_thickness>3</global_streambed_thickness>
     <ScenResistance>Rlinesink</ScenResistance>
     <!-- ComputationalUnits: ('Feet' or 'Meters')
     model units-->
@@ -51,15 +54,13 @@ Notes on linesinkMaker input:
     buffer distance around the nearfield polygon
     (can be specified in lieu of a polygon shapefile under <farfield>)
      -->
-    <farfield_buffer>30000</farfield_buffer>
-    <!-- nearfield:
+    <farfield_buffer>15000</farfield_buffer>
+    <!-- routed_area:
     polygon of the model nearfield area, where linesinks will be given resistance and routed -->
-    <nearfield>shps/Medford_nf.shp</nearfield>
-    <!-- split_by_HUC:
-    option to split out linesinks by HUC, writing one lss file per HUC -->
-    <split_by_HUC>False</split_by_HUC>
-    <HUC_shp>None</HUC_shp>
-    <HUC_name_field>None</HUC_name_field>
+    <routed_area>shps/Medford_nf.shp</routed_area>
+    <!-- nearfield:
+    polygon of area of focus within routed area (optional) -->
+    <nearfield>shps/Medford_unit.shp</nearfield>
 </modelDomain>
 <!-- NHDfiles:
 input .shp and .dbf files from NHDPlus. To include multiple files
@@ -68,15 +69,18 @@ simply add additional entries with same XML keyword.
 LinesinkMakr will open all of the files and combine them.-->
 <NHDfiles>
     <flowlines>shps/Medford_flowlines.shp</flowlines>
-    <elevslope>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf</elevslope>
-    <PlusFlowVAA>../example_Nicolet/shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf</PlusFlowVAA>
+    <elevslope>shps/elevslope.dbf</elevslope>
+    <PlusFlowVAA>shps/PlusFlowlineVAA.dbf</PlusFlowVAA>
     <waterbodies>shps/Medford_waterbodies.shp</waterbodies>
 </NHDfiles>
 
 <Simplification>
     <!-- nearfield_tolerance:
     maximum distance a simplified line can deviate from the original linework -->
-    <nearfield_tolerance>200</nearfield_tolerance>
+    <nearfield_tolerance>100</nearfield_tolerance>
+    <!-- routed_area_tolerance:
+    maximum distance a simplified line can deviate from the original linework -->
+    <routed_area_tolerance>300</routed_area_tolerance>
     <!-- farfield_tolerance:
     maximum distance a simplified line can deviate from the original linework -->
     <farfield_tolerance>500</farfield_tolerance>
@@ -84,26 +88,18 @@ LinesinkMakr will open all of the files and combine them.-->
     minimum stream order to retain in farfield -->
     <min_farfield_order>2</min_farfield_order>
     <!-- min_waterbody_size:
-    minimum sized waterbodies to retain (km2) -->
-    <min_waterbody_size>1.0</min_waterbody_size>
-    <!-- drop_crossing:
-    Line simplification can lead to some lines crossing.
-    In instances of crossing, remove the line representing this smaller of the two streams
-    (as indicated by a lower arbolate sum value)-->
-    <drop_crossing>True</drop_crossing>
+    minimum sized waterbodies to retain in routed area (km2) -->
+    <min_waterbody_size>1</min_waterbody_size>
+    <!-- min_nearfield_waterbody_size:
+    minimum size of waterbodies to retain in nearfield (km2) -->
+    <min_nearfield_waterbody_size>.01</min_nearfield_waterbody_size>
+    <!-- min_farfield_waterbody_size:
+    minimum size of waterbodies to retain in farfield (km2) -->
+    <min_farfield_waterbody_size>1</min_farfield_waterbody_size>
+    <!-- drop_intermittent:
+    Drop ephemeral streams from routed area outside of nearfield -->
+    <drop_intermittent>True</drop_intermittent>
 </Simplification>
-
-<preprocessed_files>
-    <DEM>shps/med_dem_clip</DEM>
-    <DEM_zmult>3.280839895013123</DEM_zmult>
-    <!-- elevs_field:
-    field in wb_centroids_w_elevations containing elevations -->
-    <elevs_field>DEM_m</elevs_field>
-    <flowlines_clipped>preprocessed/flowlines_clipped.shp</flowlines_clipped>
-    <waterbodies_clipped>preprocessed/waterbodies_clipped.shp</waterbodies_clipped>
-    <farfield_multipolygon>preprocessed/ff_cutout.shp</farfield_multipolygon>
-    <preprocessed_lines>preprocessed/lines.shp</preprocessed_lines>
-</preprocessed_files>
 
 <outputs>
     <outfile_basename>Medford</outfile_basename>

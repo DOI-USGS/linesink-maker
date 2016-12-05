@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '../linesinkmaker')
+sys.path.insert(0, '..')
 import warnings
 import os
 import numpy as np

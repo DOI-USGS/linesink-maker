@@ -1,6 +1,8 @@
 """
 Test utils
 """
+import sys
+sys.path.insert(0, '..')
 import os
 from shapely.ops import unary_union
 import pandas as pd
@@ -24,10 +26,13 @@ def test_plot_flooding_PF():
     lines = shp2df(path + 'shps/PF14_lines.shp')
     alllines = unary_union(lines.geometry)
     farfield = alllines.convex_hull
-    lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=[farfield],
-                                      outpath=output_flooded_heads_file,
-                                      solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
-                                      dem_mult=1)
+    if os.path.exists(grd):
+        lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=[farfield],
+                                          outpath=output_flooded_heads_file,
+                                          solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
+                                          dem_mult=1)
+    else:
+        print('{} not found.'.format(grd))
 
 def test_plot_flooding_NS():
     """Tests the plot_flooding utility.
@@ -38,18 +43,22 @@ def test_plot_flooding_NS():
     path = 'D:/ATLData/USFS/Nicolet/Nicolet_south/'
     grd = path + 'NS1.GRD'
     dem = path + '../dem/dem_utm_ft'
-    aquifer_bottom = path + '../from_WGNHS/Bedrock/TopoToR_Nico12.tif'
+    aquifer_bottom = path + '../from_WGNHS/Bedrock/TopoToR_Nicol.tif'
     output_folder = path + '../NS1_results/'
     if not os.path.isdir(output_folder):
         os.makedirs(output_folder)
 
     output_flooded_heads_file = output_folder + 'flooding'
     farfield = path + '../shps/Nicolet_south_ff.shp'
-    lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=farfield,
-                                aquifer_bottom=aquifer_bottom,
-                                      outpath=output_flooded_heads_file,
-                                      solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
-                                      dem_mult=1)
+    if os.path.exists(grd):
+        lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=farfield,
+                                    aquifer_bottom=aquifer_bottom,
+                                          outpath=output_flooded_heads_file,
+                                          solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
+                                          dem_mult=1)
+    else:
+        print('{} not found.'.format(grd))
+
 def test_plot_flooding():
     """Tests the plot_flooding utility."""
     solver_x0 = 671467.1 # origin of GFLOW solver coordinates in NAD 27 UTM 16
@@ -70,6 +79,6 @@ def test_plot_flooding():
                                       dem_mult=1/.3048)
 
 if __name__ == '__main__':
-    #test_plot_flooding_PF()
+    test_plot_flooding_PF()
     test_plot_flooding_NS()
-    #test_plot_flooding()
+    test_plot_flooding()

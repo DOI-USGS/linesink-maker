@@ -4,7 +4,7 @@
 # In[1]:
 
 import sys
-sys.path.insert(0, '../linesinkmaker')
+sys.path.insert(0, '..')
 import lsmaker
 '''
 try:
