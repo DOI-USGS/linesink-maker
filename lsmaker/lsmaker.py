@@ -336,14 +336,19 @@ class linesinks:
         self.farfield = self._get_XMLentry('farfield', None)
         self.routed_area = self._get_XMLentry('routed_area', None)
         self.nearfield = self._get_XMLentry('nearfield', None)
-        self.prj = self._get_XMLentry('prj', self.nearfield[:-4] +'.prj')
+        try: # get the projection file and crs from either the nearfield or routed area
+            self.prj = self._get_XMLentry('prj', self.nearfield[:-4] +'.prj')
+            self.crs = fiona.open(self.nearfield).crs
+        except:
+            self.prj = self._get_XMLentry('prj', self.routed_area[:-4] + '.prj')
+            self.crs = fiona.open(self.routed_area).crs
+            self.nearfield = self.routed_area
+        self.crs_str = to_string(self.crs)  # self.crs, in proj4 string format
         self.farfield_buffer = self._get_XMLentry('farfield_buffer', 10000, int)
         self.clip_farfield = self.tf2flag(self._get_XMLentry('clip_farfield', 'False'))
         self.split_by_HUC = self.tf2flag(self._get_XMLentry('split_by_HUC', 'False'))
         self.HUC_shp = self._get_XMLentry('HUC_shp', None)
         self.HUC_name_field = self.tf2flag(self._get_XMLentry('HUC_name_field', 'False'))
-        self.crs = fiona.open(self.nearfield).crs # fiona-style coordinate system (proj4 string as dictionary)
-        self.crs_str = to_string(self.crs) # self.crs, in proj4 string format
 
         # simplification
         self.refinement_areas = []  # list of n areas within routed area with additional refinement
@@ -357,6 +362,8 @@ class linesinks:
                                                        self.min_waterbody_size, float)
         self.drop_intermittent = self.tf2flag(self._get_XMLentry('drop_intermittent', 'False'))
         self.drop_crossing = self.tf2flag(self._get_XMLentry('drop_crossing', 'False'))
+        self.asum_thresh_ra = self._get_XMLentry('routed_area_arbolate_sum_threshold', 0., float)
+        self.asum_thresh_nf = self._get_XMLentry('nearfield_arbolate_sum_threshold', 0., float)
 
         # NHD files
         self.flowlines = self._get_XMLentry('flowlines', [], str, raise_error=True)
@@ -613,15 +620,23 @@ class linesinks:
 
         print('clipping and reprojecting input datasets...')
 
-        self.nf = self.load_poly(self.nearfield)
-        self.ra = self.load_poly(self.routed_area)
-        self.ff = self.load_poly(self.farfield)
+        # (zero buffers can clean up self-intersections in hand drawn polygons)
+        self.nf = self.load_poly(self.nearfield).buffer(0)
+        self.ra = self.load_poly(self.routed_area).buffer(0)
+        self.ff = self.load_poly(self.farfield).buffer(0)
+        for p in [self.nf, self.ra, self.ff]:
+            assert p.is_valid, 'Invalid polygon'
 
         for attr, shapefiles in list({'fl': self.flowlines, 'wb': self.waterbodies}.items()):
             # all flowlines and waterbodies must be in same coordinate system
             # sfrmaker preproc also uses crs from first file in list
             shp_crs_str = to_string(fiona.open(shapefiles[0]).crs)
-            self.__dict__[attr] = GISio.shp2df(shapefiles)
+
+            # get bounding box of model area in nhd crs to speeding reading in data via filter
+            bounds = reproject([self.ff], self.crs_str, shp_crs_str)
+            bounds = bounds[0].bounds
+
+            self.__dict__[attr] = GISio.shp2df(shapefiles, filter=bounds)
             # if NHD features not in model area coodinate system, reproject
             if shp_crs_str != self.crs_str:
                 self.__dict__[attr]['geometry'] = reproject(self.__dict__[attr].geometry.tolist(), shp_crs_str, self.crs_str)
@@ -633,7 +648,17 @@ class linesinks:
         if self.clip_farfield:
             print('truncating waterbodies at farfield boundary...')
             # get rid of any islands in the process
-            self.wb['geometry'] = [Polygon(g.exterior).intersection(self.ff) for g in self.wb.geometry]
+            wbgeoms = self.wb.geometry
+            #valid = np.array([p.is_valid for p in wbgeoms])
+            #if np.any(~valid):
+            #    comids = self.wb.loc[~valid, 'COMID']
+            #    print('The following waterbodies result in invalid polygons when intersected with the domain:')
+            #    for c in comids:
+            #        print(c)
+            wbgeoms = [Polygon(g.exterior).buffer(0)
+                               for g in self.wb.geometry]
+            wbgeoms = [p.intersection(self.ff).buffer(0) for p in wbgeoms]
+            self.wb['geometry'] = wbgeoms
             # for multipolygons, retain largest part
             geoms = self.wb.geometry.values
             for i, g in enumerate(geoms):
@@ -787,6 +812,17 @@ class linesinks:
         wbs['routed'] = [poly.intersects(rag) for poly in wbs.geometry]
         df['nearfield'] = [line.intersects(nfg) for line in df.geometry]
         wbs['nearfield'] = [poly.intersects(nfg) for poly in wbs.geometry]
+
+        if self.asum_thresh_ra > 0.:
+            print('\nremoving streams in routed area with arbolate sums < {:.2f}'.format(self.asum_thresh_ra))
+            # retain all streams in the farfield or in the routed area with arbolate sum > threshold
+            criteria = df.farfield.values | df.routed.values & (df.ArbolateSu.values > self.asum_thresh_ra)
+
+        if self.asum_thresh_nf > 0.:
+            print('\nremoving streams in nearfield with arbolate sums < {:.2f}'.format(self.asum_thresh_nf))
+            criteria = df.farfield.values | df.nearfield.values & (df.ArbolateSu.values > self.asum_thresh_nf)
+
+        df = df.loc[criteria].copy()
 
         print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
         # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
