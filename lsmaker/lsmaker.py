@@ -106,8 +106,11 @@ def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
 def get_elevations_from_epqs(points, units='Feet'):
     """From list of shapely points in lat, lon, returns list of elevation values
     """
-    print('querying National Map Elevation Point Query Service...')
-    elevations = [get_elevation_from_epqs(p.x, p.y, units=units) for p in points]
+    if len(points) > 0:
+        print('querying National Map Elevation Point Query Service...')
+        elevations = [get_elevation_from_epqs(p.x, p.y, units=units) for p in points]
+    else:
+        elevations = []
     return elevations
 
 
@@ -360,10 +363,13 @@ class linesinks:
         self.min_waterbody_size = self._get_XMLentry('min_waterbody_size', 1.0, float)
         self.min_farfield_wb_size = self._get_XMLentry('min_farfield_waterbody_size',
                                                        self.min_waterbody_size, float)
+        self.farfield_length_threshold = self._get_XMLentry('farfield_length_threshold', 0., float)
+        self.routed_area_length_threshold = self._get_XMLentry('routed_area_length_threshold', 0., float)
         self.drop_intermittent = self.tf2flag(self._get_XMLentry('drop_intermittent', 'False'))
         self.drop_crossing = self.tf2flag(self._get_XMLentry('drop_crossing', 'False'))
         self.asum_thresh_ra = self._get_XMLentry('routed_area_arbolate_sum_threshold', 0., float)
         self.asum_thresh_nf = self._get_XMLentry('nearfield_arbolate_sum_threshold', 0., float)
+        self.asum_thresh_ff = self._get_XMLentry('farfield_arbolate_sum_threshold', 0., float)
 
         # NHD files
         self.flowlines = self._get_XMLentry('flowlines', [], str, raise_error=True)
@@ -466,6 +472,21 @@ class linesinks:
             except ValueError:
                 # handle Nonetype values in some NHDPlus fields
                 continue
+
+    def _get_wb_elevations(self, wb_df):
+        # (the centroids of some lakes might not be in the lake itself)
+        wb_points = [wb.centroid if wb.centroid.within(wb)
+                     else _get_random_point_in_polygon(wb)
+                     for wb in wb_df.geometry.tolist()]
+        # reproject the representative points into lat lon
+        wb_points_ll = reproject(wb_points, self.crs_str, "+init=epsg:4269")
+        wb_elevations = get_elevations_from_epqs(wb_points_ll, units=self.ComputationalUnits)
+
+        # add in elevations from waterbodies in stream network
+
+        return pd.DataFrame({'COMID': wb_df.COMID.values,
+                                     self.elevs_field: wb_elevations,
+                                     'geometry': wb_points})
 
     def load_poly(self, shapefile, dest_crs=None):
         """Load a shapefile and return the first polygon from its records,
@@ -698,27 +719,45 @@ class linesinks:
                         f['geometry'] = mapping(donut)
                         output.write(f)
 
+        # drop waterbodies that aren't lakes bigger than min size
+        min_size = np.min([self.min_nearfield_wb_size, self.min_waterbody_size, self.min_farfield_wb_size])
+        self.wb = self.wb.loc[(self.wb.FTYPE == 'LakePond') & (self.wb.AREASQKM > min_size)].copy()
+
         print('\ngetting elevations for waterbodies not in the stream network')
-        # get elevations for all waterbodies for the time being.
-        # otherwise waterbodies associated with first-order streams may be dropped from farfield,
-        # but still waterbodies list, causing a key error in the lakes setup
-        # these lakes probably should be left in the farfield unless they are explicitly not wanted
         isolated_wb = self.wb
         isolated_wb_comids = isolated_wb.COMID.tolist()
-        # (the centroids of some lakes might not be in the lake itself)
-        wb_points = [wb.centroid if wb.centroid.within(wb)
-                     else _get_random_point_in_polygon(wb)
-                     for wb in isolated_wb.geometry.tolist()]
-        # reproject the representative points into lat lon
-        wb_points_ll = reproject(wb_points, self.crs_str, "+init=epsg:4269")
-        wb_elevations = get_elevations_from_epqs(wb_points_ll, units=self.ComputationalUnits)
+        if not os.path.exists(self.wb_centroids_w_elevations):
+            # get elevations for all waterbodies for the time being.
+            # otherwise waterbodies associated with first-order streams may be dropped from farfield,
+            # but still waterbodies list, causing a key error in the lakes setup
+            # these lakes probably should be left in the farfield unless they are explicitly not wanted
+            '''
+            # (the centroids of some lakes might not be in the lake itself)
+            wb_points = [wb.centroid if wb.centroid.within(wb)
+                         else _get_random_point_in_polygon(wb)
+                         for wb in isolated_wb.geometry.tolist()]
+            # reproject the representative points into lat lon
+            wb_points_ll = reproject(wb_points, self.crs_str, "+init=epsg:4269")
+            wb_elevations = get_elevations_from_epqs(wb_points_ll, units=self.ComputationalUnits)
 
-        # add in elevations from waterbodies in stream network
+            # add in elevations from waterbodies in stream network
 
-        wb_points_df = pd.DataFrame({'COMID': isolated_wb_comids,
-                                     self.elevs_field: wb_elevations,
-                                     'geometry': wb_points})
-        GISio.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj4=self.crs_str)
+            wb_points_df = pd.DataFrame({'COMID': isolated_wb_comids,
+                                         self.elevs_field: wb_elevations,
+                                         'geometry': wb_points})
+            '''
+            wb_points_df = self._get_wb_elevations(isolated_wb)
+            GISio.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj4=self.crs_str)
+        else:
+            print('\nreading elevations from {}...'.format(self.wb_centroids_w_elevations))
+            wb_points_df = GISio.shp2df(self.wb_centroids_w_elevations)
+            toget = set(isolated_wb_comids).difference(set(wb_points_df.COMID.tolist()))
+            if len(toget) > 0:
+                isolated_wb = self.wb.loc[self.wb.COMID.isin(toget)].copy()
+                wb_points_df2 = self._get_wb_elevations(isolated_wb)
+                wb_points_df = wb_points_df.append(wb_points_df2)
+                GISio.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj4=self.crs_str)
+
 
     def preprocess(self, save=True, use_arcpy=False):
         """
@@ -816,17 +855,24 @@ class linesinks:
         if self.asum_thresh_ra > 0.:
             print('\nremoving streams in routed area with arbolate sums < {:.2f}'.format(self.asum_thresh_ra))
             # retain all streams in the farfield or in the routed area with arbolate sum > threshold
-            criteria = df.farfield.values | df.routed.values & (df.ArbolateSu.values > self.asum_thresh_ra)
+            criteria = ~df.routed.values | df.routed.values & (df.ArbolateSu.values > self.asum_thresh_ra)
+            df = df.loc[criteria].copy()
 
         if self.asum_thresh_nf > 0.:
             print('\nremoving streams in nearfield with arbolate sums < {:.2f}'.format(self.asum_thresh_nf))
-            criteria = df.farfield.values | df.nearfield.values & (df.ArbolateSu.values > self.asum_thresh_nf)
+            criteria = ~df.nearfield.values | df.nearfield.values & (df.ArbolateSu.values > self.asum_thresh_nf)
+            df = df.loc[criteria].copy()
 
-        df = df.loc[criteria].copy()
+        if self.asum_thresh_ff > 0.:
+            print('\nremoving streams in farfield with arbolate sums < {:.2f}'.format(self.asum_thresh_ff))
+            criteria = ~df.farfield.values | df.farfield.values & (df.ArbolateSu.values > self.asum_thresh_ff)
+            df = df.loc[criteria].copy()
 
-        print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
-        # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
-        df = df[~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))]
+        if self.min_farfield_order > 1.:
+            print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
+            # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
+            criteria = ~df.farfield.values | (df.farfield.values & (df.StreamOrde.values >= self.min_farfield_order))
+            df = df[criteria].copy()
 
         farfield_retain = ~(df.farfield.values & (df.FCODE == self.fcodes['Intermittent']).values) # drop intermittent streams from farfield
         if self.drop_intermittent:
@@ -1374,6 +1420,18 @@ class linesinks:
         isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0
                     and c not in self.wblist]
         #df = df.drop(isolated, axis=0)
+
+        # drop lines below minimum length that are not Lakes
+        if self.farfield_length_threshold > 0.:
+            criteria = ~df.farfield.values | (df.FTYPE == 'LakePond') |\
+                       (df.farfield.values & (df.LENGTHKM >= self.farfield_length_threshold))
+            df = df.loc[criteria].copy()
+
+        if self.routed_area_length_threshold > 0.:
+            criteria = ~df.routed.values | (df.FTYPE == 'LakePond') |\
+                       (df.routed.values & (df.LENGTHKM >= self.routed_area_length_threshold))
+            df = df.loc[criteria].copy()
+
 
         # names
         df['ls_name'] = len(df) * [None]
