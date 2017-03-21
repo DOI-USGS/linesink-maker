@@ -227,7 +227,8 @@ def name(x):
                'Reservoir': 'Res',
                'River': 'R',
                'South': 'S',
-               'West': 'W'}
+               'West': 'W',
+               "'": ''}
 
         name = '{} {}'.format(x.name, x.GNIS_NAME)
         for k, v in abb.items():
