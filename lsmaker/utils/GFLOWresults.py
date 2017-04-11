@@ -96,7 +96,7 @@ def plot_flooding(grdfile, dem, epsg,
         import rasterio
         from rasterio import transform
         from rasterio.warp import reproject, Resampling
-        from rasterio.tools.mask import mask
+        from rasterio.mask import mask
         from rasterio.crs import CRS
     except ImportError:
         print('This method requires Rasterio')
@@ -334,7 +334,7 @@ class surferGrid:
         else:
             crs = None
 
-        with rasterio.drivers():
+        with rasterio.Env():
             with rasterio.open(fname,
                                'w',
                                driver='GTiff',
