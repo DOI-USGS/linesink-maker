@@ -78,7 +78,14 @@ def test_plot_flooding():
                                       solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
                                       dem_mult=1/.3048)
 
+def test_write_raster():
+    from lsmaker.utils import write_heads_raster
+    model_x0, model_y0 = 454273.02, 5153978.23
+    write_heads_raster('input/STL14.GRD', 'output/STL14.tif',
+                       solver_x0=model_x0, solver_y0=model_y0,
+                       scale_xy=.3048, epsg=26715)
 if __name__ == '__main__':
-    test_plot_flooding_PF()
-    test_plot_flooding_NS()
-    test_plot_flooding()
+    #test_plot_flooding_PF()
+    #test_plot_flooding_NS()
+    #test_plot_flooding()
+    test_write_raster()

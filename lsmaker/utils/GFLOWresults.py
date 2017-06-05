@@ -284,7 +284,7 @@ class surferGrid:
         print('reading {}...'.format(grdfile))
         with open(grdfile) as input:
             self.header = next(input)
-            self.nrow, self.ncol = map(int, next(input).strip().split())
+            self.ncol, self.nrow = map(int, next(input).strip().split())
             self.xmin, self.xmax = map(float, next(input).strip().split())
             self.ymin, self.ymax = map(float, next(input).strip().split())
             self.zmin, self.zmax = map(float, next(input).strip().split())
@@ -307,8 +307,14 @@ class surferGrid:
 
     def read_grd(self, grdfile):
         self._read_grd_header(grdfile)
-        data = np.loadtxt(grdfile, skiprows=5)
-        self.data = np.reshape(data, (self.ncol, self.nrow))
+        try:
+            data = np.loadtxt(grdfile, skiprows=5)
+        except ValueError: # handle uneven number of columns
+            with open(grdfile) as input:
+                all_data = [l.split() for l in input.readlines()][5:]
+                data = np.hstack(all_data).astype(float)
+
+        self.data = np.reshape(data, (self.nrow, self.ncol))
 
     def write_grd(self, fname='output.grd'):
 
