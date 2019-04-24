@@ -823,9 +823,9 @@ class linesinks:
         self._enforce_dtypes(wbs)
 
         # check for MultiLineStrings / MultiPolygons and drop them (these are features that were fragmented by the boundaries)
-        mls = [i for i in df.index if 'Multi' in df.ix[i, 'geometry'].type]
+        mls = [i for i in df.index if 'Multi' in df.loc[i, 'geometry'].type]
         df = df.drop(mls, axis=0)
-        mps = [i for i in wbs.index if 'Multi' in wbs.ix[i, 'geometry'].type]
+        mps = [i for i in wbs.index if 'Multi' in wbs.loc[i, 'geometry'].type]
         wbs = wbs.drop(mps, axis=0)
 
         # join NHD tables to lines
@@ -901,11 +901,11 @@ class linesinks:
                 continue
 
             wb_geometry = wbs.geometry[wb_comid]
-            overlapping = wbs.ix[[wb_geometry.intersects(r) for r in wbs.geometry]]
+            overlapping = wbs.loc[[wb_geometry.intersects(r) for r in wbs.geometry]]
             basering_comid = overlapping.sort_values('FTYPE').index[0]  # sort to prioritize features with names
 
             # two or more shapes in overlapping signifies a coincident boundary
-            if len(overlapping > 1):
+            if len(overlapping) > 1:
                 merged = unary_union([r for r in overlapping.geometry])
                 # multipolygons will result if the two polygons only have a single point in common
                 if merged.type == 'MultiPolygon':
@@ -977,7 +977,7 @@ class linesinks:
         #(see http://toblerity.org/shapely/manual.html)
         df = self.df[['farfield', 'routed', 'nearfield', 'geometry']].copy()
 
-        ls_geom = np.array([LineString()] * len(df))
+        ls_geom = np.array([LineString()] * len(df), dtype=object)
         tols = {'nf': nearfield_tolerance,
                 'ra': routed_area_tolerance,
                 'ff': farfield_tolerance}
@@ -989,7 +989,7 @@ class linesinks:
         for k, within in simplification.items():
             # simplify the linesinks in the domain; add simplified geometries to global geometry column
             # assign geometries to numpy array first and then to df (had trouble assigning with pandas)
-            ls_geom[within] = [g.simplify(tols[k]) for g in df.ix[within, 'geometry'].tolist()]
+            ls_geom[within] = [g.simplify(tols[k]) for g in df.loc[within, 'geometry'].tolist()]
 
         df['ls_geom'] = ls_geom
 
@@ -1068,7 +1068,7 @@ class linesinks:
             print("adjusting elevations for comids with zero-gradient...")
             for comid in comids0:
 
-                outsegs = [o for o in self.outsegs.ix[comid].values if o > 0]
+                outsegs = [o for o in self.outsegs.loc[comid].values if o > 0]
                 for i, o in enumerate(outsegs):
 
                     if i == len(outsegs) - 1:
@@ -1076,7 +1076,7 @@ class linesinks:
                     else:
                         oo = outsegs[i + 1]
 
-                    minElev, maxElev = df.ix[o, 'minElev'], df.ix[o, 'maxElev']
+                    minElev, maxElev = df.loc[o, 'minElev'], df.loc[o, 'maxElev']
                     # test if current segment has flat or negative gradient
                     if minElev >= maxElev:
                         minElev = maxElev - increment
@@ -1086,12 +1086,12 @@ class linesinks:
                                                                                  maxElev,
                                                                                  minElev, oo))
                         # test if next segment is now higher
-                        if oo > 0 and df.ix[oo, 'maxElev'] > minElev:
+                        if oo > 0 and df.loc[oo, 'maxElev'] > minElev:
                             self.efp.write('{}, {:.2f}, {:.2f}, {:.2f}, {}\n'.format(outsegs[i + 1],
-                                                                                     df.ix[outsegs[i + 1], 'maxElev'],
-                                                                                     df.ix[outsegs[i + 1], 'minElev'],
+                                                                                     df.loc[outsegs[i + 1], 'maxElev'],
+                                                                                     df.loc[outsegs[i + 1], 'minElev'],
                                                                                      minElev,
-                                                                                     df.ix[outsegs[i + 1], 'minElev'],
+                                                                                     df.loc[outsegs[i + 1], 'minElev'],
                                                                                      oo))
                             df.loc[oo, 'maxElev'] = minElev
                     else:
@@ -1120,7 +1120,7 @@ class linesinks:
         df['ls_coords_str'] = [''.join(map(str, coords)) for coords in df.ls_coords]
 
         # identify duplicates; make common set of up and down comids for duplicates
-        duplicates = np.unique(df.ix[df.duplicated('ls_coords_str'), 'ls_coords_str'])
+        duplicates = np.unique(df.loc[df.duplicated('ls_coords_str'), 'ls_coords_str'])
         for dup in duplicates:
             alld = df[df.ls_coords_str == dup]
             upcomids = []
@@ -1138,7 +1138,7 @@ class linesinks:
             for u in upcomids:
                 df.set_value(u, 'dncomid', [keep_comid])
             for d in dncomid:
-                upids = set(df.ix[d, 'upcomids']).difference(set(alld.index[1:]))
+                upids = set(df.loc[d, 'upcomids']).difference(set(alld.index[1:]))
                 upids.add(alld.index[0])
                 df.set_value(d, 'upcomids', list(upids))
             df.drop(alld.index[1:], axis=0, inplace=True)
@@ -1169,12 +1169,12 @@ class linesinks:
 
             # isolated lakes have no overlapping lines and no routing
             if len(lines) == 0:
-                df.ix[wb_comid, 'maxElev'] = wb_elevs[wb_comid]
-                df.ix[wb_comid, 'minElev'] = wb_elevs[wb_comid] - 0.01
-                df.ix[wb_comid, 'routing'] = 0
+                df.loc[wb_comid, 'maxElev'] = wb_elevs[wb_comid]
+                df.loc[wb_comid, 'minElev'] = wb_elevs[wb_comid] - 0.01
+                df.loc[wb_comid, 'routing'] = 0
             else:
-                df.ix[wb_comid, 'minElev'] = np.min(lines.minElev)
-                df.ix[wb_comid, 'maxElev'] = np.min(lines.maxElev)
+                df.loc[wb_comid, 'minElev'] = np.min(lines.minElev)
+                df.loc[wb_comid, 'maxElev'] = np.min(lines.maxElev)
 
                 # get upcomids and downcomid for lake,
                 # by differencing all up/down comids for lines in lake, and comids in the lake
@@ -1202,19 +1202,19 @@ class linesinks:
                     # (instead of the lines that represented the lake in the flowlines dataset)
                     df.loc[upcomids, 'dncomid'] = [wb_comid]
                     df.loc[dncomids, 'upcomids'] = [wb_comid]
-                    df.ix[df.FTYPE != 'LakePond', 'dncomid'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].dncomid]
-                    df.ix[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
+                    df.loc[df.FTYPE != 'LakePond', 'dncomid'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].dncomid]
+                    df.loc[df.FTYPE != 'LakePond', 'upcomids'] = [[wb_comid if v == comid else v for v in l] for l in df[df.FTYPE != 'LakePond'].upcomids]
                 '''
                 # get total length of lines representing lake (used later to estimate width)
                 df.loc[wb_comid, 'total_line_length'] = np.sum(lines.LENGTHKM)
 
                 # modifications to routed lakes
-                #if df.ix[wb_comid, 'routing'] == 1:
+                #if df.loc[wb_comid, 'routing'] == 1:
 
                 # enforce gradient in routed lakes; update elevations in downstream comids
-                if df.ix[wb_comid, 'minElev'] == df.ix[wb_comid, 'maxElev']:
+                if df.loc[wb_comid, 'minElev'] == df.loc[wb_comid, 'maxElev']:
                     df.loc[wb_comid, 'minElev'] -= 0.01
-                    dnids = df.ix[wb_comid, 'dncomid']
+                    dnids = df.loc[wb_comid, 'dncomid']
                     for dnid in [d for d in dnids if d > 0]:
                         df.loc[dnid, 'maxElev'] -= 0.01
 
@@ -1224,9 +1224,9 @@ class linesinks:
             # some routed lakes may not have an outlet
             # do this for both routed and unrouted (farfield) lakes, so that the outlet line won't cross the lake
             # (only tributaries are tested for crossing in step below)
-            lake_coords = uniquelist(df.ix[wb_comid, 'ls_coords'])
-            if len(df.ix[wb_comid, 'dncomid']) > 0 and dncomids[0] != 0:
-                outlet_coords = df.ix[df.ix[wb_comid, 'dncomid'][0], 'ls_coords'][0]
+            lake_coords = uniquelist(df.loc[wb_comid, 'ls_coords'])
+            if len(df.loc[wb_comid, 'dncomid']) > 0 and dncomids[0] != 0:
+                outlet_coords = df.loc[df.loc[wb_comid, 'dncomid'][0], 'ls_coords'][0]
                 closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
                 lake_coords[closest_ind] = outlet_coords
                 next_ind = closest_ind + 1 if closest_ind < (len(lake_coords) - 1) else 0
@@ -1241,11 +1241,11 @@ class linesinks:
             df.set_value(wb_comid, 'ls_coords', new_coords)
 
             # make sure inlets/outlets don't cross lines representing lake
-            wb_geom = LineString(df.ix[wb_comid, 'ls_coords'])
-            x = [c for c in upcomids if c != 0 and LineString(df.ix[c, 'ls_coords']).crosses(wb_geom)]
+            wb_geom = LineString(df.loc[wb_comid, 'ls_coords'])
+            x = [c for c in upcomids if c != 0 and LineString(df.loc[c, 'ls_coords']).crosses(wb_geom)]
             if len(x) > 0:
                 for c in x:
-                    ls_coords = list(df.ix[c, 'ls_coords'])  # want to copy, to avoid modifying df
+                    ls_coords = list(df.loc[c, 'ls_coords'])  # want to copy, to avoid modifying df
                     # find the first intersection point with the lake
                     # (for some reason, two very similar coordinates will be occasionally be returned by intersection)
                     intersection = LineString(ls_coords).intersection(wb_geom)
@@ -1281,17 +1281,17 @@ class linesinks:
         lines = [l for l in df.index if l not in self.wblist and l not in farfield]
         #df['dncomid'] = len(df)*[[]]
         #df['upcomids'] = len(df)*[[]]
-        #df.ix[lines, 'dncomid'] = [list(df[df['Hydroseq'] == df.ix[i, 'DnHydroseq']].index) for i in lines]
-        #df.ix[lines, 'upcomids'] = [list(df[df['DnHydroseq'] == df.ix[i, 'Hydroseq']].index) for i in lines]
+        #df.loc[lines, 'dncomid'] = [list(df[df['Hydroseq'] == df.loc[i, 'DnHydroseq']].index) for i in lines]
+        #df.loc[lines, 'upcomids'] = [list(df[df['DnHydroseq'] == df.loc[i, 'Hydroseq']].index) for i in lines]
         df['upcomids'] = [[]] * len(df)
         df['dncomid'] = [[]] * len(df)
         dncomid, upcomids = [], []
         for l in lines:
             # set up/down comids that are not in the model domain to zero
             dncomid.append([d if d in lines else 0 for d in
-                            list(df[df['Hydroseq'] == df.ix[l, 'DnHydroseq']].index)])
+                            list(df[df['Hydroseq'] == df.loc[l, 'DnHydroseq']].index)])
             upcomids.append([u if u in lines else 0 for u in
-                             list(df[df['DnHydroseq'] == df.ix[l, 'Hydroseq']].index)])
+                             list(df[df['DnHydroseq'] == df.loc[l, 'Hydroseq']].index)])
 
         df.loc[lines, 'upcomids'] = upcomids
         df.loc[lines, 'dncomid'] = dncomid
@@ -1328,7 +1328,7 @@ class linesinks:
         #df['ls_geom'] = self.lines_df['ls_geom']
         df['ls_coords'] = self.lines_df['ls_coords']
 
-        self.wblist = set(df.ix[df.waterbody].index.values.astype(self.int_dtype)).difference({0})
+        self.wblist = set(df.loc[df.waterbody].index.values.astype(self.int_dtype)).difference({0})
 
         print('Assigning attributes for GFLOW input...')
 
@@ -1380,7 +1380,7 @@ class linesinks:
         downstream_ff = []
         for i in range(len(df)):
             try:
-                dff = df.ix[df.iloc[i].dncomid[0], 'farfield'].item()
+                dff = df.loc[df.iloc[i].dncomid[0], 'farfield'].item()
             except:
                 dff = True
             downstream_ff.append(dff)
@@ -1395,9 +1395,9 @@ class linesinks:
 
         # widths for lakes
         if np.any(df['FTYPE'] == 'LakePond'):
-            df.ix[df['FTYPE'] == 'LakePond', 'width'] = \
-                np.vectorize(lake_width)(df.ix[df['FTYPE'] == 'LakePond', 'AREASQKM'],
-                                         df.ix[df['FTYPE'] == 'LakePond', 'total_line_length'], self.lmbda)
+            df.loc[df['FTYPE'] == 'LakePond', 'width'] = \
+                np.vectorize(lake_width)(df.loc[df['FTYPE'] == 'LakePond', 'AREASQKM'],
+                                         df.loc[df['FTYPE'] == 'LakePond', 'total_line_length'], self.lmbda)
 
         # resistance
         df['resistance'] = self.resistance
@@ -1414,11 +1414,11 @@ class linesinks:
         df['chkScenario'] = self.chkScenario
 
         # linesink location
-        df.ix[df['FTYPE'] != 'LakePond', 'AutoSWIZC'] = 1  # Along stream centerline
-        df.ix[df['FTYPE'] == 'LakePond', 'AutoSWIZC'] = 2  # Along surface water boundary
+        df.loc[df['FTYPE'] != 'LakePond', 'AutoSWIZC'] = 1  # Along stream centerline
+        df.loc[df['FTYPE'] == 'LakePond', 'AutoSWIZC'] = 2  # Along surface water boundary
 
         # additional check to drop isolated lines
-        isolated = [c for c in df.index if len(df.ix[c].dncomid) == 0 and len(df.ix[c].upcomids) == 0
+        isolated = [c for c in df.index if len(df.loc[c].dncomid) == 0 and len(df.loc[c].upcomids) == 0
                     and c not in self.wblist]
         #df = df.drop(isolated, axis=0)
 
@@ -1466,7 +1466,7 @@ class linesinks:
         seglengths = np.array([len(u) for u in upsegs])
         # setup dataframe of confluences
         # confluences are where segments have upsegs (no upsegs means the reach 1 is a headwater)
-        confluences = self.df.ix[(seglengths > 0) & (maxsegs > 0), ['COMID', 'upcomids']].copy()
+        confluences = self.df.loc[(seglengths > 0) & (maxsegs > 0), ['COMID', 'upcomids']].copy()
 
         confluences['elev'] = [0] * len(confluences)
         nconfluences = len(confluences)
@@ -1474,8 +1474,8 @@ class linesinks:
         for i, r in confluences.iterrows():
 
             # confluence elevation is the minimum of the ending segments minimums, starting segments maximums
-            endsmin = np.min(self.df.ix[self.df.COMID.isin(r.upcomids), 'minElev'].values)
-            startmax = np.max(self.df.ix[self.df.COMID == i, 'maxElev'].values)
+            endsmin = np.min(self.df.loc[self.df.COMID.isin(r.upcomids), 'minElev'].values)
+            startmax = np.max(self.df.loc[self.df.COMID == i, 'maxElev'].values)
             cfelev = np.min([endsmin, startmax])
             confluences.loc[i, 'elev'] = cfelev
 
@@ -1602,7 +1602,7 @@ class linesinks:
         HUCs_df = GISio.shp2df(self.HUC_shp, index=self.HUC_name_field)
         df[self.HUC_name_field] = len(df) * [None]
         for HUC in HUCs_df.index:
-            lines = [line.intersects(HUCs_df.ix[HUC, 'geometry']) for line in df['geometry']]
+            lines = [line.intersects(HUCs_df.loc[HUC, 'geometry']) for line in df['geometry']]
             df.loc[lines, self.HUC_name_field] = HUC
         dfg = df.groupby(self.HUC_name_field)
 
@@ -1631,18 +1631,18 @@ class linesinks:
 
         for comid in df.index:
             ofp.write('\t<LinesinkString>\n')
-            ofp.write('\t\t<Label>{}</Label>\n'.format(df.ix[comid, 'ls_name']))
+            ofp.write('\t\t<Label>{}</Label>\n'.format(df.loc[comid, 'ls_name']))
             ofp.write('\t\t<HeadSpecified>1</HeadSpecified>\n')
-            ofp.write('\t\t<StartingHead>{:.2f}</StartingHead>\n'.format(df.ix[comid, 'maxElev']))
-            ofp.write('\t\t<EndingHead>{:.2f}</EndingHead>\n'.format(df.ix[comid, 'minElev']))
-            ofp.write('\t\t<Resistance>{}</Resistance>\n'.format(df.ix[comid, 'resistance']))
-            ofp.write('\t\t<Width>{:.2f}</Width>\n'.format(df.ix[comid, 'width']))
-            ofp.write('\t\t<Depth>{:.2f}</Depth>\n'.format(df.ix[comid, 'depth']))
-            ofp.write('\t\t<Routing>{}</Routing>\n'.format(df.ix[comid, 'routing']))
-            ofp.write('\t\t<EndStream>{}</EndStream>\n'.format(df.ix[comid, 'end_stream']))
+            ofp.write('\t\t<StartingHead>{:.2f}</StartingHead>\n'.format(df.loc[comid, 'maxElev']))
+            ofp.write('\t\t<EndingHead>{:.2f}</EndingHead>\n'.format(df.loc[comid, 'minElev']))
+            ofp.write('\t\t<Resistance>{}</Resistance>\n'.format(df.loc[comid, 'resistance']))
+            ofp.write('\t\t<Width>{:.2f}</Width>\n'.format(df.loc[comid, 'width']))
+            ofp.write('\t\t<Depth>{:.2f}</Depth>\n'.format(df.loc[comid, 'depth']))
+            ofp.write('\t\t<Routing>{}</Routing>\n'.format(df.loc[comid, 'routing']))
+            ofp.write('\t\t<EndStream>{}</EndStream>\n'.format(df.loc[comid, 'end_stream']))
             ofp.write('\t\t<OverlandFlow>0</OverlandFlow>\n')
             ofp.write('\t\t<EndInflow>0</EndInflow>\n')
-            ofp.write('\t\t<ScenResistance>{}</ScenResistance>\n'.format(df.ix[comid, 'ScenResistance']))
+            ofp.write('\t\t<ScenResistance>{}</ScenResistance>\n'.format(df.loc[comid, 'ScenResistance']))
             ofp.write('\t\t<Drain>0</Drain>\n')
             ofp.write('\t\t<ScenFluxName>__NONE__</ScenFluxName>\n')
             ofp.write('\t\t<Gallery>0</Gallery>\n')
@@ -1653,14 +1653,14 @@ class linesinks:
             ofp.write('\t\t<Lake>0</Lake>\n')
             ofp.write('\t\t<Precipitation>0</Precipitation>\n')
             ofp.write('\t\t<Evapotranspiration>0</Evapotranspiration>\n')
-            ofp.write('\t\t<Farfield>{:.0f}</Farfield>\n'.format(df.ix[comid, 'farfield']))
-            ofp.write('\t\t<chkScenario>{}</chkScenario>\n'.format(df.ix[comid, 'chkScenario'])) # include linesink in PEST 'scenarios'
-            ofp.write('\t\t<AutoSWIZC>{:.0f}</AutoSWIZC>\n'.format(df.ix[comid, 'AutoSWIZC']))
-            ofp.write('\t\t<DefaultResistance>{:.2f}</DefaultResistance>\n'.format(df.ix[comid, 'resistance']))
+            ofp.write('\t\t<Farfield>{:.0f}</Farfield>\n'.format(df.loc[comid, 'farfield']))
+            ofp.write('\t\t<chkScenario>{}</chkScenario>\n'.format(df.loc[comid, 'chkScenario'])) # include linesink in PEST 'scenarios'
+            ofp.write('\t\t<AutoSWIZC>{:.0f}</AutoSWIZC>\n'.format(df.loc[comid, 'AutoSWIZC']))
+            ofp.write('\t\t<DefaultResistance>{:.2f}</DefaultResistance>\n'.format(df.loc[comid, 'resistance']))
             ofp.write('\t\t<Vertices>\n')
 
             # now write out linesink vertices
-            for x, y in df.ix[comid, 'ls_coords']:
+            for x, y in df.loc[comid, 'ls_coords']:
                 ofp.write('\t\t\t<Vertex>\n')
                 ofp.write('\t\t\t\t<X> {:.2f}</X>\n'.format(x))
                 ofp.write('\t\t\t\t<Y> {:.2f}</Y>\n'.format(y))
