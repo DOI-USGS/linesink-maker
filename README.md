@@ -12,7 +12,7 @@ linesink network.
 * shapely
 * pandas
 * pyproj
-
+* requests
   
 ### GFLOW Linesink import capability
 Linesinkmaker requires GFLOW 2.2 or higher, which has the capability of importing linesink string xml files.
@@ -22,7 +22,7 @@ The best way to install the required packages through **Anaconda**, available fo
 ##### at the command prompt:
 
 ```
-> conda create -n gis lxml fiona shapely pandas pyproj -y
+> conda create -n gis lxml fiona shapely pandas pyproj requests -y
 ```
 This creates a conda environment with the gis packages. To use the environment:
 
