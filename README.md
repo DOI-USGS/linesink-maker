@@ -18,7 +18,7 @@ linesink network.
 Linesinkmaker requires GFLOW 2.2 or higher, which has the capability of importing linesink string xml files.
 
 ### Installing the required Python packages:
-The best way to install the required packages through **Anaconda**, available for free at (<https://store.continuum.io/cshop/anaconda/>). Once Anaconda is installed, open a command prompt with Anaconda python in the system path (i.e., so that if you run `>python`, you get the Anaconda python). For Windows users, this probably means running the Anaconda command prompt from the start menu. Note that this shortcut can be copied to any folder for convenience. By right-clicking on the shortcut and selecting "properties", you can also change the starting location of the command prompt to the folder it is in by replacing the "Start in" field with %cd%.
+The best way to install the required packages through [**Anaconda**](https://www.anaconda.com/distribution/#download-section) (python 3x version). Once Anaconda is installed, open a command prompt with Anaconda python in the system path (i.e., so that if you run `>python`, you get the Anaconda python). For Windows users, this probably means running the Anaconda command prompt from the start menu. Note that this shortcut can be copied to any folder for convenience. By right-clicking on the shortcut and selecting "properties", you can also change the starting location of the command prompt to the folder it is in by replacing the "Start in" field with %cd%.
 ##### at the command prompt:
 
 ```
@@ -63,7 +63,7 @@ For each major drainage area encompassed by the model (e.g. Area 04 representing
 * elevslope.dbf  
 * PlusFlowlineVAA.dbf
 
-These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **NHDPlusV21_GL_04_NHDSnapshot_07.7z** and **NHDPlusV21_GL_04_NHDPlusAttributes_08.7z** 
+These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **`NHDPlusV21_GL_04_NHDSnapshot_07.7z`** and **`NHDPlusV21_GL_04_NHDPlusAttributes_08.7z`** 
 downloads. The NHDPlus files are specified in the XML input file under the tag **\<NHDfiles\>**.
 
 ##### Model domain specification:  

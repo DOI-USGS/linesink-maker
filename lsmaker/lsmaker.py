@@ -6,15 +6,8 @@ import numpy as np
 import os
 import pandas as pd
 import shutil
-
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-    import requests
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-
+from urllib.request import urlopen
+import requests
 import json
 from functools import partial
 import fiona
