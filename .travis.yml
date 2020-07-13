@@ -1,0 +1,59 @@
+language: python
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.ccache  # https://github.com/travis-ci/travis-ci/issues/5853
+
+matrix:
+  include:
+    # test with python 3.7
+    - env: ENV_FILE="ci/python37.yml"
+
+    # test with python 3.8
+    - env: ENV_FILE="ci/python38.yml"
+
+  #allow_failures:
+  #  - env: ENV_FILE="ci/environment.yml"
+
+env:
+  global:
+    # Doctr deploy key for aleaf/LinesinkMaker
+    - secure: "eHMTkCC0Un7l9kDsfve6JADE1Attr7mEXIJUzqeKkVWgx+ZQmdUyLk2Rzvk9nHMbKt8KUW7ro+cZuh7Y9dToW8YeqWLf2nOrlgARdqmvRBAYc5b+9SWlY7BJqd+buuSwBPujP8lfgKS8baVygU4vnlo5hoyGXrYQSvKVXSCwZ8/ghsMQGMhLcMx2D+qtZKUnwUtSGoZWVXlRCvgajQ9IrOkl8DN2pL4WLhErzDzHJuXuugXs5c34XMOEQjuk0Bj98TgedACsa0/1A2bv3AbZAyE/DCq+W+lA5lxJu+rBL7NG0kzuYL6WtT4BlGY5L9qGOcbVVJdox8qs3SqASSO90x3+aGlLZHAzbWFhDlv2UPRe0w63DMko/aBHAPrVVgm+7vVhcIb4IQn1Ke6DCyVgih8phsTE8r9vrB+hTMCKj5KR4Cp9qre+n+CKCyM+ntvVpPjc4PQ4Z5C7ULUSofsZcrSRweHDKjiXht22gMDjMVWVVHHD/tZ85Wc0g+kgue+y1QviO0F+Bz7GQkeP5Eztcl/JJ7Rp0JEh1PRNm/TBmDGYdlusfzysU0n1W5i9ARkWpLJ8Uy6ii7rJF5/5VTSi8MT31EQ+v+1HnnAUM/1Jk3rgbyahcC+xzsmwBJ+Q08/+9MbVxFGE4SrF8k7vTHaV8LGgkkS9eyiSXaXz1GL/1Xc="
+
+install:
+  - sudo apt-get update
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - # for including binary execs in the path
+  - #export PATH="$HOME/build/{ cookiecutter.github_username }/{ cookiecutter.repo_name }/bin/linux:$PATH"
+  - echo $PATH
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+  - conda info -a
+  - conda env create --file="${ENV_FILE}"
+  - source activate test
+  - pip install -e .
+  - python -m ipykernel install --user --name test --display-name "test"
+  - conda list
+
+  # Install this package and the packages listed in requirements.txt.
+  #- pip install .
+  # Install extra requirements for running tests and building docs.
+  #- pip install -r requirements-dev.txt
+
+script:
+  - coverage run -m pytest -v --durations=20  # Run the tests and check for test coverage.
+  - coverage report -m  # Generate test coverage report.
+  - set -e
+  - make -C docs html  # Build the documentation.
+  #  Publish the documentation with builds on master or develop branch
+  - doctr deploy --built-docs docs/build/html . --branch-whitelist master develop
+
+after_success:
+  - codecov  # Upload the report to codecov.
+  #- flake8 --max-line-length=115  # Enforce code style (but relax line length limit a bit).
+  #- make -C docs html  # Build the documentation.
+

@@ -2,6 +2,7 @@ name: test
 channels:
 - conda-forge
 - defaults
+- atleaf
 dependencies:
 - python=3.7
 - ipython
@@ -26,7 +27,7 @@ dependencies:
 - nbsphinx  # for rendering notebooks in sphinx-generated docs
 - sphinx-copybutton
 - sphinx_rtd_theme
-- gisutils
+- gis-utils
 - pip
 - pip:
   - doctr
