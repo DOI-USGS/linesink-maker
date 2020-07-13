@@ -16,11 +16,13 @@ from shapely.geometry import Polygon, LineString, Point, shape, mapping
 from shapely.ops import unary_union, transform
 import pyproj
 import math
+import gisutils
 try:
     import matplotlib.pyplot as plt
 except:
     pass
-from .diagnostics import *
+from .diagnostics import Diagnostics
+
 
 # ## Functions #############################
 def add_projection(line, point):
@@ -49,6 +51,7 @@ def add_projection(line, point):
             return line
         elif pd > distance:
             return LineString(coords[:i] + [(mp.x, mp.y)] + coords[i:])
+
 
 def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
     """Add vertices to linesinks at locations of testpoints
@@ -93,8 +96,10 @@ def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
             ind = ldf.index[0]
             l = ldf.geometry.values[0]
             newline = add_projection(l, mp)
-            df.set_value(ind, 'geometry', newline)
+            df.loc[ind, 'geometry'] = newline
+            #df.set_value(ind, 'geometry', newline)
     return df.geometry.tolist()
+
 
 def get_elevations_from_epqs(points, units='Feet'):
     """From list of shapely points in lat, lon, returns list of elevation values
@@ -153,7 +158,7 @@ def _get_random_point_in_polygon(poly):
 
 def reproject(geoms, pr1, pr2):
     """Reprojects a list of geometries from coordinate system pr1 to pr2
-    (given as proj4 strings)."""
+    (given as proj strings)."""
     print('reprojecting from {} to {}...'.format(pr1, pr2))
     if not isinstance(geoms, list):
         geoms = [geoms]
@@ -257,7 +262,7 @@ def move_point_along_line(x1, x2, dist):
 class linesinks:
     maxlines = 4000
 
-    int_dtype = np.int64
+    int_dtype = str  # np.int64
 
     dtypes = {'Label': str,
                     'HeadSpecified': float,
@@ -292,16 +297,22 @@ class linesinks:
 
     def __init__(self, infile=None, GFLOW_lss_xml=None):
 
+        self._lsmaker_xml_file_path = None  # absolute path to config file
         if infile is not None:
             self.read_lsmaker_xml(infile)
+
         elif GFLOW_lss_xml is not None:
             self.df = self.read_lss(GFLOW_lss_xml)
 
     def read_lsmaker_xml(self, infile):
-        try:
-            inpardat = ET.parse(infile)
-        except:
-            raise InputFileMissing
+
+        #try:
+        inpardat = ET.parse(infile)
+        #except:
+        #    raise InputFileMissing
+
+        # record the config file absolute path
+        self._lsmaker_xml_file_path = os.path.split(os.path.abspath(infile))[0]
 
         inpars = inpardat.getroot()
         self.inpars = inpars
@@ -340,7 +351,7 @@ class linesinks:
             self.prj = self._get_XMLentry('prj', self.routed_area[:-4] + '.prj')
             self.crs = fiona.open(self.routed_area).crs
             self.nearfield = self.routed_area
-        self.crs_str = to_string(self.crs)  # self.crs, in proj4 string format
+        self.crs_str = to_string(self.crs)  # self.crs, in proj string format
         self.farfield_buffer = self._get_XMLentry('farfield_buffer', 10000, int)
         self.clip_farfield = self.tf2flag(self._get_XMLentry('clip_farfield', 'False'))
         self.split_by_HUC = self.tf2flag(self._get_XMLentry('split_by_HUC', 'False'))
@@ -419,11 +430,21 @@ class linesinks:
         self.elevs_field = self._get_XMLentry('elevs_field', 'elev')
         self.DEM_zmult = self._get_XMLentry('DEM_zmult', 1.0, float)
 
-        self.flowlines_clipped = self._get_XMLentry('flowlines_clipped', 'preprocessed/flowlines_clipped.shp')
-        self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped', 'preprocessed/waterbodies_clipped.shp')
-        self.routed_mp = self._get_XMLentry('routed_area_multipolygon', 'preprocessed/ra_cutout.shp')
-        self.farfield_mp = self._get_XMLentry('farfield_multipolygon', 'preprocessed/ff_cutout.shp')
-        self.preprocessed_lines = self._get_XMLentry('preprocessed_lines', 'preprocessed/lines.shp')
+        self.flowlines_clipped = self._get_XMLentry('flowlines_clipped',
+                                                    'preprocessed/flowlines_clipped.shp',
+                                                    relative_filepath=True)
+        self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped',
+                                                      'preprocessed/waterbodies_clipped.shp',
+                                                    relative_filepath=True)
+        self.routed_mp = self._get_XMLentry('routed_area_multipolygon',
+                                            'preprocessed/ra_cutout.shp',
+                                                    relative_filepath=True)
+        self.farfield_mp = self._get_XMLentry('farfield_multipolygon',
+                                              'preprocessed/ff_cutout.shp',
+                                                    relative_filepath=True)
+        self.preprocessed_lines = self._get_XMLentry('preprocessed_lines',
+                                                     'preprocessed/lines.shp',
+                                                    relative_filepath=True)
         self.preprocdir = os.path.split(self.flowlines_clipped)[0]
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[
@@ -431,8 +452,10 @@ class linesinks:
         self.elevs_field = 'DEM'  # field in wb_centroids_w_elevations containing elevations
 
         # outputs
-        self.outfile_basename = inpars.findall('.//outfile_basename')[0].text
-        self.error_reporting = inpars.findall('.//error_reporting')[0].text
+        self.outfile_basename = os.path.join(self._lsmaker_xml_file_path,
+                                             inpars.findall('.//outfile_basename')[0].text)
+        self.error_reporting = os.path.join(self._lsmaker_xml_file_path,
+                                            inpars.findall('.//error_reporting')[0].text)
         self.efp = open(self.error_reporting, 'w')
 
         # attributes
@@ -441,21 +464,43 @@ class linesinks:
         self.outsegs = pd.DataFrame()
         self.confluences = pd.DataFrame()
 
-    def _get_XMLentry(self, XMLentry, default, dtype=str, raise_error=False):
+    def _parse_XMLtext(self, findall_result, dtype, relative_filepath=False):
+        # handle either strings or lxml Elements
+        txt = getattr(findall_result, 'text', findall_result)
+        if dtype == str:
+            # check if a file exists relative to config file path
+            # if so, change the file path to be absolute
+            file_abspath = os.path.join(self._lsmaker_xml_file_path, txt)
+            if os.path.exists(file_abspath) or relative_filepath:
+                txt = file_abspath
+        return dtype(txt) if txt is not None else None
+
+    def _get_XMLentry(self, XMLentry, default, dtype=str,
+                      relative_filepath=False,
+                      raise_error=False):
         try:
             tmp = self.inpars.findall('.//{}'.format(XMLentry))
-            if len(tmp) == 1 and not isinstance(default, list):
-                txt = tmp[0].text
-                return dtype(txt) if txt is not None else None
+            if len(tmp) == 0:
+                if not raise_error and not relative_filepath:
+                    return default
+                elif not raise_error and relative_filepath:
+                    tmp = [default] if not isinstance(default, list) else default
+                else:
+                    raise ValueError('Nothing specified for {} in input XML file!'.format(XMLentry))
+            if len(tmp) == 1: # and not isinstance(default, list):
+                return self._parse_XMLtext(tmp[0], dtype, relative_filepath=relative_filepath)
             elif len(tmp) >= 1:
-                return [dtype(s.text) for s in tmp]
+                return [self._parse_XMLtext(s, dtype, relative_filepath=relative_filepath)
+                        for s in tmp]
+                #return [dtype(s.text) for s in tmp]
             else:
                 raise Exception()
         except:
             if not raise_error:
                 return default
             else:
-                raise IOError('Nothing specified for {} in input XML file!'.format(XMLentry))
+                raise ValueError('Nothing specified for {} in input XML file!'.format(XMLentry))
+
 
     def _enforce_dtypes(self, df):
         """Ensure that dataframe column dtypes are correct."""
@@ -465,6 +510,7 @@ class linesinks:
                 df[c] = df[c].astype(dtype)
             except ValueError:
                 # handle Nonetype values in some NHDPlus fields
+                j=2
                 continue
 
     def _get_wb_elevations(self, wb_df):
@@ -523,7 +569,7 @@ class linesinks:
            added.
 
         Notes:
-        -----
+        ------
         **This method does not perform any projections or transformations.** Therefore all input shapefiles must
         be in the same projected coordinate system that will be used in the GFLOW GUI.
 
@@ -642,16 +688,21 @@ class linesinks:
         for p in [self.nf, self.ra, self.ff]:
             assert p.is_valid, 'Invalid polygon'
 
-        for attr, shapefiles in list({'fl': self.flowlines, 'wb': self.waterbodies}.items()):
+        for attr, shapefiles in list({'fl': self.flowlines,
+                                      'wb': self.waterbodies}.items()):
             # all flowlines and waterbodies must be in same coordinate system
             # sfrmaker preproc also uses crs from first file in list
-            shp_crs_str = to_string(fiona.open(shapefiles[0]).crs)
+            if isinstance(shapefiles, list):
+                shapefile = shapefiles[0]
+            else:
+                shapefile = shapefiles
+            shp_crs_str = to_string(fiona.open(shapefile).crs)
 
             # get bounding box of model area in nhd crs to speeding reading in data via filter
             bounds = reproject([self.ff], self.crs_str, shp_crs_str)
             bounds = bounds[0].bounds
 
-            self.__dict__[attr] = GISio.shp2df(shapefiles, filter=bounds)
+            self.__dict__[attr] = gisutils.shp2df(shapefiles, filter=bounds)
             # if NHD features not in model area coodinate system, reproject
             if shp_crs_str != self.crs_str:
                 self.__dict__[attr]['geometry'] = reproject(self.__dict__[attr].geometry.tolist(), shp_crs_str, self.crs_str)
@@ -686,8 +737,8 @@ class linesinks:
             if len(self.__dict__[df]) == 0:
                 raise EmptyDataFrame()
 
-        GISio.df2shp(self.fl, self.flowlines_clipped, proj4=self.crs_str)
-        GISio.df2shp(self.wb, self.waterbodies_clipped, proj4=self.crs_str)
+        gisutils.df2shp(self.fl, self.flowlines_clipped, proj_str=self.crs_str)
+        gisutils.df2shp(self.wb, self.waterbodies_clipped, proj_str=self.crs_str)
 
         print('\nmaking donut polygon of farfield (with routed area removed)...')
         ffdonut = self.ff.difference(self.ra)
@@ -741,16 +792,16 @@ class linesinks:
                                          'geometry': wb_points})
             '''
             wb_points_df = self._get_wb_elevations(isolated_wb)
-            GISio.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj4=self.crs_str)
+            gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
         else:
             print('\nreading elevations from {}...'.format(self.wb_centroids_w_elevations))
-            wb_points_df = GISio.shp2df(self.wb_centroids_w_elevations)
+            wb_points_df = gisutils.shp2df(self.wb_centroids_w_elevations)
             toget = set(isolated_wb_comids).difference(set(wb_points_df.COMID.tolist()))
             if len(toget) > 0:
                 isolated_wb = self.wb.loc[self.wb.COMID.isin(toget)].copy()
                 wb_points_df2 = self._get_wb_elevations(isolated_wb)
                 wb_points_df = wb_points_df.append(wb_points_df2)
-                GISio.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj4=self.crs_str)
+                gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
 
 
     def preprocess(self, save=True, use_arcpy=False):
@@ -791,7 +842,6 @@ class linesinks:
                           'geometry': mapping(modelarea_farfield)})
             output.close()
 
-
         if use_arcpy:
             self.preprocess_arcpy()
         else:
@@ -803,14 +853,16 @@ class linesinks:
 
         print('\nAssembling input...')
         # read linework shapefile into pandas dataframe
-        df = GISio.shp2df(self.flowlines_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
+        df = gisutils.shp2df(self.flowlines_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
         df.drop([c for c in df.columns if c.lower() not in [cc.lower() for cc in self.flowlines_cols]],
                 axis=1, inplace=True)
         # might want to consider enforcing integer index here if strings cause problems
-        clipto = df.index.tolist()
-        elevs = GISio.shp2df(self.elevslope, index='COMID', index_dtype=self.int_dtype, clipto=clipto)
-        pfvaa = GISio.shp2df(self.PlusFlowVAA, index='COMID', index_dtype=self.int_dtype, clipto=clipto)
-        wbs = GISio.shp2df(self.waterbodies_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
+        #clipto = df.index.tolist()
+        elevs = gisutils.shp2df(self.elevslope, index='COMID', index_dtype=self.int_dtype)  #, clipto=clipto)
+        elevs = elevs.loc[elevs.COMID.isin(df.index)]
+        pfvaa = gisutils.shp2df(self.PlusFlowVAA, index='COMID', index_dtype=self.int_dtype)  #, clipto=clipto)
+        pfvaa = pfvaa.loc[pfvaa.ComID.isin(df.index)]
+        wbs = gisutils.shp2df(self.waterbodies_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
         wbs.drop([c for c in wbs.columns if c.lower() not in [cc.lower() for cc in self.wb_cols]],
                  axis=1, inplace=True)
         self._enforce_dtypes(wbs)
@@ -827,15 +879,15 @@ class linesinks:
         self._enforce_dtypes(df)
 
         # read in nearfield and farfield boundaries
-        nf = GISio.shp2df(self.nearfield)
+        nf = gisutils.shp2df(self.nearfield)
         nfg = nf.iloc[0]['geometry']  # polygon representing nearfield
         if self.routed_area is not None and self.routed_area != self.nearfield:
-            ra = GISio.shp2df(self.routed_mp)
+            ra = gisutils.shp2df(self.routed_mp)
             rag = ra.iloc[0]['geometry']
         else:
             rag = nfg
             nfg = Polygon() # no nearfield specified
-        ff = GISio.shp2df(self.farfield_mp)
+        ff = gisutils.shp2df(self.farfield_mp)
         ffg = ff.iloc[0]['geometry']  # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
         print('\nidentifying farfield and nearfield linesinks...')
@@ -930,9 +982,10 @@ class linesinks:
         '''
         print('\nDone with preprocessing.')
         if save:
-            GISio.df2shp(df, self.preprocessed_lines, proj4=self.crs_str)
+            gisutils.df2shp(df, self.preprocessed_lines, proj_str=self.crs_str)
 
         self.df = df
+
 
     def simplify_lines(self, nearfield_tolerance=None, routed_area_tolerance=None, farfield_tolerance=None,
                        nearfield_refinement={}):
@@ -940,14 +993,14 @@ class linesinks:
         to within specified tolerances. The tolerance values represent the maximum distance
         in the coordinate system units that the simplified feature can deviate from the original feature.
 
-        Parameters:
+        Parameters
         ----------
         nearfield_tolerance : float
             Tolerance for the area representing the model nearfield
         farfield_tolerance : float
             Tolerance for the area representing the model farfield
 
-        Returns:
+        Returns
         -------
         df : DataFrame
             A copy of the df attribute with a 'ls_geom' column of simplified geometries, and
@@ -1032,7 +1085,7 @@ class linesinks:
             # make a shapefile of the simplified lines with nearfield_tol=tol
             df.drop(['ls_coords', 'geometry'], axis=1, inplace=True)
             outshp = 'prototypes/' + self.outfile_basename + '_dis_tol_{}.shp'.format(tol)
-            GISio.df2shp(df, outshp, geo_column='ls_geom', proj4=self.crs_str)
+            gisutils.df2shp(df, outshp, geo_column='ls_geom', proj_str=self.crs_str)
 
         plt.figure()
         plt.plot(nftol, nlines)
@@ -1061,7 +1114,7 @@ class linesinks:
             print("adjusting elevations for comids with zero-gradient...")
             for comid in comids0:
 
-                outsegs = [o for o in self.outsegs.loc[comid].values if o > 0]
+                outsegs = [o for o in self.outsegs.loc[comid].values if int(o) > 0]
                 for i, o in enumerate(outsegs):
 
                     if i == len(outsegs) - 1:
@@ -1079,7 +1132,7 @@ class linesinks:
                                                                                  maxElev,
                                                                                  minElev, oo))
                         # test if next segment is now higher
-                        if oo > 0 and df.loc[oo, 'maxElev'] > minElev:
+                        if int(oo) > 0 and df.loc[oo, 'maxElev'] > minElev:
                             self.efp.write('{}, {:.2f}, {:.2f}, {:.2f}, {}\n'.format(outsegs[i + 1],
                                                                                      df.loc[outsegs[i + 1], 'maxElev'],
                                                                                      df.loc[outsegs[i + 1], 'minElev'],
@@ -1122,18 +1175,22 @@ class linesinks:
                 upcomids += r.upcomids
                 dncomid += r.dncomid
 
-            upcomids = list(set(upcomids).difference({0}))
-            dncomid = list(set(dncomid).difference({0}))
+            upcomids = list(set(upcomids).difference({0, '0'}))
+            dncomid = list(set(dncomid).difference({0, '0'}))
 
             keep_comid = alld.index[0]
-            df.set_value(keep_comid, 'upcomids', upcomids)
-            df.set_value(keep_comid, 'dncomid', dncomid)
+            df.at[keep_comid, 'upcomids'] = upcomids
+            df.at[keep_comid, 'dncomid'] = dncomid
+            #df.set_value(keep_comid, 'upcomids', upcomids)
+            #df.set_value(keep_comid, 'dncomid', dncomid)
             for u in upcomids:
-                df.set_value(u, 'dncomid', [keep_comid])
+                df.at[u, 'dncomid'] = [keep_comid]
+                #df.set_value(u, 'dncomid', [keep_comid])
             for d in dncomid:
                 upids = set(df.loc[d, 'upcomids']).difference(set(alld.index[1:]))
                 upids.add(alld.index[0])
-                df.set_value(d, 'upcomids', list(upids))
+                df.at[d, 'upcomids'] = list(upids)
+                #df.set_value(d, 'upcomids', list(upids))
             df.drop(alld.index[1:], axis=0, inplace=True)
 
         # drop the duplicates (this may cause problems if multiple braids are routed to)
@@ -1144,7 +1201,7 @@ class linesinks:
     def setup_linesink_lakes(self, df):
 
         # read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)
-        wb_elevs = GISio.shp2df(self.wb_centroids_w_elevations,
+        wb_elevs = gisutils.shp2df(self.wb_centroids_w_elevations,
                                 index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
         self._enforce_dtypes(wb_elevs)
         wb_elevs = wb_elevs[self.elevs_field] * self.DEM_zmult
@@ -1174,16 +1231,33 @@ class linesinks:
                 upcomids = list(set([c for l in lines.upcomids for c in l]) - set(lines.index))
                 dncomids = list(set([c for l in lines.dncomid for c in l]) - set(lines.index))
 
-                df.set_value(wb_comid, 'upcomids', upcomids)
-                df.set_value(wb_comid, 'dncomid', dncomids)
+                # .at sets an entry for a single row/column location in a DataFrame
+                # (to avoid confusion over specifying a single row but supplying a sequence)
+                df.at[wb_comid, 'upcomids'] = upcomids
+                df.at[wb_comid, 'dncomid'] = dncomids
+                #df.set_value(wb_comid, 'upcomids', upcomids)
+                #df.set_value(wb_comid, 'dncomid', dncomids)
+                try:
+                    assert all([True if isinstance(comid, list) else False for comid in df.upcomids])
+                    assert all([True if isinstance(comid, list) else False for comid in df.dncomid])
+                except:
+                    j=2
+
 
                 # make the lake the down-comid for the upcomids of the lake
                 # (instead of the lines that represented the lake in the flowlines dataset)
                 # do the same for the down-comid of the lake
-                for u in [u for u in upcomids if u > 0]:  # exclude outlets
-                    df.set_value(u, 'dncomid', [wb_comid])
-                for d in [d for d in dncomids if d > 0]:
-                    df.set_value(d, 'upcomids', [wb_comid])
+                for u in [u for u in upcomids if int(u) > 0]:  # exclude outlets
+                    df.at[u, 'dncomid'] = [wb_comid]
+                    #df.set_value(u, 'dncomid', [wb_comid])
+                for d in [d for d in dncomids if int(d) > 0]:
+                    df.at[d, 'upcomids'] = [wb_comid]
+                    #df.set_value(d, 'upcomids', [wb_comid])
+                try:
+                    assert all([True if isinstance(comid, list) else False for comid in df.upcomids])
+                    assert all([True if isinstance(comid, list) else False for comid in df.dncomid])
+                except:
+                    j=2
                 '''
                 # update all up/dn comids in lines dataframe that reference the lines inside of the lakes
                 # (replace those references with the comids for the lakes)
@@ -1208,7 +1282,7 @@ class linesinks:
                 if df.loc[wb_comid, 'minElev'] == df.loc[wb_comid, 'maxElev']:
                     df.loc[wb_comid, 'minElev'] -= 0.01
                     dnids = df.loc[wb_comid, 'dncomid']
-                    for dnid in [d for d in dnids if d > 0]:
+                    for dnid in [d for d in dnids if int(d) > 0]:
                         df.loc[dnid, 'maxElev'] -= 0.01
 
             #df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
@@ -1218,24 +1292,27 @@ class linesinks:
             # do this for both routed and unrouted (farfield) lakes, so that the outlet line won't cross the lake
             # (only tributaries are tested for crossing in step below)
             lake_coords = uniquelist(df.loc[wb_comid, 'ls_coords'])
-            if len(df.loc[wb_comid, 'dncomid']) > 0 and dncomids[0] != 0:
-                outlet_coords = df.loc[df.loc[wb_comid, 'dncomid'][0], 'ls_coords'][0]
-                closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
-                lake_coords[closest_ind] = outlet_coords
-                next_ind = closest_ind + 1 if closest_ind < (len(lake_coords) - 1) else 0
-            # for lakes without outlets, make the last coordinate the outlet so that it can be moved below
-            else:
-                outlet_coords = lake_coords[-1]
-                next_ind = 0
+            try:
+                if len(df.loc[wb_comid, 'dncomid']) > 0 and int(dncomids[0]) != 0:
+                    outlet_coords = df.loc[df.loc[wb_comid, 'dncomid'][0], 'ls_coords'][0]
+                    closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
+                    lake_coords[closest_ind] = outlet_coords
+                    next_ind = closest_ind + 1 if closest_ind < (len(lake_coords) - 1) else 0
+                # for lakes without outlets, make the last coordinate the outlet so that it can be moved below
+                else:
+                    outlet_coords = lake_coords[-1]
+                    next_ind = 0
+            except:
+                j=2
 
             inlet_coords = move_point_along_line(lake_coords[next_ind], outlet_coords, 1)
 
             new_coords = [inlet_coords] + lake_coords[next_ind:] + lake_coords[:next_ind]
-            df.set_value(wb_comid, 'ls_coords', new_coords)
+            df.loc[wb_comid, 'ls_coords'] = [new_coords]
 
             # make sure inlets/outlets don't cross lines representing lake
             wb_geom = LineString(df.loc[wb_comid, 'ls_coords'])
-            x = [c for c in upcomids if c != 0 and LineString(df.loc[c, 'ls_coords']).crosses(wb_geom)]
+            x = [c for c in upcomids if int(c) != 0 and LineString(df.loc[c, 'ls_coords']).crosses(wb_geom)]
             if len(x) > 0:
                 for c in x:
                     ls_coords = list(df.loc[c, 'ls_coords'])  # want to copy, to avoid modifying df
@@ -1262,7 +1339,8 @@ class linesinks:
                     # make a new endpoint that is between the intersection and next to last
                     new_endvert = tuple(intersection_point + np.sign(diff) * np.sqrt(self.nearfield_tolerance))
                     ls_coords.append(new_endvert)
-                    df.set_value(c, 'ls_coords', ls_coords)
+                    df.at[c, 'ls_coords'] = ls_coords
+                    #df.set_value(c, 'ls_coords', ls_coords)
             # drop the lines representing the lake from the lines dataframe
             df.drop(lines.index, axis=0, inplace=True)
         return df
@@ -1300,7 +1378,7 @@ class linesinks:
             shp = self.preprocessed_lines
 
         try:
-            self.df = GISio.shp2df(shp, index='COMID',
+            self.df = gisutils.shp2df(shp, index='COMID',
                                    index_dtype=self.int_dtype,
                                    true_values=['True'],
                                    false_values=['False'])
@@ -1455,7 +1533,8 @@ class linesinks:
     def map_confluences(self):
 
         upsegs = self.df.upcomids.tolist()
-        maxsegs = np.array([np.max(u) if len(u) > 0 else 0 for u in upsegs])
+        maxsegs = np.array([np.max([int(uu) for uu in u]) if len(u) > 0
+                            else 0 for u in upsegs])
         seglengths = np.array([len(u) for u in upsegs])
         # setup dataframe of confluences
         # confluences are where segments have upsegs (no upsegs means the reach 1 is a headwater)
@@ -1472,7 +1551,7 @@ class linesinks:
             cfelev = np.min([endsmin, startmax])
             confluences.loc[i, 'elev'] = cfelev
 
-            upcomids = [u for u in r.upcomids if u > 0]
+            upcomids = [u for u in r.upcomids if int(u) > 0]
             if len(upcomids) > 0:
                 self.df.loc[upcomids, 'minElev'] = cfelev
             self.df.loc[i, 'maxElev'] = cfelev
@@ -1494,12 +1573,12 @@ class linesinks:
         '''
         outsegsmap = pd.DataFrame(self.df.COMID)
         outsegs = pd.Series([d[0] if len(d) > 0 else 0 for d in self.df.dncomid], index=self.df.index)
-        max_outseg = np.max(outsegsmap[outsegsmap.columns[-1]])
+        max_outseg = outsegsmap[outsegsmap.columns[-1]].astype(int).max()
         knt = 2
         while max_outseg > 0:
-            outsegsmap['outseg{}'.format(knt)] = [outsegs[s] if s > 0 else 0
+            outsegsmap['outseg{}'.format(knt)] = [outsegs[s] if int(s) > 0 else 0
                                                   for s in outsegsmap[outsegsmap.columns[-1]]]
-            max_outseg = np.max(outsegsmap[outsegsmap.columns[-1]].values)
+            max_outseg = outsegsmap[outsegsmap.columns[-1]].astype(int).max()
             if max_outseg == 0:
                 break
             knt += 1
@@ -1592,7 +1671,7 @@ class linesinks:
 
         print('\nGrouping segments by hydrologic unit...')
         # intersect lines with HUCs; then group dataframe by HUCs
-        HUCs_df = GISio.shp2df(self.HUC_shp, index=self.HUC_name_field)
+        HUCs_df = gisutils.shp2df(self.HUC_shp, index=self.HUC_name_field)
         df[self.HUC_name_field] = len(df) * [None]
         for HUC in HUCs_df.index:
             lines = [line.intersects(HUCs_df.loc[HUC, 'geometry']) for line in df['geometry']]
@@ -1605,6 +1684,7 @@ class linesinks:
             dfh = dfg.get_group(HUC)
             outfile = '{}_{}.lss.xml'.format(self.outfile_basename, HUC)
             self.write_lss(dfh, outfile)
+
 
     def write_lss(self, df, outfile):
         """write GFLOW linesink XML (lss) file from dataframe df
@@ -1664,6 +1744,7 @@ class linesinks:
         ofp.write('</LinesinkStringFile>')
         ofp.close()
 
+
     def write_shapefile(self, outfile=None, use_ls_coords=True):
         if outfile is None:
             outfile = self.outfile_basename.split('.')[0] + '.shp'
@@ -1677,7 +1758,8 @@ class linesinks:
             df['geometry'] = [LineString(g) for g in df.ls_coords]
             df = df.drop(['ls_coords'], axis=1)
 
-        GISio.df2shp(df, outfile, proj4=self.crs_str)
+        gisutils.df2shp(df, outfile, proj_str=self.crs_str)
+
 
 class InputFileMissing(Exception):
     def __init__(self, infile):
@@ -1685,6 +1767,7 @@ class InputFileMissing(Exception):
 
     def __str__(self):
         return ('\n\nCould not open or parse input file {0}.\nCheck for errors in XML formatting.'.format(self.infile))
+
 
 class EmptyDataFrame(Exception):
     def __init__(self):

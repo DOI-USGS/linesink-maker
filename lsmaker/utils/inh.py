@@ -78,7 +78,7 @@ class inhomogeneity:
             print('unknown geometry type')
 
     def to_xml(self, indent=1):
-        Need to check for duplicate vertices (i.e. at start/end!)
+        #Need to check for duplicate vertices (i.e. at start/end!)
         def tab(ntab=0):
             return self.tab * indent + self.tab * ntab
         text = '\n{}<Inhomogeneity>\n'.format(tab())

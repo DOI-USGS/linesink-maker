@@ -1,126 +1,15 @@
-# LinesinkMaker
-Python package to construct linesink networks for the analytic element groundwater flow modeling
-program GFLOW (<http://www.haitjema.com/>). 
-  
-* Reads information from NHDPlus v2 (<http://www.horizon-systems.com/nhdplus/NHDPlusV2_home.php/>)
-* Writes a GFLOW linesink string (lss) XML import file, and a shapefile of the 
-linesink network.
-
-##### Required python packages (see below for installation instructions):  
-* lxml
-* fiona
-* shapely
-* pandas
-* pyproj
-* requests
-  
-### GFLOW Linesink import capability
-Linesinkmaker requires GFLOW 2.2 or higher, which has the capability of importing linesink string xml files.
-
-### Installing the required Python packages:
-The best way to install the required packages through [**Anaconda**](https://www.anaconda.com/distribution/#download-section) (python 3x version). Once Anaconda is installed, open a command prompt with Anaconda python in the system path (i.e., so that if you run `>python`, you get the Anaconda python). For Windows users, this probably means running the Anaconda command prompt from the start menu. Note that this shortcut can be copied to any folder for convenience. By right-clicking on the shortcut and selecting "properties", you can also change the starting location of the command prompt to the folder it is in by replacing the "Start in" field with %cd%.
-##### at the command prompt:
-
-```
-> conda create -n gis lxml fiona shapely pandas pyproj requests -y
-```
-This creates a conda environment with the gis packages. To use the environment:
-
-```
-> conda activate gis
-```
-
-You should see `(gis)` to the left of the command prompt. **The gis environment needs to be activated to use linksinkmaker.**
-
-**Note** The functions in the `GFLOWresults` module require GIS_units, available [here](https://github.com/aleaf/GIS_utils).
-
-
-### to install LinesinkMaker:  
-From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker folder (which should contain **setup.py**) and run:  
-
-```
-$ python setup.py install
-```  
-(Windows users can launch a command line at the folder by right clicking on the folder icon and then choosing *Open command window here*)  
-
-
-##### to import into a python session:
-```
-import lsmaker
-```
+# linesink-maker
+Rapid creation of linesink elements for stream network simulation in the groundwater flow modeling program GFLOW (<http://www.haitjema.com/>). Nearfield (highest resultion), mid-field and farfield (least resolution, zero resistance) areas of a desired stream network can be defined by polygon shapefiles. The linesinks are then created from NHDPlus hydrography. The number of resulting linesink equations (level of detail) in the various areas of the stream network can be controlled by a distance tolerance parameter specified by geographic area (defined by one of the polygons). Results are written to a linesink string (LSS) XML file that can be imported into the GFLOW GUI (version 2.2 or higher).
+ 
+[![Build Status](https://img.shields.io/travis/aleaf/linesink-maker.svg)](https://travis-ci.org/aleaf/linesink-maker) [![codecov](https://codecov.io/gh/aleaf/linesink-maker/branch/develop/graph/badge.svg)](https://codecov.io/gh/aleaf/linesink-maker)
 
 
 
-## Required input  
-
-#### Note: 
-##### all shapefile input should include projection information (*.prj files), and be in a standard coordinate system that is recognized by the proj4 library (e.g. lat/lon or UTM meters; length units of feet are not recommended!)
-#####From NHDPlus v2:  
-For each major drainage area encompassed by the model (e.g. Area 04 representing the Great Lakes Basin, 07 representing the Upper Mississippi Basin, etc):  
-
-* NHDFlowline.shp  
-* NHDWaterbody.shp  
-* elevslope.dbf  
-* PlusFlowlineVAA.dbf
-
-These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **`NHDPlusV21_GL_04_NHDSnapshot_07.7z`** and **`NHDPlusV21_GL_04_NHDPlusAttributes_08.7z`** 
-downloads. The NHDPlus files are specified in the XML input file under the tag **\<NHDfiles\>**.
-
-##### Model domain specification:  
-* shapefile of the model nearfield area (where linesinks will be routed and have resistance)  
-   **(required)**
-* shapefile of the model farfield area (where linesinks will be zero-resistance and not routed)  
- (**optional**; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag **\<farfield_buffer\>**.
+Getting Started
+----------------------------------------------- 
+See the [linesink-maker documentation](https://aleaf.github.io/linesink-maker/index.html)
 
 
-##### Line simplification
-Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of linesinks are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (**\<nearfield_tolerance\>** and **\<farfield_tolerance\>farfield_tolerance>**). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.
-
-##### Other inputs
-Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the XML input file. See the example XML input files for more details.
-
-
-## Creating the XML Input file for LinesinkMaker
-The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an **XML input file**. See the example folders for templates with input instructions (e.g. **Nicolet_lines.xml**). An editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended for working with this file. 
-
-
-
-## Running LinesinkMaker
-
-LinesinkMaker can be run from the command line by calling the script make_linesinks.py with an XML input file as an argument:
-
-```
-\>python make_linesinks.py Medford_lines.xml
-```
-
-
-### Importing the linesink string file into GFLOW  
-LinesinkMaker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under ```Tools>Import>Line-sink Strings```. It can also be inspected in any text editor.  
-### Viewing the linesinks in a GIS
-LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS. For an example, see **Medford.shp** after running the Medford example.
-
-## Exporting and Visualizing GFLOW output
-
-**GFLOWresults.py** (under **utils**) has methods for visualizing output  
-#### Baseflow  
-  
-  
-```python
-
-from lsmaker.utils.GFLOWresults import write_streamflow_shapefile
-
-write_streamflow_shapefile('GFLOW_output.xtr', outshp='output.shp', solver_x0=0, solver_y0=0, coords_mult=0.3048, epsg=None)  
-```
-where:  
-
-* 'GFLOW_output.xtr' is the xtr file output by GFLOW
-* **outshp** is the name of the shapefile to write  
-* **solver_x0** amd **solve_y0** are the model offset (To get (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer, 
-    then View > Base Tables > Model.)
-* **coords_mult** is 0.3048 if the model computation unit is feet and the GIS unit is meters  
-* **epsg** is the epsg code for the GIS coordinates (for example, 26716 for UTM 27 zone 16)
-
-### Uninstall
-```
-pip uninstall lsmaker
-```
+Installation
+-----------------------------------------------
+See the [Installation Instructions](https://aleaf.github.io/linesink-maker/installation.html)

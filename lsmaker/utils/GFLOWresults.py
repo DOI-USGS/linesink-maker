@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
 
+
 def get_ls_skiprows_nrows(xtr):
     with open(xtr) as f:
         knt = 0
@@ -19,6 +20,7 @@ def get_ls_skiprows_nrows(xtr):
                 nrows = knt - skiprows -1
                 break
     return skiprows, nrows
+
 
 def get_linesink_results(xtr):
     """Read linesink results from GFLOW extract (.xtr) file into dataframe.
@@ -182,6 +184,7 @@ def plot_flooding(grdfile, dem, epsg,
     # garbage cleanup
     shutil.rmtree(tmpath)
 
+
 def plot_flooding_arcpy(grdfile, dem,
                         outpath='flooding',
                         solver_x0=0, solver_y0=0, scale_xy=0.3048, epsg=None,
@@ -249,6 +252,7 @@ def plot_flooding_arcpy(grdfile, dem,
     print('writing {}/flooding...'.format(outpath))
     flooding.save('flooding')
 
+
 def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
                                coords_mult=0.3048, epsg=None):
     """Read linesink results from GFLOW extract (.xtr) file and write to shapefile.
@@ -264,6 +268,7 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     df[['y1', 'y2']] = df[['y1', 'y2']] * coords_mult + solver_y0
     df['geometry'] = [LineString([(r.x1, r.y1), (r.x2, r.y2)]) for i, r in df.iterrows()]
     df2shp(df, outshp, epsg=epsg)
+
 
 class surferGrid:
     def __init__(self, grdfile=None, data=None):
