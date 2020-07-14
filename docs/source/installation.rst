@@ -33,12 +33,16 @@ This creates a conda environment with the required packages. To use the environm
 
     conda activate lsmaker
 
-You should see `(lsmaker)` to the left of the command prompt. **The `lsmaker` environment needs to be activated to use linksink-maker.**
+You should see `(lsmaker)` to the left of the command prompt. 
+
+.. note::
+    **The `lsmaker` conda environment needs to be activated to use linksink-maker!**
 
 
 To install LinesinkMaker
 ++++++++++++++++++++++++++++++++++++++++++++++++++++  
-From this page, click either *Clone in Desktop* (if you have the GitHub desktop software installed), or *Download ZIP*. Once the files have downloaded, navigate to the LinesinkMaker folder (which should contain **setup.py**) and run::
+From the main page of the `GitHub repository <https://github.com/aleaf/linesink-maker>`_
+, click on the green Code button in the upper right, and select an option to clone or download the repository. Once the files have downloaded, navigate to the ``linesink-maker`` folder (which should contain **setup.py**) and run::
 
     python setup.py install
 
