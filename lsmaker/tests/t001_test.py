@@ -89,7 +89,10 @@ def test1(test_data_path, test_output_path, preprocessed_folder):
                          farfield_tol)
 
 
-def test2(test_data_path, test_output_path):
+@pytest.mark.parametrize(('case', 'min_waterbody_size', 'expected_nlines'), 
+                         ((1, 1e10, 412),
+                          (2, 0.001, 586)))
+def test2(test_data_path, test_output_path, case, min_waterbody_size, expected_nlines):
     input_file = os.path.join(test_data_path, 'test_input.xml')
     ls = linesinks(input_file)
     ls.nearfield = os.path.join(test_data_path, 'testarea.shp')
@@ -99,12 +102,15 @@ def test2(test_data_path, test_output_path):
     ls.nearfield_tolerance = 100
     ls.farfield_tolerance = 200
     ls.outfile_basename = os.path.join(test_output_path, 'test2')
+    ls.min_waterbody_size = min_waterbody_size
+    ls.min_nearfield_wb_size = min_waterbody_size
+    ls.min_farfield_wb_size = min_waterbody_size
 
     ls.preprocess(save=True)
 
     ls.makeLineSinks()
 
-    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == 586 # not sure why this is 586 vs. 585 above
+    assert sum([len(p) - 1 for p in ls.df.ls_coords]) == expected_nlines # not sure why this is 586 vs. 585 above
     # likewise number above changed from 683 to 684 after debugging
 
 

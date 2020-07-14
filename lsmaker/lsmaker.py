@@ -968,10 +968,10 @@ class linesinks:
         # swap out polygons in lake geometry column with the linear rings that make up their exteriors
         print('converting lake exterior polygons to lines...')
         wbs['geometry'] = [LineString(g.exterior) for g in wbs.geometry]
-        wbs['waterbody'] = [True] * len(wbs)  # boolean variable indicate whether feature is waterbody
+        wbs['waterbody'] = np.array([True] * len(wbs), dtype=bool)  # boolean variable indicate whether feature is waterbody
 
         print('merging flowline and waterbody datasets...')
-        df['waterbody'] = [False] * len(df)
+        df['waterbody'] = np.array([False] * len(df), dtype=bool)
         df = df.append(wbs)
         df.COMID = df.index
         '''
