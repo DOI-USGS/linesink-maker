@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+gaed4112 documentation</title>
+  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+gf1aa430 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.post65.dev0+gaed4112
+                0.post65.dev0+gf1aa430
               </div>
             
           
@@ -1147,10 +1147,10 @@
         <span class="c1"># swap out polygons in lake geometry column with the linear rings that make up their exteriors</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;converting lake exterior polygons to lines...&#39;</span><span class="p">)</span>
         <span class="n">wbs</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">LineString</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">exterior</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">wbs</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
-        <span class="n">wbs</span><span class="p">[</span><span class="s1">&#39;waterbody&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">wbs</span><span class="p">)</span>  <span class="c1"># boolean variable indicate whether feature is waterbody</span>
+        <span class="n">wbs</span><span class="p">[</span><span class="s1">&#39;waterbody&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">wbs</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>  <span class="c1"># boolean variable indicate whether feature is waterbody</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;merging flowline and waterbody datasets...&#39;</span><span class="p">)</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;waterbody&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;waterbody&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wbs</span><span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">COMID</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span>
         <span class="sd">&#39;&#39;&#39;</span>
