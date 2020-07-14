@@ -1,0 +1,588 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API reference &mdash; linesink-maker 0.post65.dev0+gaed4112 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Release History" href="../release-history.html" />
+    <link rel="prev" title="Input requirements" href="../usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> linesink-maker
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.post65.dev0+gaed4112
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../philosophy.html">Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Input requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html#creating-the-xml-input-file-for-linesinkmaker">Creating the XML Input file for LinesinkMaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html#running-linesinkmaker">Running LinesinkMaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html#viewing-the-linesinks-in-a-gis">Viewing the linesinks in a GIS</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"> Modules</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Release history</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../release-history.html"> Release History</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to linesink-maker</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">linesink-maker</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>API reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="module-lsmaker.lsmaker">
+<span id="api-reference"></span><h1>API reference<a class="headerlink" href="#module-lsmaker.lsmaker" title="Permalink to this headline">¶</a></h1>
+<dl class="py exception">
+<dt id="lsmaker.lsmaker.EmptyDataFrame">
+<em class="property">exception </em><code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">EmptyDataFrame</code><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#EmptyDataFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.EmptyDataFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="lsmaker.lsmaker.InputFileMissing">
+<em class="property">exception </em><code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">InputFileMissing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">infile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#InputFileMissing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.InputFileMissing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.add_projection">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">add_projection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line</span></em>, <em class="sig-param"><span class="n">point</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#add_projection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.add_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add vertex to line at point,
+if the closest point on the line isn’t an end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>line</strong><span class="classifier">LineString</span></dt><dd></dd>
+<dt><strong>point</strong><span class="classifier">Point</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>newline</strong><span class="classifier">LineString</span></dt><dd><p>Line with point added, or original line, if point coincides with end.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.add_vertices_at_testpoints">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">add_vertices_at_testpoints</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lssdf</span></em>, <em class="sig-param"><span class="n">tpgeoms</span></em>, <em class="sig-param"><span class="n">tol</span><span class="o">=</span><span class="default_value">200</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#add_vertices_at_testpoints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.add_vertices_at_testpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add vertices to linesinks at locations of testpoints
+(so that modeled flow observations are correct)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lssdf</strong><span class="classifier">DataFrame</span></dt><dd><p>DataFrame of linesink strings. Must contain ‘geometry’ column
+of shapely LineStrings defining geometries of linesink strings,
+in same coordinate system as testpoints.</p>
+</dd>
+<dt><strong>tpgeoms</strong><span class="classifier">list</span></dt><dd><p>List of testpoint geometries.</p>
+</dd>
+<dt><strong>tol</strong><span class="classifier">float</span></dt><dd><p>Tolerance, in coordinate system units, for considering lines
+near the testpoints.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>geoms</strong><span class="classifier">list of geometries</span></dt><dd><p>New geometry column with added vertices.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.closest_vertex_ind">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">closest_vertex_ind</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">point</span></em>, <em class="sig-param"><span class="n">shape_coords</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#closest_vertex_ind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.closest_vertex_ind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns index of closest vertices in shapely geometry object
+Ugly but works</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.get_elevation_from_epqs">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">get_elevation_from_epqs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lon</span></em>, <em class="sig-param"><span class="n">lat</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Feet'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#get_elevation_from_epqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.get_elevation_from_epqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an elevation value at a point location.</p>
+<p class="rubric">Notes</p>
+<dl class="simple">
+<dt>example url for -91, 45:</dt><dd><p><a class="reference external" href="http://nationalmap.gov/epqs/pqs.php?x=-91&amp;y=45&amp;units=Feet&amp;output=json">http://nationalmap.gov/epqs/pqs.php?x=-91&amp;y=45&amp;units=Feet&amp;output=json</a></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_elevation_from_epqs</span><span class="p">(</span><span class="o">-</span><span class="mi">91</span><span class="p">,</span> <span class="mi">45</span><span class="p">)</span>
+<span class="go">1139.778277</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.get_elevations_from_epqs">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">get_elevations_from_epqs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Feet'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#get_elevations_from_epqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.get_elevations_from_epqs" title="Permalink to this definition">¶</a></dt>
+<dd><p>From list of shapely points in lat, lon, returns list of elevation values</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.lake_width">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">lake_width</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">area</span></em>, <em class="sig-param"><span class="n">total_line_length</span></em>, <em class="sig-param"><span class="n">lmbda</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#lake_width"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.lake_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate conductance width from lake area and length of flowlines running through it</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="lsmaker.lsmaker.linesinks">
+<em class="property">class </em><code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">linesinks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">infile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">GFLOW_lss_xml</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.adjust_zero_gradient">
+<code class="sig-name descname">adjust_zero_gradient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">increment</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.adjust_zero_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.adjust_zero_gradient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.drop_crossing_lines">
+<code class="sig-name descname">drop_crossing_lines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.drop_crossing_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.drop_crossing_lines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.drop_duplicates">
+<code class="sig-name descname">drop_duplicates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.drop_duplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.drop_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="lsmaker.lsmaker.linesinks.dtypes">
+<code class="sig-name descname">dtypes</code><em class="property"> = {'AutoSWIZC': &lt;class 'numpy.int64'&gt;, 'DefaultResistance': &lt;class 'float'&gt;, 'Depth': &lt;class 'float'&gt;, 'Drain': &lt;class 'numpy.int64'&gt;, 'EndInflow': &lt;class 'numpy.int64'&gt;, 'EndStream': &lt;class 'numpy.int64'&gt;, 'EndingHead': &lt;class 'float'&gt;, 'Evapotranspiration': &lt;class 'float'&gt;, 'Farfield': &lt;class 'bool'&gt;, 'Gallery': &lt;class 'numpy.int64'&gt;, 'HeadSpecified': &lt;class 'float'&gt;, 'InletStream': &lt;class 'numpy.int64'&gt;, 'Label': &lt;class 'str'&gt;, 'Lake': &lt;class 'numpy.int64'&gt;, 'OutletStream': &lt;class 'numpy.int64'&gt;, 'OutletTable': &lt;class 'str'&gt;, 'OverlandFlow': &lt;class 'numpy.int64'&gt;, 'Precipitation': &lt;class 'float'&gt;, 'Resistance': &lt;class 'float'&gt;, 'Routing': &lt;class 'numpy.int64'&gt;, 'ScenFluxName': &lt;class 'str'&gt;, 'ScenResistance': &lt;class 'str'&gt;, 'StartingHead': &lt;class 'float'&gt;, 'TotalDischarge': &lt;class 'numpy.int64'&gt;, 'Width': &lt;class 'float'&gt;, 'chkScenario': &lt;class 'bool'&gt;}</em><a class="headerlink" href="#lsmaker.lsmaker.linesinks.dtypes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="lsmaker.lsmaker.linesinks.fcodes">
+<code class="sig-name descname">fcodes</code><em class="property"> = {'Intermittent': 46003, 'Perennial': 46006, 'Uncategorized': 46000}</em><a class="headerlink" href="#lsmaker.lsmaker.linesinks.fcodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="lsmaker.lsmaker.linesinks.int_dtype">
+<code class="sig-name descname">int_dtype</code><a class="headerlink" href="#lsmaker.lsmaker.linesinks.int_dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">builtins.str</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.list_updown_comids">
+<code class="sig-name descname">list_updown_comids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.list_updown_comids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.list_updown_comids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.load_poly">
+<code class="sig-name descname">load_poly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shapefile</span></em>, <em class="sig-param"><span class="n">dest_crs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.load_poly"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.load_poly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a shapefile and return the first polygon from its records,
+projected in the destination coordinate system.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.makeLineSinks">
+<code class="sig-name descname">makeLineSinks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.makeLineSinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.makeLineSinks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.map_confluences">
+<code class="sig-name descname">map_confluences</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.map_confluences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.map_confluences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.map_outsegs">
+<code class="sig-name descname">map_outsegs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.map_outsegs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.map_outsegs" title="Permalink to this definition">¶</a></dt>
+<dd><p>from Mat2, returns dataframe of all downstream segments (will not work with circular routing!)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="lsmaker.lsmaker.linesinks.maxlines">
+<code class="sig-name descname">maxlines</code><em class="property"> = 4000</em><a class="headerlink" href="#lsmaker.lsmaker.linesinks.maxlines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.preprocess">
+<code class="sig-name descname">preprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">save</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">use_arcpy</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.preprocess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and
+the model domain configuration (nearfield, farfield, and any other polygon areas) with the NHDPlus
+Flowlines and Waterbodies datasets. The following edits are made to the Flowlines and waterbodies:
+* remove farfield streams lower than &lt;min_farfield_order&gt;
+* remove waterbodies that aren’t lakes, and lakes smaller than &lt;min_waterbody_size&gt;
+* convert lakes from polygons to lines; merge the lakes with the with flowlines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.preprocess_arcpy">
+<code class="sig-name descname">preprocess_arcpy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.preprocess_arcpy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.preprocess_arcpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>requires arcpy</p>
+<p>This method performs the following steps:</p>
+<ol class="arabic simple">
+<li><p>clip the NHDPlus flowlines and waterbodies datasets to the model farfield polygon.
+Save the result of the clipping to new shapefiles, which are the same as those specified
+in the &lt;preprocessed_files&gt; section of the XML input file.</p></li>
+<li><p>Perform an “Erase analysis”, to cut-out the model nearfield from the farfield polygon
+(making the farfield polygon a donut with exterior and interior rings). Save this
+to file specified as &lt;farfield_multipolygon&gt; in the XML input file.</p></li>
+<li><p>Run “FeatureToPoint” on the NHD waterbodies dataset, resulting in a shapefile of points
+for each waterbody.</p></li>
+<li><p>Run “ExtractMultiValuesToPoints” on the waterbody points created in Step 3 and the DEM
+for the area, to get an elevation value for each waterbody. The name for the resulting
+point shapefile with elevation attributes should be the same as the name for the clipped
+waterbodies shapefile specified in the XML input file, but with the suffix “_points.shp”
+added.</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.preprocess_python">
+<code class="sig-name descname">preprocess_python</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.preprocess_python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.preprocess_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>temporary method to take the place of preprocess_arcpy.
+Will eventually combine with preprocess to reduce I/O
+This method also removes the need for a DEM, by getting lake elevations from the National Map Elevation Point Query Service</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.prototype">
+<code class="sig-name descname">prototype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nftol</span><span class="o">=</span><span class="default_value">[10, 50, 100, 200, 500]</span></em>, <em class="sig-param"><span class="n">fftol</span><span class="o">=</span><span class="default_value">500</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.prototype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.prototype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compare multiple simplification distance tolerance values for the model nearfield.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.read_lsmaker_xml">
+<code class="sig-name descname">read_lsmaker_xml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">infile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.read_lsmaker_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.read_lsmaker_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.read_lss">
+<code class="sig-name descname">read_lss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lss_xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.read_lss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.read_lss" title="Permalink to this definition">¶</a></dt>
+<dd><p>read a linesink string (lss) XML file exported by GFLOW</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.run_diagnostics">
+<code class="sig-name descname">run_diagnostics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.run_diagnostics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.run_diagnostics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.setup_linesink_lakes">
+<code class="sig-name descname">setup_linesink_lakes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.setup_linesink_lakes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.setup_linesink_lakes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.simplify_lines">
+<code class="sig-name descname">simplify_lines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nearfield_tolerance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">routed_area_tolerance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">farfield_tolerance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nearfield_refinement</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.simplify_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.simplify_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduces the number of vertices in the GIS linework representing streams and lakes,
+to within specified tolerances. The tolerance values represent the maximum distance
+in the coordinate system units that the simplified feature can deviate from the original feature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nearfield_tolerance</strong><span class="classifier">float</span></dt><dd><p>Tolerance for the area representing the model nearfield</p>
+</dd>
+<dt><strong>farfield_tolerance</strong><span class="classifier">float</span></dt><dd><p>Tolerance for the area representing the model farfield</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>df</strong><span class="classifier">DataFrame</span></dt><dd><p>A copy of the df attribute with a ‘ls_geom’ column of simplified geometries, and
+a ‘ls_coords’ column containing lists of coordinate tuples defining each simplified line.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.tf2flag">
+<code class="sig-name descname">tf2flag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">intxt</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.tf2flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.tf2flag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.write_lss">
+<code class="sig-name descname">write_lss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="n">outfile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.write_lss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.write_lss" title="Permalink to this definition">¶</a></dt>
+<dd><p>write GFLOW linesink XML (lss) file from dataframe df</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.write_lss_by_huc">
+<code class="sig-name descname">write_lss_by_huc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.write_lss_by_huc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.write_lss_by_huc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.write_shapefile">
+<code class="sig-name descname">write_shapefile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">outfile</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_ls_coords</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.write_shapefile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.write_shapefile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.move_point_along_line">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">move_point_along_line</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x1</span></em>, <em class="sig-param"><span class="n">x2</span></em>, <em class="sig-param"><span class="n">dist</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#move_point_along_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.move_point_along_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.name">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abbreviations for naming linesinks from names in NHDPlus
+GFLOW requires linesink names to be 32 characters or less</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.reproject">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">reproject</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geoms</span></em>, <em class="sig-param"><span class="n">pr1</span></em>, <em class="sig-param"><span class="n">pr2</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#reproject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.reproject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reprojects a list of geometries from coordinate system pr1 to pr2
+(given as proj strings).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.uniquelist">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">uniquelist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seq</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#uniquelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.uniquelist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.w_parameter">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">w_parameter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">B</span></em>, <em class="sig-param"><span class="n">lmbda</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#w_parameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.w_parameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute w parameter for estimating an effective conductance term
+(i.e., when simulating Lakes using Linesinks instead of GFLOW’s lake package)</p>
+<p>If only larger lakes are simulated (e.g., &gt; 1 km2), w parameter will be = lambda</p>
+<p>see Haitjema 2005, “Dealing with Resistance to Flow into Surface Waters”</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="lsmaker.lsmaker.width_from_arboate">
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">width_from_arboate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arbolate</span></em>, <em class="sig-param"><span class="n">lmbda</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#width_from_arboate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.width_from_arboate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate stream width in feet from arbolate sum in meters, using relationship
+described by Feinstein et al (2010), Appendix 2, p 266.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../release-history.html" class="btn btn-neutral float-right" title="Release History" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../usage.html" class="btn btn-neutral float-left" title="Input requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+      <span class="lastupdated">
+        Last updated on Jul 14, 2020.
+      </span>
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
