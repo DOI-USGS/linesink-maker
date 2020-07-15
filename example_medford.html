@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+g2e7cab4 documentation</title>
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+g01081f8 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g2e7cab4
+                0.post65.dev0+g01081f8
               </div>
             
           
@@ -96,7 +96,8 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Medford National Forest Unit Example</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#configuration-file-medford-lines-xml">Configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file-in-yaml-format-medford-lines-yml">Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#alternative-xml-format-for-configuration-file-medford-lines-xml">Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#python-script-to-build-the-model-make-linesinks-py">Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):</a></li>
 </ul>
 </li>
@@ -217,8 +218,152 @@
 <div class="section" id="medford-national-forest-unit">
 <h1>Medford National Forest Unit<a class="headerlink" href="#medford-national-forest-unit" title="Permalink to this headline">¶</a></h1>
 <p>In this example, a GFLOW model of a National Forest Unit in Northern Wisconsin is constructed, similar to the one documented in <a class="reference external" href="https://wgnhs.wisc.edu/pubs/tr0041/">this study</a>.</p>
-<div class="section" id="configuration-file-medford-lines-xml">
-<h2>Configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)<a class="headerlink" href="#configuration-file-medford-lines-xml" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="configuration-file-in-yaml-format-medford-lines-yml">
+<h2>Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)<a class="headerlink" href="#configuration-file-in-yaml-format-medford-lines-yml" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-yaml notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">GlobalSettings</span><span class="p">:</span>
+  <span class="c1"># full path to working folder where intermediate (preprocessed) files</span>
+  <span class="c1"># and output will be generated.</span>
+  <span class="nt">working_dir</span><span class="p">:</span> <span class="s">&#39;.&#39;</span>
+  <span class="c1"># Note: Currently LinesinkMaker does not do transformations</span>
+  <span class="c1"># So input coordinate projections and output prj should be consistent</span>
+  <span class="c1"># projection file for output shapefiles</span>
+  <span class="nt">prj</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.prj</span>
+  <span class="c1"># global resistance value to apply to all resistance linesinks </span>
+  <span class="c1"># (c parameter in the GFLOW documentation)</span>
+  <span class="nt">resistance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.3</span>
+  <span class="c1"># global global_streambed_thickness value to apply to all resistance linesinks </span>
+  <span class="c1"># (delta parameter in the GFLOW documentation)</span>
+  <span class="nt">global_streambed_thickness</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+  <span class="c1"># aquifer thickness in model units</span>
+  <span class="c1"># (used for calculating lambda parameter in determining resistance;</span>
+  <span class="c1"># see GFLOW documentation on &quot;Dealing with Resistance to Flow into Surface Waters&quot;</span>
+  <span class="c1"># https://www.haitjema.com/documents/Dealingwithresistancetoflowintosurfacewaters.pdf)</span>
+  <span class="nt">H</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+  <span class="c1"># representative hydraulic conductivity for computing lambda</span>
+  <span class="nt">k</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">10</span>
+  <span class="c1"># default (PEST) parameter name for linesink resistance</span>
+  <span class="nt">ScenResistance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Rlinesink</span>
+  <span class="c1"># model length units (feet or meters)</span>
+  <span class="nt">ComputationalUnits</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">feet</span>
+  <span class="c1"># units for the model basemaps (projected coordinate system)</span>
+  <span class="nt">BasemapUnits</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">meters</span>
+
+<span class="nt">modelDomain</span><span class="p">:</span>
+  <span class="c1"># polygon shapefile indicating the desired model extent</span>
+  <span class="c1"># linesinks within this area but outside of the near or mid-fields</span>
+  <span class="c1"># will be zero resistance (specified head)</span>
+  <span class="nt">farfield</span><span class="p">:</span>
+  <span class="c1"># A distance (in GIS or Basemap units; typically meters) that defines </span>
+  <span class="c1"># the extent of model farfield area as a buffer distance around the nearfield polygon</span>
+  <span class="c1"># (can be specified in lieu of a polygon shapefile under the farfield: key)</span>
+  <span class="nt">farfield_buffer</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">15000</span>
+  <span class="c1"># polygon of the model nearfield area, where linesinks will be given </span>
+  <span class="c1"># resistance and routed</span>
+  <span class="nt">routed_area</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.shp</span>
+  <span class="c1"># polygon of area of focus within routed area (optional)</span>
+  <span class="nt">nearfield</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
+
+<span class="nt">NHDfiles</span><span class="p">:</span>
+  <span class="nt">flowlines</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_flowlines.shp</span>
+  <span class="nt">elevslope</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/elevslope.dbf</span>
+  <span class="nt">PlusFlowVAA</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/PlusFlowlineVAA.dbf</span>
+  <span class="nt">waterbodies</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_waterbodies.shp</span>
+
+<span class="nt">Simplification</span><span class="p">:</span>
+  <span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
+  <span class="nt">nearfield_tolerance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
+  <span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
+  <span class="nt">routed_area_tolerance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">300</span>
+  <span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
+  <span class="nt">farfield_tolerance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">500</span>
+  <span class="c1"># minimum stream order to retain in farfield --&gt;</span>
+  <span class="nt">min_farfield_order</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
+  <span class="c1"># minimum sized waterbodies to retain in routed area (km2)</span>
+  <span class="nt">min_waterbody_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+  <span class="c1"># minimum size of waterbodies to retain in nearfield (km2)</span>
+  <span class="nt">min_nearfield_wb_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.01</span>
+  <span class="c1"># minimum size of waterbodies to retain in farfield (km2)</span>
+  <span class="nt">min_farfield_wb_size</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+  <span class="c1"># Drop ephemeral streams from routed area outside of nearfield</span>
+  <span class="nt">drop_intermittent</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">True</span>
+
+<span class="nt">Outputs</span><span class="p">:</span>
+  <span class="nt">outfile_basename</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Medford</span>
+  <span class="nt">error_reporting</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">linesinkMaker_errors.txt</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="alternative-xml-format-for-configuration-file-medford-lines-xml">
+<h2>Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)<a class="headerlink" href="#alternative-xml-format-for-configuration-file-medford-lines-xml" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-xml notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
@@ -480,7 +625,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 14, 2020.
+        Last updated on Jul 15, 2020.
       </span>
 
     </p>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+g2e7cab4 documentation</title>
+  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+g01081f8 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g2e7cab4
+                0.post65.dev0+g01081f8
               </div>
             
           
@@ -188,9 +188,10 @@
 <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">import</span> <span class="nn">fiona</span>
-<span class="kn">from</span> <span class="nn">fiona.crs</span> <span class="kn">import</span> <span class="n">to_string</span>
+<span class="kn">from</span> <span class="nn">fiona.crs</span> <span class="kn">import</span> <span class="n">to_string</span><span class="p">,</span> <span class="n">from_string</span>
 <span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">Polygon</span><span class="p">,</span> <span class="n">LineString</span><span class="p">,</span> <span class="n">Point</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">mapping</span>
 <span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">unary_union</span><span class="p">,</span> <span class="n">transform</span>
 <span class="kn">import</span> <span class="nn">pyproj</span>
@@ -280,7 +281,7 @@
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="get_elevations_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevations_from_epqs">[docs]</a><span class="k">def</span> <span class="nf">get_elevations_from_epqs</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Feet&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_elevations_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevations_from_epqs">[docs]</a><span class="k">def</span> <span class="nf">get_elevations_from_epqs</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;feet&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;From list of shapely points in lat, lon, returns list of elevation values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -291,7 +292,7 @@
     <span class="k">return</span> <span class="n">elevations</span></div>
 
 
-<div class="viewcode-block" id="get_elevation_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevation_from_epqs">[docs]</a><span class="k">def</span> <span class="nf">get_elevation_from_epqs</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Feet&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_elevation_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevation_from_epqs">[docs]</a><span class="k">def</span> <span class="nf">get_elevation_from_epqs</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;feet&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns an elevation value at a point location.</span>
 
 <span class="sd">    Notes</span>
@@ -476,13 +477,171 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">GFLOW_lss_xml</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_xml_file_path</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># absolute path to config file</span>
-        <span class="k">if</span> <span class="n">infile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">read_lsmaker_xml</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+        <span class="c1"># attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># absolute path to config file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preproc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># aquifer thickness in model units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># hydraulic conductivity of the aquifer in model units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ScenResistance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chkScenario</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_streambed_thickness</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># streambed thickness</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># &#39;feet&#39; or &#39;meters&#39;; for XML output file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># elevation units multiplier (from NHDPlus cm to model units)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmult</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="c1"># model domain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">farfield</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routed_area</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nearfield</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prj</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crs_str</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># self.crs, in proj string format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">farfield_buffer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clip_farfield</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">split_by_HUC</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HUC_shp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HUC_name_field</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># simplification</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refinement_areas</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list of n areas within routed area with additional refinement</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nearfield_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routed_area_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">farfield_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_order</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_wb_size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_waterbody_size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_wb_size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">farfield_length_threshold</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routed_area_length_threshold</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop_intermittent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop_crossing</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asum_thresh_ra</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asum_thresh_nf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asum_thresh_ff</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># NHD files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flowlines</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevslope</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PlusFlowVAA</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">waterbodies</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># columns to retain in NHD files (when joining to GIS lines)</span>
+        <span class="c1"># Note: may need to add method to handle case discrepancies</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flowlines_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;COMID&#39;</span><span class="p">,</span> <span class="s1">&#39;FCODE&#39;</span><span class="p">,</span> <span class="s1">&#39;FDATE&#39;</span><span class="p">,</span> <span class="s1">&#39;FLOWDIR&#39;</span><span class="p">,</span> <span class="s1">&#39;FTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;GNIS_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;GNIS_NAME&#39;</span><span class="p">,</span> <span class="s1">&#39;LENGTHKM&#39;</span><span class="p">,</span>
+                               <span class="s1">&#39;REACHCODE&#39;</span><span class="p">,</span> <span class="s1">&#39;RESOLUTION&#39;</span><span class="p">,</span> <span class="s1">&#39;WBAREACOMI&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flowlines_cols_dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;COMID&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                      <span class="s1">&#39;FCODE&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                      <span class="s1">&#39;FDATE&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                      <span class="s1">&#39;FLOWDIR&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                      <span class="s1">&#39;FTYPE&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                      <span class="s1">&#39;GNIS_ID&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                      <span class="s1">&#39;GNIS_NAME&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                      <span class="s1">&#39;LENGTHKM&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                                      <span class="s1">&#39;REACHCODE&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                      <span class="s1">&#39;RESOLUTION&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                      <span class="s1">&#39;WBAREACOMI&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                      <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="nb">object</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevslope_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MINELEVSMO&#39;</span><span class="p">,</span> <span class="s1">&#39;MAXELEVSMO&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevslope_dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;MINELEVSMO&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                                 <span class="s1">&#39;MAXELEVSMO&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pfvaa_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ArbolateSu&#39;</span><span class="p">,</span> <span class="s1">&#39;Hydroseq&#39;</span><span class="p">,</span> <span class="s1">&#39;DnHydroseq&#39;</span><span class="p">,</span> <span class="s1">&#39;StreamOrde&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pfvaa_cols_dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ArbolateSu&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                                  <span class="s1">&#39;Hydroseq&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                  <span class="s1">&#39;DnHydroseq&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                  <span class="s1">&#39;StreamOrde&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wb_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AREASQKM&#39;</span><span class="p">,</span> <span class="s1">&#39;COMID&#39;</span><span class="p">,</span> <span class="s1">&#39;ELEVATION&#39;</span><span class="p">,</span> <span class="s1">&#39;FCODE&#39;</span><span class="p">,</span> <span class="s1">&#39;FDATE&#39;</span><span class="p">,</span> <span class="s1">&#39;FTYPE&#39;</span><span class="p">,</span> <span class="s1">&#39;GNIS_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;GNIS_NAME&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;REACHCODE&#39;</span><span class="p">,</span> <span class="s1">&#39;RESOLUTION&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wb_cols_dtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;AREASQKM&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                               <span class="s1">&#39;COMID&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                               <span class="s1">&#39;ELEVATION&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                               <span class="s1">&#39;FCODE&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                               <span class="s1">&#39;FDATE&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                               <span class="s1">&#39;FTYPE&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                               <span class="s1">&#39;GNIS_ID&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                               <span class="s1">&#39;GNIS_NAME&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                               <span class="s1">&#39;REACHCODE&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                               <span class="s1">&#39;RESOLUTION&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                               <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="nb">object</span><span class="p">}</span>
+        <span class="c1"># could do away with above and have one dtypes list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowlines_cols_dtypes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elevslope_dtypes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pfvaa_cols_dtypes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wb_cols_dtypes</span><span class="p">)</span>
+
+        <span class="c1"># preprocessed files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEM</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEM_zmult</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">flowlines_clipped</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">waterbodies_clipped</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">routed_mp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">farfield_mp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_lines</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preprocdir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wb_centroids_w_elevations</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># elevations extracted during preprocessing routine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># field in wb_centroids_w_elevations containing elevations</span>
+
+        <span class="c1"># outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span> <span class="o">=</span> <span class="s1">&#39;error_reporting.txt&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="c1"># attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="c1"># working dataframe for translating NHDPlus data to linesink strings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lss</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="c1"># dataframe of GFLOW linesink strings (with attributes)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outsegs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confluences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        
+        <span class="c1"># read in the configuration file</span>
+        <span class="k">if</span> <span class="n">infile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">infile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.xml&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read_lsmaker_xml</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">infile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">infile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.yml&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read_lsmaker_yaml</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+
+        <span class="c1"># or create instance from a GFLOW LSS XML file</span>
         <span class="k">elif</span> <span class="n">GFLOW_lss_xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_lss</span><span class="p">(</span><span class="n">GFLOW_lss_xml</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test for equality to another linesink object.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># items to skip</span>
+             <span class="c1"># todo: implement pyproj.CRS class to robustly compare CRSs</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_lsmaker_config_file_path&#39;</span><span class="p">,</span> 
+                     <span class="s1">&#39;crs&#39;</span><span class="p">,</span> 
+                     <span class="s1">&#39;crs_str&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;inpars&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;cfg&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;efp&#39;</span>
+                     <span class="p">]:</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+                    <span class="k">return</span> <span class="kc">False</span> 
+            <span class="k">elif</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="c1">#elif type(v) in [str, int, float, dict, list]:</span>
+            <span class="c1">#    if v != other.__dict__[k]:</span>
+            <span class="c1">#        pass</span>
+            <span class="c1">#    continue</span>
+        
 <div class="viewcode-block" id="linesinks.read_lsmaker_xml"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.linesinks.read_lsmaker_xml">[docs]</a>    <span class="k">def</span> <span class="nf">read_lsmaker_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
 
         <span class="c1">#try:</span>
@@ -491,7 +650,7 @@
         <span class="c1">#    raise InputFileMissing</span>
 
         <span class="c1"># record the config file absolute path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_xml_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">infile</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">infile</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">inpars</span> <span class="o">=</span> <span class="n">inpardat</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inpars</span> <span class="o">=</span> <span class="n">inpars</span>
@@ -502,7 +661,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span>
 
         <span class="c1"># global settings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">preproc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf2flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;preproc&#39;</span><span class="p">,</span> <span class="s1">&#39;True&#39;</span><span class="p">))</span>
@@ -511,13 +670,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>  <span class="c1"># hydraulic conductivity of the aquifer in model units</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ScenResistance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;ScenResistance&#39;</span><span class="p">,</span> <span class="s1">&#39;linesink&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">chkScenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;chkScenario&#39;</span><span class="p">,</span> <span class="s1">&#39;True&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chkScenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf2flag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;chkScenario&#39;</span><span class="p">,</span> <span class="s1">&#39;True&#39;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">global_streambed_thickness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;global_streambed_thickness&#39;</span><span class="p">,</span>
                                                              <span class="mi">3</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>  <span class="c1"># streambed thickness</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;ComputationalUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;Feet&#39;</span><span class="p">)</span> <span class="c1"># &#39;Feet&#39; or &#39;Meters&#39;; for XML output file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;BasemapUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;Meters&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;ComputationalUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;feet&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="c1"># &#39;feet&#39; or &#39;meters&#39;; for XML output file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;BasemapUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;meters&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="c1"># elevation units multiplier (from NHDPlus cm to model units)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">z_mult</span> <span class="o">=</span> <span class="mf">0.03280839895013123</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;feet&#39;</span> <span class="k">else</span> <span class="mf">0.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmult</span> <span class="o">=</span> <span class="mf">0.03280839895013123</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;feet&#39;</span> <span class="k">else</span> <span class="mf">0.01</span>
 
         <span class="c1"># model domain</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">farfield</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_XMLentry</span><span class="p">(</span><span class="s1">&#39;farfield&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -631,9 +790,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span> <span class="o">=</span> <span class="s1">&#39;DEM&#39;</span>  <span class="c1"># field in wb_centroids_w_elevations containing elevations</span>
 
         <span class="c1"># outputs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_xml_file_path</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span>
                                              <span class="n">inpars</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//outfile_basename&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_xml_file_path</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span>
                                             <span class="n">inpars</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//error_reporting&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
 
@@ -643,13 +802,85 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">outsegs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">confluences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
 
+<div class="viewcode-block" id="linesinks.read_lsmaker_yaml"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.linesinks.read_lsmaker_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">read_lsmaker_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
+
+        <span class="c1"># read in the user-specified configuration</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">cfg</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span>
+        <span class="c1"># read in the default configuration</span>
+        <span class="n">defaults_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> 
+                                     <span class="s1">&#39;default_settings.yml&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">defaults_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">defaults</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">infile</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># configuration dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cfg</span>
+
+        <span class="c1"># configuration file blocks</span>
+        <span class="n">filepaths_to_make_abs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;outfile_basename&#39;</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">blockname</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># entries within blocks</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span> <span class="ow">in</span> <span class="n">defaults</span><span class="p">[</span><span class="n">blockname</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># try to detect files and make their paths absolute</span>
+                <span class="n">entry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">blockname</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">file_abspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_abspath</span><span class="p">)</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">filepaths_to_make_abs</span><span class="p">:</span>
+                        <span class="n">entry</span> <span class="o">=</span> <span class="n">file_abspath</span>
+                <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
+                
+        <span class="c1"># setup the working directory (default to current directory)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;working_dir&#39;</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">lmbda</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">resistance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmult</span> <span class="o">=</span> <span class="mf">0.03280839895013123</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;feet&#39;</span> <span class="k">else</span> <span class="mf">0.01</span>
+            
+        <span class="c1"># get the projection file and crs from either the nearfield or routed area</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">prj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nearfield</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">routed_area</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                    <span class="n">prjfile</span> <span class="o">=</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.prj&#39;</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prjfile</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prj</span> <span class="o">=</span> <span class="n">prjfile</span>
+                        <span class="k">with</span> <span class="n">fiona</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">crs</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">crs_str</span> <span class="o">=</span> <span class="n">to_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crs_str</span> <span class="o">=</span> <span class="n">gisutils</span><span class="o">.</span><span class="n">get_proj_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prj</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="n">from_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crs_str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">prj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Invalid projection file or projection file not found: </span><span class="si">{}</span><span class="s2">. </span><span class="se">\</span>
+<span class="s2">                Specify a valid ESRI projection file under the </span><span class="se">\</span>
+<span class="s2">                prj: configuration file key&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prj</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># NHDPlus files</span>
+        <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="s1">&#39;flowlines&#39;</span><span class="p">,</span> <span class="s1">&#39;elevslope&#39;</span><span class="p">,</span> <span class="s1">&#39;PlusFlowVAA&#39;</span><span class="p">,</span> <span class="s1">&#39;waterbodies&#39;</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Nothing specified for </span><span class="si">{}</span><span class="s1"> in the configuration file!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">variable</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;file not found: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+        <span class="c1"># preprocessed files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preprocdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowlines_clipped</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wb_centroids_w_elevations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">waterbodies_clipped</span><span class="p">[</span>
+                                         <span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_points.shp&#39;</span>  <span class="c1"># elevations extracted during preprocessing routine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span> <span class="o">=</span> <span class="s1">&#39;DEM&#39;</span>  <span class="c1"># field in wb_centroids_w_elevations containing elevations</span>
+
+        <span class="c1"># outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span></div>
+        
     <span class="k">def</span> <span class="nf">_parse_XMLtext</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">findall_result</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">relative_filepath</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1"># handle either strings or lxml Elements</span>
         <span class="n">txt</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">findall_result</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">findall_result</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
             <span class="c1"># check if a file exists relative to config file path</span>
             <span class="c1"># if so, change the file path to be absolute</span>
-            <span class="n">file_abspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_xml_file_path</span><span class="p">,</span> <span class="n">txt</span><span class="p">)</span>
+            <span class="n">file_abspath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span> <span class="n">txt</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_abspath</span><span class="p">)</span> <span class="ow">or</span> <span class="n">relative_filepath</span><span class="p">:</span>
                 <span class="n">txt</span> <span class="o">=</span> <span class="n">file_abspath</span>
         <span class="k">return</span> <span class="n">dtype</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span> <span class="k">if</span> <span class="n">txt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
@@ -1590,8 +1821,8 @@
         <span class="c1"># linesink elevations (lakes won&#39;t be populated yet)</span>
         <span class="n">min_elev_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s1">&#39;minelev&#39;</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">lower</span><span class="p">()][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">max_elev_col</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s1">&#39;maxelev&#39;</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">lower</span><span class="p">()][</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;minElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">min_elev_col</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_mult</span>
-        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">max_elev_col</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_mult</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;minElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">min_elev_col</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmult</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">max_elev_col</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmult</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;dStage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;minElev&#39;</span><span class="p">]</span>
 
         <span class="c1"># list upstream and downstream comids</span>
@@ -1967,7 +2198,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 14, 2020.
+        Last updated on Jul 15, 2020.
       </span>
 
     </p>

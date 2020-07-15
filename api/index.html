@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API reference &mdash; linesink-maker 0.post65.dev0+g2e7cab4 documentation</title>
+  <title>API reference &mdash; linesink-maker 0.post65.dev0+g01081f8 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g2e7cab4
+                0.post65.dev0+g01081f8
               </div>
             
           
@@ -276,7 +276,7 @@ Ugly but works</p>
 
 <dl class="py function">
 <dt id="lsmaker.lsmaker.get_elevation_from_epqs">
-<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">get_elevation_from_epqs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lon</span></em>, <em class="sig-param"><span class="n">lat</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Feet'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#get_elevation_from_epqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.get_elevation_from_epqs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">get_elevation_from_epqs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lon</span></em>, <em class="sig-param"><span class="n">lat</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'feet'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#get_elevation_from_epqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.get_elevation_from_epqs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an elevation value at a point location.</p>
 <p class="rubric">Notes</p>
 <dl class="simple">
@@ -292,7 +292,7 @@ Ugly but works</p>
 
 <dl class="py function">
 <dt id="lsmaker.lsmaker.get_elevations_from_epqs">
-<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">get_elevations_from_epqs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Feet'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#get_elevations_from_epqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.get_elevations_from_epqs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">lsmaker.lsmaker.</code><code class="sig-name descname">get_elevations_from_epqs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'feet'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#get_elevations_from_epqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.get_elevations_from_epqs" title="Permalink to this definition">¶</a></dt>
 <dd><p>From list of shapely points in lat, lon, returns list of elevation values</p>
 </dd></dl>
 
@@ -423,6 +423,11 @@ This method also removes the need for a DEM, by getting lake elevations from the
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="lsmaker.lsmaker.linesinks.read_lsmaker_yaml">
+<code class="sig-name descname">read_lsmaker_yaml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">infile</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.read_lsmaker_yaml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.read_lsmaker_yaml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt id="lsmaker.lsmaker.linesinks.read_lss">
 <code class="sig-name descname">read_lss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lss_xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#linesinks.read_lss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.linesinks.read_lss" title="Permalink to this definition">¶</a></dt>
 <dd><p>read a linesink string (lss) XML file exported by GFLOW</p>
@@ -549,7 +554,7 @@ described by Feinstein et al (2010), Appendix 2, p 266.</p>
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 14, 2020.
+        Last updated on Jul 15, 2020.
       </span>
 
     </p>
