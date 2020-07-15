@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <LinesinkStringFile version="1">
-	<ComputationalUnits>Feet</ComputationalUnits>
-	<BasemapUnits>Meters</BasemapUnits>
+	<ComputationalUnits>feet</ComputationalUnits>
+	<BasemapUnits>meters</BasemapUnits>
 
 	<LinesinkString>
 		<Label>13102863 S Fork Yellow R</Label>

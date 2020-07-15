@@ -1,0 +1,108 @@
+GlobalSettings:
+  # full path to working folder where intermediate (preprocessed) files
+  # and output will be generated.
+  working_dir: '.'
+  # Note: Currently LinesinkMaker does not do transformations
+  # So input coordinate projections and output prj should be consistent
+  # projection file for output shapefiles
+  prj: shps/Medford_nf.prj
+  # elevation units multiplier (from NHDPlus cm to model units)
+  zmult: 0.03280839895013123
+  # global resistance value to apply to all resistance linesinks 
+  # (c parameter in the GFLOW documentation)
+  resistance: 0.3
+  # global global_streambed_thickness value to apply to all resistance linesinks 
+  # (delta parameter in the GFLOW documentation)
+  global_streambed_thickness: 3
+  # aquifer thickness in model units
+  # (used for calculating lambda parameter in determining resistance;
+  # see GFLOW documentation on "Dealing with Resistance to Flow into Surface Waters"
+  # https://www.haitjema.com/documents/Dealingwithresistancetoflowintosurfacewaters.pdf)
+  H: 100
+  # representative hydraulic conductivity for computing lambda
+  k: 10
+  # default (PEST) parameter name for linesink resistance
+  ScenResistance: Rlinesink
+  # model length units (feet or meters)
+  ComputationalUnits: feet
+  # units for the model basemaps (projected coordinate system)
+  BasemapUnits: meters
+  # 
+  chkScenario: True
+  preproc: True  # whether or not to run preprocessing
+
+modelDomain:
+  # polygon shapefile indicating the desired model extent
+  # linesinks within this area but outside of the near or mid-fields
+  # will be zero resistance (specified head)
+  farfield:
+  # A distance (in GIS or Basemap units; typically meters) that defines 
+  # the extent of model farfield area as a buffer distance around the nearfield polygon
+  # (can be specified in lieu of a polygon shapefile under the farfield: key)
+  farfield_buffer: 15000
+  # polygon of the model nearfield area, where linesinks will be given 
+  # resistance and routed
+  routed_area: shps/Medford_nf.shp
+  # polygon of area of focus within routed area (optional)
+  nearfield: shps/Medford_unit.shp
+  # option to clip linestrings that intersect the outer edge of the farfield area
+  clip_farfield: False
+  # options to write a separate LSS XML file for each polgyon in the HUC_shp shapefile
+  split_by_HUC: False
+  # polygon shapefile
+  HUC_shp:
+  # field in HUC_shp with polygon names
+  HUC_name_field: False
+
+NHDfiles:
+  flowlines: shps/Medford_flowlines.shp
+  elevslope: shps/elevslope.dbf
+  PlusFlowVAA: shps/PlusFlowlineVAA.dbf
+  waterbodies: shps/Medford_waterbodies.shp
+
+preprocessedFiles:
+  DEM:
+  DEM_zmult: 1.
+  flowlines_clipped: 'preprocessed/flowlines_clipped.shp'
+  waterbodies_clipped: 'preprocessed/waterbodies_clipped.shp'
+  routed_mp: 'preprocessed/ra_cutout.shp'
+  farfield_mp: 'preprocessed/ff_cutout.shp'
+  preprocessed_lines: 'preprocessed/lines.shp'
+
+Simplification:
+  # maximum distance a simplified line can deviate from the original linework
+  nearfield_tolerance: 100
+  # maximum distance a simplified line can deviate from the original linework
+  routed_area_tolerance: 100
+  # maximum distance a simplified line can deviate from the original linework
+  farfield_tolerance: 300
+  # minimum stream order to retain in farfield -->
+  min_farfield_order: 2
+  # minimum sized waterbodies to retain in routed area (km2)
+  min_waterbody_size: 1
+  # minimum size of waterbodies to retain in nearfield (km2)
+  min_nearfield_wb_size: 1
+  # minimum size of waterbodies to retain in farfield (km2)
+  min_farfield_wb_size: 1
+  # 
+  farfield_length_threshold: 0
+  #
+  routed_area_length_threshold: 0
+  # Drop ephemeral streams from routed area outside of nearfield
+  drop_intermittent: True
+  # Option to drop linesinks that cross
+  drop_crossing: False
+  # routed area arbolate sum threshold
+  asum_thresh_ra: 0
+  # nearfield_arbolate sum threshold
+  asum_thresh_nf: 0
+  # farfield arbolate sum threshold
+  asum_thresh_ff: 0
+
+Outputs:
+  outfile_basename: Medford
+  error_reporting: linesinkMaker_errors.txt
+
+
+
+

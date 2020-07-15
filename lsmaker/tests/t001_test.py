@@ -28,7 +28,7 @@ def test1(test_data_path, test_output_path, preprocessed_folder):
     nearfield_tol = 50
     routed_area_tol = 100
     farfield_tol = 200
-    expected_nearfield_path = os.path.abspath(os.path.join(ls._lsmaker_xml_file_path,
+    expected_nearfield_path = os.path.abspath(os.path.join(ls._lsmaker_config_file_path,
                                                            'testnearfield.shp'))
     assert ls.nearfield == expected_nearfield_path
     assert ls.farfield_buffer == 1000

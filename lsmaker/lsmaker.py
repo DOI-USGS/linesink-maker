@@ -9,9 +9,10 @@ import shutil
 from urllib.request import urlopen
 import requests
 import json
+import yaml
 from functools import partial
 import fiona
-from fiona.crs import to_string
+from fiona.crs import to_string, from_string
 from shapely.geometry import Polygon, LineString, Point, shape, mapping
 from shapely.ops import unary_union, transform
 import pyproj
@@ -101,7 +102,7 @@ def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
     return df.geometry.tolist()
 
 
-def get_elevations_from_epqs(points, units='Feet'):
+def get_elevations_from_epqs(points, units='feet'):
     """From list of shapely points in lat, lon, returns list of elevation values
     """
     if len(points) > 0:
@@ -112,7 +113,7 @@ def get_elevations_from_epqs(points, units='Feet'):
     return elevations
 
 
-def get_elevation_from_epqs(lon, lat, units='Feet'):
+def get_elevation_from_epqs(lon, lat, units='feet'):
     """Returns an elevation value at a point location.
 
     Notes
@@ -297,13 +298,171 @@ class linesinks:
 
     def __init__(self, infile=None, GFLOW_lss_xml=None):
 
-        self._lsmaker_xml_file_path = None  # absolute path to config file
-        if infile is not None:
-            self.read_lsmaker_xml(infile)
+        # attributes
+        self._lsmaker_config_file_path = None  # absolute path to config file
+        self.preproc = None
+        self.resistance = None
+        self.H = None  # aquifer thickness in model units
+        self.k = None  # hydraulic conductivity of the aquifer in model units
+        self.lmbda = None
+        self.ScenResistance = None
+        self.chkScenario = None
+        self.global_streambed_thickness = None  # streambed thickness
+        self.ComputationalUnits = None  # 'feet' or 'meters'; for XML output file
+        self.BasemapUnits = None
+        # elevation units multiplier (from NHDPlus cm to model units)
+        self.zmult = None
 
+        # model domain
+        self.farfield = None
+        self.routed_area = None
+        self.nearfield = None
+        self.prj = None
+        self.crs = None
+        self.crs_str = None  # self.crs, in proj string format
+        self.farfield_buffer = None
+        self.clip_farfield = None
+        self.split_by_HUC = None
+        self.HUC_shp = None
+        self.HUC_name_field = None
+
+        # simplification
+        self.refinement_areas = []  # list of n areas within routed area with additional refinement
+        self.nearfield_tolerance = None
+        self.routed_area_tolerance = None
+        self.farfield_tolerance = None
+        self.min_farfield_order = None
+        self.min_nearfield_wb_size = None
+        self.min_waterbody_size = None
+        self.min_farfield_wb_size = None
+        self.farfield_length_threshold = None
+        self.routed_area_length_threshold = None
+        self.drop_intermittent = None
+        self.drop_crossing = None
+        self.asum_thresh_ra = None
+        self.asum_thresh_nf = None
+        self.asum_thresh_ff = None
+
+        # NHD files
+        self.flowlines = None
+        self.elevslope = None
+        self.PlusFlowVAA = None
+        self.waterbodies = None
+
+        # columns to retain in NHD files (when joining to GIS lines)
+        # Note: may need to add method to handle case discrepancies
+        self.flowlines_cols = ['COMID', 'FCODE', 'FDATE', 'FLOWDIR', 'FTYPE', 'GNIS_ID', 'GNIS_NAME', 'LENGTHKM',
+                               'REACHCODE', 'RESOLUTION', 'WBAREACOMI', 'geometry']
+        self.flowlines_cols_dtypes = {'COMID': self.int_dtype,
+                                      'FCODE': self.int_dtype,
+                                      'FDATE': str,
+                                      'FLOWDIR': str,
+                                      'FTYPE': str,
+                                      'GNIS_ID': self.int_dtype,
+                                      'GNIS_NAME': str,
+                                      'LENGTHKM': float,
+                                      'REACHCODE': str,
+                                      'RESOLUTION': str,
+                                      'WBAREACOMI': self.int_dtype,
+                                      'geometry': object}
+        self.elevslope_cols = ['MINELEVSMO', 'MAXELEVSMO']
+        self.elevslope_dtypes = {'MINELEVSMO': float,
+                                 'MAXELEVSMO': float}
+        self.pfvaa_cols = ['ArbolateSu', 'Hydroseq', 'DnHydroseq', 'StreamOrde']
+        self.pfvaa_cols_dtypes = {'ArbolateSu': float,
+                                  'Hydroseq': self.int_dtype,
+                                  'DnHydroseq': self.int_dtype,
+                                  'StreamOrde': np.int64}
+        self.wb_cols = ['AREASQKM', 'COMID', 'ELEVATION', 'FCODE', 'FDATE', 'FTYPE', 'GNIS_ID', 'GNIS_NAME',
+                        'REACHCODE', 'RESOLUTION', 'geometry']
+        self.wb_cols_dtypes = {'AREASQKM': float,
+                               'COMID': self.int_dtype,
+                               'ELEVATION': float,
+                               'FCODE': self.int_dtype,
+                               'FDATE': str,
+                               'FTYPE': str,
+                               'GNIS_ID': self.int_dtype,
+                               'GNIS_NAME': str,
+                               'REACHCODE': str,
+                               'RESOLUTION': str,
+                               'geometry': object}
+        # could do away with above and have one dtypes list
+        self.dtypes.update(self.flowlines_cols_dtypes)
+        self.dtypes.update(self.elevslope_dtypes)
+        self.dtypes.update(self.pfvaa_cols_dtypes)
+        self.dtypes.update(self.wb_cols_dtypes)
+
+        # preprocessed files
+        self.DEM = None
+        self.elevs_field = None
+        self.DEM_zmult = None
+
+        self.flowlines_clipped = None
+        self.waterbodies_clipped = None
+        self.routed_mp = None
+        self.farfield_mp = None
+        self.preprocessed_lines = None
+        self.preprocdir = None
+        self.wb_centroids_w_elevations = None  # elevations extracted during preprocessing routine
+        self.elevs_field = None  # field in wb_centroids_w_elevations containing elevations
+
+        # outputs
+        self.outfile_basename = None
+        self.error_reporting = 'error_reporting.txt'
+        self.efp = open(self.error_reporting, 'w')
+
+        # attributes
+        self.df = pd.DataFrame() # working dataframe for translating NHDPlus data to linesink strings
+        self.lss = pd.DataFrame() # dataframe of GFLOW linesink strings (with attributes)
+        self.outsegs = pd.DataFrame()
+        self.confluences = pd.DataFrame()
+        
+        # read in the configuration file
+        if infile is not None and infile.endswith('.xml'):
+            self.read_lsmaker_xml(infile)
+        if infile is not None and infile.endswith('.yml'):
+            self.read_lsmaker_yaml(infile)
+
+        # or create instance from a GFLOW LSS XML file
         elif GFLOW_lss_xml is not None:
             self.df = self.read_lss(GFLOW_lss_xml)
 
+    def __eq__(self, other):
+        """Test for equality to another linesink object."""
+        if not isinstance(other, self.__class__):
+            return False
+        for k, v in self.__dict__.items():
+            # items to skip
+             # todo: implement pyproj.CRS class to robustly compare CRSs
+            if k in ['_lsmaker_config_file_path', 
+                     'crs', 
+                     'crs_str',
+                     'inpars',
+                     'cfg',
+                     'efp'
+                     ]:
+                continue
+            elif k not in other.__dict__:
+                return False
+            elif type(v) == bool:
+                if not v == other.__dict__[k]:
+                    return False
+            elif type(v) == pd.DataFrame:
+                if len(v) == 0 and len(other.__dict__[k]) == 0:
+                    continue
+                if not pd.testing.assert_frame_equal(v, other.__dict__[k]):
+                    return False 
+            elif v != other.__dict__[k]:
+                try:
+                    if not np.allclose(v, other.__dict__[k]):
+                        return False
+                except:
+                    return False
+            #elif type(v) in [str, int, float, dict, list]:
+            #    if v != other.__dict__[k]:
+            #        pass
+            #    continue
+        
     def read_lsmaker_xml(self, infile):
 
         #try:
@@ -312,7 +471,7 @@ class linesinks:
         #    raise InputFileMissing
 
         # record the config file absolute path
-        self._lsmaker_xml_file_path = os.path.split(os.path.abspath(infile))[0]
+        self._lsmaker_config_file_path = os.path.split(os.path.abspath(infile))[0]
 
         inpars = inpardat.getroot()
         self.inpars = inpars
@@ -323,7 +482,7 @@ class linesinks:
             if not os.path.exists(self.path):
                 os.makedirs(self.path)
         except:
-            self.path = os.getcwd()
+            self.path = self._lsmaker_config_file_path
 
         # global settings
         self.preproc = self.tf2flag(self._get_XMLentry('preproc', 'True'))
@@ -332,13 +491,13 @@ class linesinks:
         self.k = self._get_XMLentry('k', 10, float)  # hydraulic conductivity of the aquifer in model units
         self.lmbda = np.sqrt(self.k * self.H * self.resistance)
         self.ScenResistance = self._get_XMLentry('ScenResistance', 'linesink')
-        self.chkScenario = self._get_XMLentry('chkScenario', 'True')
+        self.chkScenario = self.tf2flag(self._get_XMLentry('chkScenario', 'True'))
         self.global_streambed_thickness = self._get_XMLentry('global_streambed_thickness',
                                                              3, float)  # streambed thickness
-        self.ComputationalUnits = self._get_XMLentry('ComputationalUnits', 'Feet') # 'Feet' or 'Meters'; for XML output file
-        self.BasemapUnits = self._get_XMLentry('BasemapUnits', 'Meters')
+        self.ComputationalUnits = self._get_XMLentry('ComputationalUnits', 'feet').lower() # 'feet' or 'meters'; for XML output file
+        self.BasemapUnits = self._get_XMLentry('BasemapUnits', 'meters').lower()
         # elevation units multiplier (from NHDPlus cm to model units)
-        self.z_mult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
+        self.zmult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
 
         # model domain
         self.farfield = self._get_XMLentry('farfield', None)
@@ -452,9 +611,9 @@ class linesinks:
         self.elevs_field = 'DEM'  # field in wb_centroids_w_elevations containing elevations
 
         # outputs
-        self.outfile_basename = os.path.join(self._lsmaker_xml_file_path,
+        self.outfile_basename = os.path.join(self._lsmaker_config_file_path,
                                              inpars.findall('.//outfile_basename')[0].text)
-        self.error_reporting = os.path.join(self._lsmaker_xml_file_path,
+        self.error_reporting = os.path.join(self._lsmaker_config_file_path,
                                             inpars.findall('.//error_reporting')[0].text)
         self.efp = open(self.error_reporting, 'w')
 
@@ -464,13 +623,85 @@ class linesinks:
         self.outsegs = pd.DataFrame()
         self.confluences = pd.DataFrame()
 
+    def read_lsmaker_yaml(self, infile):
+
+        # read in the user-specified configuration
+        with open(infile) as src:
+            cfg = yaml.load(src, Loader=yaml.Loader)
+        # read in the default configuration
+        defaults_file = os.path.join(os.path.split(__file__)[0], 
+                                     'default_settings.yml')
+        with open(defaults_file) as src:
+            defaults = yaml.load(src, Loader=yaml.Loader)
+
+        self._lsmaker_config_file_path = os.path.split(os.path.abspath(infile))[0]
+
+        # configuration dictionary
+        self.cfg = cfg
+
+        # configuration file blocks
+        filepaths_to_make_abs = {'outfile_basename'}
+        for blockname, block in defaults.items():
+            # entries within blocks
+            for key, default in defaults[blockname].items():
+                # try to detect files and make their paths absolute
+                entry = self.cfg.get(blockname, {}).get(key, default)
+                if isinstance(entry, str):
+                    file_abspath = os.path.join(self._lsmaker_config_file_path, entry)
+                    if os.path.exists(file_abspath) or key in filepaths_to_make_abs:
+                        entry = file_abspath
+                self.__dict__[key] = entry
+                
+        # setup the working directory (default to current directory)
+        self.path = os.path.abspath(self.__dict__.pop('working_dir'))
+        
+        self.lmbda = np.sqrt(self.k * self.H * self.resistance)
+        self.zmult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
+            
+        # get the projection file and crs from either the nearfield or routed area
+        if self.prj is None:
+            for filename in self.nearfield, self.routed_area:
+                if filename is not None:
+                    name, ext = os.path.splitext(filename)
+                    prjfile = name + '.prj'
+                    if os.path.exists(prjfile):
+                        self.prj = prjfile
+                        with fiona.open(filename) as src:
+                            self.crs = src.crs
+                            self.crs_str = to_string(self.crs)
+        else:
+            self.crs_str = gisutils.get_proj_str(self.prj)
+            self.crs = from_string(self.crs_str)
+        if self.crs is None or self.prj is None:
+            msg = ("Invalid projection file or projection file not found: {}. \
+                Specify a valid ESRI projection file under the \
+                prj: configuration file key".format(self.prj))
+            raise ValueError(msg)
+
+        # NHDPlus files
+        for variable in 'flowlines', 'elevslope', 'PlusFlowVAA', 'waterbodies':
+            filename = self.__dict__[variable]
+            if filename is None:
+                raise KeyError('Nothing specified for {} in the configuration file!'.format(variable))
+            elif not os.path.exists(filename):
+                raise ValueError('file not found: {}'.format(filename))
+
+        # preprocessed files
+        self.preprocdir = os.path.split(self.flowlines_clipped)[0]
+        self.wb_centroids_w_elevations = self.waterbodies_clipped[
+                                         :-4] + '_points.shp'  # elevations extracted during preprocessing routine
+        self.elevs_field = 'DEM'  # field in wb_centroids_w_elevations containing elevations
+
+        # outputs
+        self.efp = open(self.error_reporting, 'w')
+        
     def _parse_XMLtext(self, findall_result, dtype, relative_filepath=False):
         # handle either strings or lxml Elements
         txt = getattr(findall_result, 'text', findall_result)
         if dtype == str:
             # check if a file exists relative to config file path
             # if so, change the file path to be absolute
-            file_abspath = os.path.join(self._lsmaker_xml_file_path, txt)
+            file_abspath = os.path.join(self._lsmaker_config_file_path, txt)
             if os.path.exists(file_abspath) or relative_filepath:
                 txt = file_abspath
         return dtype(txt) if txt is not None else None
@@ -1411,8 +1642,8 @@ class linesinks:
         # linesink elevations (lakes won't be populated yet)
         min_elev_col = [c for c in df.columns if 'minelev' in c.lower()][0]
         max_elev_col = [c for c in df.columns if 'maxelev' in c.lower()][0]
-        df['minElev'] = df[min_elev_col] * self.z_mult
-        df['maxElev'] = df[max_elev_col] * self.z_mult
+        df['minElev'] = df[min_elev_col] * self.zmult
+        df['maxElev'] = df[max_elev_col] * self.zmult
         df['dStage'] = df['maxElev'] - df['minElev']
 
         # list upstream and downstream comids
