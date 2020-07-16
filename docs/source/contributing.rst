@@ -156,9 +156,9 @@ An easy way to create a *linesink-maker* development environment is as follows:
 - Make sure that you have :ref:`cloned the repository <contributing.forking>`
 - ``cd`` to the *linesink-maker** source directory
 
-Tell conda to create a new environment, named ``linesink-maker_dev``, that has all of the python packages needed to contribute to linesink-maker. Note that in the `geopandas instructions <https://geopandas.org/contributing.html>`_, this step is broken into two parts- 2) creating the environment, and 3) installing the dependencies. By using a yaml file that includes the environment name and package requirements, these two steps can be combined::
+Tell conda to create a new environment, named ``lsmaker_dev``, that has all of the python packages needed to contribute to linesink-maker. Note that in the `geopandas instructions <https://geopandas.org/contributing.html>`_, this step is broken into two parts- 2) creating the environment, and 3) installing the dependencies. By using a yaml file that includes the environment name and package requirements, these two steps can be combined::
 
-      conda env create -f environment-dev.yml
+      conda env create -f requirements-dev.yml
 
 This will create the new environment, and not touch any of your existing environments,
 nor any existing python installation.
@@ -166,7 +166,7 @@ nor any existing python installation.
 To work in this environment, you need to ``activate`` it. The instructions below
 should work for both Windows, Mac and Linux::
 
-      conda activate linesink-maker_dev
+      conda activate lsmaker_dev
 
 Once your environment is activated, you will see a confirmation message to
 indicate you are in the new development environment.
@@ -187,7 +187,7 @@ At this point you can easily do a *development* install, as detailed in the next
 4) Installing the linesink-maker source code
 ------------------------------------------------------
 
-Once dependencies are in place, install the linesink-maker source code by navigating to the gitclone of the *linesink-maker* repository and (with the ``linesink-maker_dev`` environment activated) running::
+Once dependencies are in place, install the linesink-maker source code by navigating to the gitclone of the *linesink-maker* repository and (with the ``lsmaker_dev`` environment activated) running::
 
     python install -e .
 

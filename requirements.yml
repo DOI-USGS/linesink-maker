@@ -1,0 +1,21 @@
+name: lsmaker
+channels:
+- conda-forge
+- defaults
+- atleaf
+dependencies:
+- python
+- ipython
+- jupyter
+- notebook
+- ipykernel
+- matplotlib
+- pyyaml
+- numpy
+- pandas
+- gdal
+- fiona
+- rasterio>=1.0
+- shapely
+- pyproj>=2.0
+- gis-utils
