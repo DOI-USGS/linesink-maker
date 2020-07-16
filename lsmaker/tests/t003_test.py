@@ -9,7 +9,8 @@ def lsmaker_instance_from_xml():
     config_file = 'examples/example_Medford/Medford_lines.xml'
     ls = lsmaker.LinesinkData(config_file)
     return ls
-    
+
+
 def test_medford(lsmaker_instance_from_xml):
 
     #path = 'examples/example_Medford/Medford_lines.xml'
@@ -22,6 +23,7 @@ def test_medford(lsmaker_instance_from_xml):
     ls.preprocess(save=True)
 
     ls.make_linesinks(shp='preprocessed/lines.shp')
+
     
 def test_medford_yaml(lsmaker_instance_from_xml):
     """Test that the xml and yaml config files yield equivalent results.
