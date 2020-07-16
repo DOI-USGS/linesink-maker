@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Input requirements &mdash; linesink-maker 0.post65.dev0+gb4a9964 documentation</title>
+  <title>Input requirements &mdash; linesink-maker 0.post65.dev0+ga5dd695 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+gb4a9964
+                0.post65.dev0+ga5dd695
               </div>
             
           
@@ -108,7 +108,7 @@
 <li class="toctree-l1"><a class="reference internal" href="#creating-the-xml-input-file-for-linesinkmaker">Creating the XML Input file for LinesinkMaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#running-linesinkmaker">Running LinesinkMaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#viewing-the-linesinks-in-a-gis">Viewing the linesinks in a GIS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Code reference</span></p>
 <ul>
@@ -231,14 +231,14 @@ downloads. The NHDPlus files are specified in the XML input file under the tag <
 <div class="section" id="model-domain-specification">
 <h2>Model domain specification<a class="headerlink" href="#model-domain-specification" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li><p><strong>shapefile of the model nearfield area</strong> (where linesinks will be routed and have resistance) <strong>(required)</strong></p></li>
-<li><p><strong>shapefile of the model farfield area</strong> (where linesinks will be zero-resistance and not routed) (<strong>optional</strong>; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag <strong>&lt;farfield_buffer&gt;</strong>.</p></li>
-<li><p>in addition, a <strong>third shapefile</strong> defining an intermediate area with routed, resistance linesinks can be supplied with the <strong>&lt;routed_area&gt;</strong> tag. This allows for 3 levels of line simplification, with the most detail limited to the immediate nearfield.</p></li>
+<li><p><strong>shapefile of the model nearfield area</strong> (where LinesinkData will be routed and have resistance) <strong>(required)</strong></p></li>
+<li><p><strong>shapefile of the model farfield area</strong> (where LinesinkData will be zero-resistance and not routed) (<strong>optional</strong>; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag <strong>&lt;farfield_buffer&gt;</strong>.</p></li>
+<li><p>in addition, a <strong>third shapefile</strong> defining an intermediate area with routed, resistance LinesinkData can be supplied with the <strong>&lt;routed_area&gt;</strong> tag. This allows for 3 levels of line simplification, with the most detail limited to the immediate nearfield.</p></li>
 </ul>
 </div>
 <div class="section" id="line-simplification">
 <h2>Line simplification<a class="headerlink" href="#line-simplification" title="Permalink to this headline">¶</a></h2>
-<p>Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of linesinks are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (<strong>&lt;nearfield_tolerance&gt;</strong> and <strong>&lt;farfield_tolerance&gt;farfield_tolerance&gt;</strong>). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.</p>
+<p>Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of LinesinkData are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (<strong>&lt;nearfield_tolerance&gt;</strong> and <strong>&lt;farfield_tolerance&gt;farfield_tolerance&gt;</strong>). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.</p>
 </div>
 <div class="section" id="other-inputs">
 <h2>Other inputs<a class="headerlink" href="#other-inputs" title="Permalink to this headline">¶</a></h2>
@@ -260,8 +260,8 @@ downloads. The NHDPlus files are specified in the XML input file under the tag <
 <h1>Importing the linesink string file into GFLOW<a class="headerlink" href="#importing-the-linesink-string-file-into-gflow" title="Permalink to this headline">¶</a></h1>
 <p>LinesinkMaker outputs a linesink string file of the form <strong>&lt;basename&gt;.lss.xml</strong>, which can be imported into GFLOW under <cite>Tools&gt;Import&gt;Line-sink Strings</cite>. It can also be inspected in any text editor.</p>
 </div>
-<div class="section" id="viewing-the-linesinks-in-a-gis">
-<h1>Viewing the linesinks in a GIS<a class="headerlink" href="#viewing-the-linesinks-in-a-gis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="viewing-the-linesinkdata-in-a-gis">
+<h1>Viewing the LinesinkData in a GIS<a class="headerlink" href="#viewing-the-linesinkdata-in-a-gis" title="Permalink to this headline">¶</a></h1>
 <p>LinesinkMaker also outputs a shapefile representation of the linesink network (<strong>&lt;basename&gt;.shp</strong>), for visualization in a GIS. For an example, see <strong>Medford.shp</strong> after running the <a class="reference internal" href="example_medford.html#medford-national-forest-unit"><span class="std std-ref">Medford National Forest Unit</span></a> example.</p>
 </div>
 
@@ -286,7 +286,7 @@ downloads. The NHDPlus files are specified in the XML input file under the tag <
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 15, 2020.
+        Last updated on Jul 16, 2020.
       </span>
 
     </p>

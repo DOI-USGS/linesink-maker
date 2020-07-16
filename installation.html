@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; linesink-maker 0.post65.dev0+gb4a9964 documentation</title>
+  <title>Installation &mdash; linesink-maker 0.post65.dev0+ga5dd695 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+gb4a9964
+                0.post65.dev0+ga5dd695
               </div>
             
           
@@ -110,7 +110,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-xml-input-file-for-linesinkmaker">Creating the XML Input file for LinesinkMaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesinkmaker">Running LinesinkMaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinks-in-a-gis">Viewing the linesinks in a GIS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Code reference</span></p>
 <ul>
@@ -234,10 +234,10 @@
 <h3>Installing the required Python packages<a class="headerlink" href="#installing-the-required-python-packages" title="Permalink to this headline">¶</a></h3>
 <p>The best way to install the required packages through <a class="reference external" href="https://www.anaconda.com/products/individual">Anaconda</a>. Once Anaconda is installed, open a command prompt with Anaconda python in the system path (i.e., so that if you run <cite>&gt;python</cite>, you get the Anaconda python). For Windows users, this probably means running the Anaconda command prompt from the start menu. Note that this shortcut can be copied to any folder for convenience. By right-clicking on the shortcut and selecting “properties”, you can also change the starting location of the command prompt to the folder it is in by replacing the “Start in” field with <code class="docutils literal notranslate"><span class="pre">%cd%</span></code>.</p>
 <p>Then at the command prompt:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">lsmaker</span> <span class="n">lxml</span> <span class="n">fiona</span> <span class="n">shapely</span> <span class="n">pandas</span> <span class="n">pyproj</span> <span class="n">requests</span> <span class="o">-</span><span class="n">y</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">requirements</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
-<p>This creates a conda environment with the required packages. To use the environment:</p>
+<p>This creates a conda environment with the required packages listed in requirements.yml. To use the environment:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">lsmaker</span>
 </pre></div>
 </div>
@@ -280,7 +280,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 15, 2020.
+        Last updated on Jul 16, 2020.
       </span>
 
     </p>

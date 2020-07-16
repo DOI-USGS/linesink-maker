@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+gb4a9964 documentation</title>
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+ga5dd695 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+gb4a9964
+                0.post65.dev0+ga5dd695
               </div>
             
           
@@ -111,7 +111,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-xml-input-file-for-linesinkmaker">Creating the XML Input file for LinesinkMaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesinkmaker">Running LinesinkMaker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinks-in-a-gis">Viewing the linesinks in a GIS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Code reference</span></p>
 <ul>
@@ -297,10 +297,10 @@
   <span class="c1"># So input coordinate projections and output prj should be consistent</span>
   <span class="c1"># projection file for output shapefiles</span>
   <span class="nt">prj</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.prj</span>
-  <span class="c1"># global resistance value to apply to all resistance linesinks </span>
+  <span class="c1"># global resistance value to apply to all resistance LinesinkData</span>
   <span class="c1"># (c parameter in the GFLOW documentation)</span>
   <span class="nt">resistance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.3</span>
-  <span class="c1"># global global_streambed_thickness value to apply to all resistance linesinks </span>
+  <span class="c1"># global global_streambed_thickness value to apply to all resistance LinesinkData</span>
   <span class="c1"># (delta parameter in the GFLOW documentation)</span>
   <span class="nt">global_streambed_thickness</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
   <span class="c1"># aquifer thickness in model units</span>
@@ -319,14 +319,14 @@
 
 <span class="nt">modelDomain</span><span class="p">:</span>
   <span class="c1"># polygon shapefile indicating the desired model extent</span>
-  <span class="c1"># linesinks within this area but outside of the near or mid-fields</span>
+  <span class="c1"># LinesinkData within this area but outside of the near or mid-fields</span>
   <span class="c1"># will be zero resistance (specified head)</span>
   <span class="nt">farfield</span><span class="p">:</span>
   <span class="c1"># A distance (in GIS or Basemap units; typically meters) that defines </span>
   <span class="c1"># the extent of model farfield area as a buffer distance around the nearfield polygon</span>
   <span class="c1"># (can be specified in lieu of a polygon shapefile under the farfield: key)</span>
   <span class="nt">farfield_buffer</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">15000</span>
-  <span class="c1"># polygon of the model nearfield area, where linesinks will be given </span>
+  <span class="c1"># polygon of the model nearfield area, where LinesinkData will be given</span>
   <span class="c1"># resistance and routed</span>
   <span class="nt">routed_area</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.shp</span>
   <span class="c1"># polygon of area of focus within routed area (optional)</span>
@@ -495,7 +495,7 @@
 <span class="c">    elevation units multiplier (from NHDPlus cm to model units) --&gt;</span>
     <span class="nt">&lt;zmult&gt;</span>0.03280839895013123<span class="nt">&lt;/zmult&gt;</span>
     <span class="c">&lt;!-- resistance:</span>
-<span class="c">    global resistance value to apply to all resistance linesinks (c in GFLOW documentation) --&gt;</span>
+<span class="c">    global resistance value to apply to all resistance LinesinkData (c in GFLOW documentation) --&gt;</span>
     <span class="nt">&lt;resistance&gt;</span>0.3<span class="nt">&lt;/resistance&gt;</span>
     <span class="c">&lt;!-- H:</span>
 <span class="c">    aquifer thickness in model units --&gt;</span>
@@ -504,9 +504,9 @@
 <span class="c">    Hydraulic conductivity in model units --&gt;</span>
     <span class="nt">&lt;k&gt;</span>10<span class="nt">&lt;/k&gt;</span>
     <span class="c">&lt;!-- ScenResistance:</span>
-<span class="c">    name for global resistance parameter to assign to linesinks--&gt;</span>
+<span class="c">    name for global resistance parameter to assign to LinesinkData--&gt;</span>
     <span class="c">&lt;!-- global_streambed_thickness:</span>
-<span class="c">    Streambed thickness depth value to assign to all linesinks--&gt;</span>
+<span class="c">    Streambed thickness depth value to assign to all LinesinkData--&gt;</span>
     <span class="nt">&lt;global_streambed_thickness&gt;</span>3<span class="nt">&lt;/global_streambed_thickness&gt;</span>
     <span class="nt">&lt;ScenResistance&gt;</span>Rlinesink<span class="nt">&lt;/ScenResistance&gt;</span>
     <span class="c">&lt;!-- ComputationalUnits: (&#39;Feet&#39; or &#39;Meters&#39;)</span>
@@ -520,7 +520,7 @@
 <span class="nt">&lt;modelDomain&gt;</span>
     <span class="c">&lt;!-- farfield:</span>
 <span class="c">    polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area</span>
-<span class="c">    linesinks within this area will be zero resistance (specified head) --&gt;</span>
+<span class="c">    LinesinkData within this area will be zero resistance (specified head) --&gt;</span>
     <span class="nt">&lt;farfield&gt;&lt;/farfield&gt;</span>
     <span class="c">&lt;!-- farfield_buffer: numeric, default is 10,0000</span>
 <span class="c">    A distance (in GIS units) that defines the extent of model farfield area as a </span>
@@ -529,7 +529,7 @@
 <span class="c">     --&gt;</span>
     <span class="nt">&lt;farfield_buffer&gt;</span>15000<span class="nt">&lt;/farfield_buffer&gt;</span>
     <span class="c">&lt;!-- routed_area:</span>
-<span class="c">    polygon of the model nearfield area, where linesinks will be given resistance and routed --&gt;</span>
+<span class="c">    polygon of the model nearfield area, where LinesinkData will be given resistance and routed --&gt;</span>
     <span class="nt">&lt;routed_area&gt;</span>shps/Medford_nf.shp<span class="nt">&lt;/routed_area&gt;</span>
     <span class="c">&lt;!-- nearfield:</span>
 <span class="c">    polygon of area of focus within routed area (optional) --&gt;</span>
@@ -594,11 +594,11 @@
 8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">lsmaker</span>
 
 <span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.xml&#39;</span>
-<span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">linesinks</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+<span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
 
 <span class="n">ls</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">ls</span><span class="o">.</span><span class="n">makeLineSinks</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="s1">&#39;preprocessed/lines.shp&#39;</span><span class="p">)</span>
+<span class="n">ls</span><span class="o">.</span><span class="n">make_linesinks</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="s1">&#39;preprocessed/lines.shp&#39;</span><span class="p">)</span>
 </pre></div>
 </td></tr></table></div>
 </div>
@@ -625,7 +625,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 15, 2020.
+        Last updated on Jul 16, 2020.
       </span>
 
     </p>

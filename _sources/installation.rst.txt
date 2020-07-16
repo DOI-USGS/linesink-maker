@@ -26,10 +26,10 @@ The best way to install the required packages through `Anaconda <https://www.ana
 
 Then at the command prompt::
 
-    conda create -n lsmaker lxml fiona shapely pandas pyproj requests -y
+    conda env create -f requirements.yml
 
 
-This creates a conda environment with the required packages. To use the environment::
+This creates a conda environment with the required packages listed in requirements.yml. To use the environment::
 
     conda activate lsmaker
 
