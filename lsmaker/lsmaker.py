@@ -825,13 +825,6 @@ class LinesinkData:
             shutil.copy(self.prj, 'GFLOW.prj')
         self.prj = 'GFLOW.prj'
 
-        def _get_random_point_in_polygon(poly):
-            (minx, miny, maxx, maxy) = poly.bounds
-            while True:
-                p = Point(np.random.uniform(minx, maxx), np.random.uniform(miny, maxy))
-                if poly.contains(p):
-                    return p
-
         print('clipping and reprojecting input datasets...')
 
         # (zero buffers can clean up self-intersections in hand drawn polygons)

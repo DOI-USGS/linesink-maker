@@ -4,25 +4,29 @@ import os
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def lsmaker_instance_from_xml():
     config_file = 'examples/example_Medford/Medford_lines.xml'
     ls = lsmaker.LinesinkData(config_file)
     return ls
 
 
-def test_medford(lsmaker_instance_from_xml):
-
-    #path = 'examples/example_Medford/Medford_lines.xml'
-    #dir, input_file = os.path.split(path)
-#
-    #os.chdir(dir)
-    #ls = lsmaker.LinesinkData(input_file)
+@pytest.fixture(scope='module')
+def lsmaker_instance_with_linesinks(lsmaker_instance_from_xml):
     ls = lsmaker_instance_from_xml
-
     ls.preprocess(save=True)
-
     ls.make_linesinks(shp='preprocessed/lines.shp')
+    return ls
+
+
+def test_medford(lsmaker_instance_with_linesinks):
+    ls = lsmaker_instance_with_linesinks
+    assert isinstance(ls, lsmaker.LinesinkData)
+
+
+def test_diagnostics(lsmaker_instance_with_linesinks):
+    ls = lsmaker_instance_with_linesinks
+    ls.run_diagnostics()
 
     
 def test_medford_yaml(lsmaker_instance_from_xml):
@@ -31,4 +35,3 @@ def test_medford_yaml(lsmaker_instance_from_xml):
     config_file = 'examples/example_Medford/Medford_lines.yml'
     ls = lsmaker.LinesinkData(config_file)
     ls == lsmaker_instance_from_xml
-    
