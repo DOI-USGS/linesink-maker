@@ -776,118 +776,43 @@ class LinesinkData:
         else:
             return False
 
-    def preprocess_arcpy(self):
+    def preprocess(self, save=True):
         """
-        requires arcpy
+        This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and
+        the model domain configuration (nearfield, farfield, and any other polygon areas) with the NHDPlus
+        Flowlines and Waterbodies datasets. The following edits are made to the Flowlines and waterbodies:
+        * remove farfield streams lower than <min_farfield_order>
+        * remove waterbodies that aren't lakes, and lakes smaller than <min_waterbody_size>
+        * convert lakes from polygons to lines; merge the lakes with the with flowlines
 
-        This method performs the following steps:
+        Parameters:
+        -----------
+        save: True/False
+            Saves the preprocessed dataset to a shapefile specified by <preprocessed_lines> in the XML input file
 
-        1) clip the NHDPlus flowlines and waterbodies datasets to the model farfield polygon.
-           Save the result of the clipping to new shapefiles, which are the same as those specified
-           in the <preprocessed_files> section of the XML input file.
-        2) Perform an "Erase analysis", to cut-out the model nearfield from the farfield polygon
-           (making the farfield polygon a donut with exterior and interior rings). Save this
-           to file specified as <farfield_multipolygon> in the XML input file.
-        3) Run "FeatureToPoint" on the NHD waterbodies dataset, resulting in a shapefile of points
-           for each waterbody.
-        4) Run "ExtractMultiValuesToPoints" on the waterbody points created in Step 3 and the DEM
-           for the area, to get an elevation value for each waterbody. The name for the resulting
-           point shapefile with elevation attributes should be the same as the name for the clipped
-           waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"
-           added.
-
-        Notes:
-        ------
-        **This method does not perform any projections or transformations.** Therefore all input shapefiles must
-        be in the same projected coordinate system that will be used in the GFLOW GUI.
-
-        Alternatively, these steps can be performed manually prior to running the preprocess() method.
         """
-        try:
-            import arcpy
-        except:
-            print('Could not import arcpy, which is required for this method. Alternatively, these steps can' \
-                  'be performed manually prior to running the preprocess() method:\n' \
-                  '1) clip the NHDPlus flowlines and waterbodies datasets to the model farfield polygon. \n' \
-                  '   Save the result of the clipping to new shapefiles, which are the same as those specified\n' \
-                  '   in the <preprocessed_files> section of the XML input file.\n' \
-                  '2) Perform an "Erase analysis", to cut-out the model nearfield from the farfield polygon\n' \
-                  '   (making the farfield polygon a donut with exterior and interior rings). Save this' \
-                  '   to file specified as <farfield_multipolygon> in the XML input file.\n' \
-                  '3) Run "FeatureToPoint" on the NHD waterbodies dataset, resulting in a shapefile of points\n' \
-                  '   for each waterbody.' \
-                  '4) Run "ExtractMultiValuesToPoints" on the waterbody points created in Step 3 and the DEM\n' \
-                  '   for the area, to get an elevation value for each waterbody. The name for the resulting\n ' \
-                  '   point shapefile with elevation attributes should be the same as the name for the clipped\n' \
-                  '   waterbodies shapefile specified in the XML input file, but with the suffix "_points.shp"\n' \
-                  '   added.')
-        path = self.preprocdir
-        flowlines_clipped = os.path.split(self.flowlines_clipped)[1]
-        waterbodies_clipped = os.path.split(self.waterbodies_clipped)[1]
-        farfield_mp = os.path.split(self.farfield_mp)[1]
-        wb_centroids_w_elevations = os.path.split(self.wb_centroids_w_elevations)[1]
 
-        # make the output directory if it doesn't exist yet
-        if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
-            os.makedirs(self.preprocdir)
+        if self.routed_area is None:
+            self.routed_area = self.nearfield
+            self.routed_area_tolerance = self.nearfield_tolerance
+        if self.nearfield is None and self.routed_area is None:
+            raise InputFileMissing('Need to supply shapefile of routed area or nearfield.')
 
-        # initialize the arcpy environment
-        arcpy.env.workspace = path
-        arcpy.env.overwriteOutput = True
-        arcpy.env.qualifiedFieldNames = False
-        arcpy.CheckOutExtension("spatial")  # Check spatial analyst license
-
-        if len(self.flowlines) > 1:
-            arcpy.Merge_management(self.flowlines, os.path.join(path, 'flowlines_merged.shp'))
-            self.flowlines = os.path.join(path, 'flowlines_merged.shp')
-        else:
-            self.flowlines = self.flowlines[0]
-        if len(self.waterbodies) > 1:
-            arcpy.Merge_management(self.waterbodies, os.path.join(path, 'waterbodies_merged.shp'))
-            self.waterbodies = os.path.join(path, 'waterbodies_merged.shp')
-        else:
-            self.waterbodies = self.waterbodies[0]
-
-        # make projection file that is independent of any shapefile
-        arcpy.Delete_management('GFLOW.prj')
-        shutil.copy(self.prj, 'GFLOW.prj')
-        self.prj = 'GFLOW.prj'
-
-        print('clipping and reprojecting input datasets...')
-        for attr in ['nearfield', 'farfield']:
-            shp = self.__dict__[attr]
-            if open(self.prj).readline() != open(shp[:-4] + '.prj').readline():
-                arcpy.Project_management(shp, 'preprocessed/' + os.path.split(shp)[1], self.prj)
-                self.__dict__[attr] = 'preprocessed/' + os.path.split(shp)[1]
-                print('reprojected {} to coordinate system in {}...'.format(self.__dict__[attr], self.prj))
-
-        for indata, output in list({self.flowlines: flowlines_clipped, self.waterbodies: waterbodies_clipped}.items()):
-
-            print('clipping {} to extent of {}...'.format(indata, self.farfield))
-            arcpy.Clip_analysis(indata, self.farfield, 'tmp.shp')
-
-            if open(self.prj).readline() != open(indata[:-4] + '.prj').readline():
-                print('\nreprojecting {} to coordinate system in {}...'.format(indata, self.prj))
-                arcpy.Project_management('tmp.shp', output, self.prj)
-            else:
-                arcpy.Rename_management('tmp.shp', output)
-            arcpy.Delete_management('tmp.shp')
-
-        print('\nremoving interior from farfield polygon...')
-        arcpy.Erase_analysis(self.farfield, self.nearfield, farfield_mp)
-        print('farfield donut written to {}'.format(farfield_mp))
-
-        print('\ngetting NHD Waterbody elevations from DEM (needed for isolated lakes)')
-        arcpy.FeatureToPoint_management(waterbodies_clipped, wb_centroids_w_elevations)
-        arcpy.sa.ExtractMultiValuesToPoints(wb_centroids_w_elevations, [[self.DEM, self.elevs_field]])
-        print('waterbody elevations written to point dataset {}'.format(wb_centroids_w_elevations))
-        print('\nDone.')
-
-    def preprocess_python(self):
-        """temporary method to take the place of preprocess_arcpy.
-        Will eventually combine with preprocess to reduce I/O
-        This method also removes the need for a DEM, by getting lake elevations from the National Map Elevation Point Query Service
-        """
+        if self.farfield is None:
+            print(('\nNo farfield shapefile supplied.\n'
+                  'Creating farfield using buffer of {:.1f} {} around routed area.\n'
+                  .format(self.farfield_buffer, self.BasemapUnits)))
+            modelareafile = fiona.open(self.routed_area)
+            nfarea = shape(modelareafile[0]['geometry'])
+            modelarea_farfield = nfarea.buffer(self.farfield_buffer)
+            self.farfield = self.nearfield[:-4] + '_ff.shp'
+            output = fiona.open(self.farfield, 'w',
+                                crs=modelareafile.crs,
+                                schema=modelareafile.schema,
+                                driver=modelareafile.driver)
+            output.write({'properties': modelareafile[0]['properties'],
+                          'geometry': mapping(modelarea_farfield)})
+            output.close()
 
         # make the output directory if it doesn't exist yet
         if len(self.preprocdir) > 0 and not os.path.isdir(self.preprocdir):
@@ -933,7 +858,8 @@ class LinesinkData:
             self.__dict__[attr] = gisutils.shp2df(shapefiles, filter=bounds)
             # if NHD features not in model area coodinate system, reproject
             if shp_crs_str != self.crs_str:
-                self.__dict__[attr]['geometry'] = reproject(self.__dict__[attr].geometry.tolist(), shp_crs_str, self.crs_str)
+                self.__dict__[attr]['geometry'] = reproject(self.__dict__[attr].geometry.tolist(), shp_crs_str,
+                                                            self.crs_str)
             # 1816107
             # for now, take intersection (don't truncate flowlines at farfield boundary)
             print('clipping to {}...'.format(self.farfield))
@@ -943,14 +869,14 @@ class LinesinkData:
             print('truncating waterbodies at farfield boundary...')
             # get rid of any islands in the process
             wbgeoms = self.wb.geometry
-            #valid = np.array([p.is_valid for p in wbgeoms])
-            #if np.any(~valid):
+            # valid = np.array([p.is_valid for p in wbgeoms])
+            # if np.any(~valid):
             #    comids = self.wb.loc[~valid, 'COMID']
             #    print('The following waterbodies result in invalid polygons when intersected with the domain:')
             #    for c in comids:
             #        print(c)
             wbgeoms = [Polygon(g.exterior).buffer(0)
-                               for g in self.wb.geometry]
+                       for g in self.wb.geometry]
             wbgeoms = [p.intersection(self.ff).buffer(0) for p in wbgeoms]
             self.wb['geometry'] = wbgeoms
             # for multipolygons, retain largest part
@@ -1030,49 +956,6 @@ class LinesinkData:
                 wb_points_df2 = self._get_wb_elevations(isolated_wb)
                 wb_points_df = wb_points_df.append(wb_points_df2)
                 gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
-
-    def preprocess(self, save=True, use_arcpy=False):
-        """
-        This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and
-        the model domain configuration (nearfield, farfield, and any other polygon areas) with the NHDPlus
-        Flowlines and Waterbodies datasets. The following edits are made to the Flowlines and waterbodies:
-        * remove farfield streams lower than <min_farfield_order>
-        * remove waterbodies that aren't lakes, and lakes smaller than <min_waterbody_size>
-        * convert lakes from polygons to lines; merge the lakes with the with flowlines
-
-        Parameters:
-        -----------
-        save: True/False
-            Saves the preprocessed dataset to a shapefile specified by <preprocessed_lines> in the XML input file
-
-        """
-
-        if self.routed_area is None:
-            self.routed_area = self.nearfield
-            self.routed_area_tolerance = self.nearfield_tolerance
-        if self.nearfield is None and self.routed_area is None:
-            raise InputFileMissing('Need to supply shapefile of routed area or nearfield.')
-
-        if self.farfield is None:
-            print(('\nNo farfield shapefile supplied.\n'
-                  'Creating farfield using buffer of {:.1f} {} around routed area.\n'
-                  .format(self.farfield_buffer, self.BasemapUnits)))
-            modelareafile = fiona.open(self.routed_area)
-            nfarea = shape(modelareafile[0]['geometry'])
-            modelarea_farfield = nfarea.buffer(self.farfield_buffer)
-            self.farfield = self.nearfield[:-4] + '_ff.shp'
-            output = fiona.open(self.farfield, 'w',
-                                crs=modelareafile.crs,
-                                schema=modelareafile.schema,
-                                driver=modelareafile.driver)
-            output.write({'properties': modelareafile[0]['properties'],
-                          'geometry': mapping(modelarea_farfield)})
-            output.close()
-
-        if use_arcpy:
-            self.preprocess_arcpy()
-        else:
-            self.preprocess_python()
 
         # open error reporting file
         self.efp = open(self.error_reporting, 'a')
