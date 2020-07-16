@@ -1,12 +1,10 @@
-__author__ = 'aleaf'
-
 import xml.etree.ElementTree as ET
 import sys
+import warnings
 import numpy as np
 import os
 import pandas as pd
 import shutil
-from urllib.request import urlopen
 import requests
 import json
 import yaml
@@ -55,7 +53,7 @@ def add_projection(line, point):
 
 
 def add_vertices_at_testpoints(lssdf, tpgeoms, tol=200):
-    """Add vertices to linesinks at locations of testpoints
+    """Add vertices to LinesinkData at locations of testpoints
     (so that modeled flow observations are correct)
 
     Parameters
@@ -211,7 +209,7 @@ def lake_width(area, total_line_length, lmbda):
 
 
 def name(x):
-    """Abbreviations for naming linesinks from names in NHDPlus
+    """Abbreviations for naming LinesinkData from names in NHDPlus
     GFLOW requires linesink names to be 32 characters or less
     """
     if x.GNIS_NAME:
@@ -260,7 +258,7 @@ def move_point_along_line(x1, x2, dist):
     return tuple(x2 - dist * np.sign(diff))
 
 
-class linesinks:
+class LinesinkData:
     maxlines = 4000
 
     int_dtype = str  # np.int64
@@ -485,61 +483,61 @@ class linesinks:
             self.path = self._lsmaker_config_file_path
 
         # global settings
-        self.preproc = self.tf2flag(self._get_XMLentry('preproc', 'True'))
-        self.resistance = self._get_XMLentry('resistance', 0.3, float)  # (days); c in documentation
-        self.H = self._get_XMLentry('H', 100, float) # aquifer thickness in model units
-        self.k = self._get_XMLentry('k', 10, float)  # hydraulic conductivity of the aquifer in model units
+        self.preproc = self.tf2flag(self._get_xml_entry('preproc', 'True'))
+        self.resistance = self._get_xml_entry('resistance', 0.3, float)  # (days); c in documentation
+        self.H = self._get_xml_entry('H', 100, float) # aquifer thickness in model units
+        self.k = self._get_xml_entry('k', 10, float)  # hydraulic conductivity of the aquifer in model units
         self.lmbda = np.sqrt(self.k * self.H * self.resistance)
-        self.ScenResistance = self._get_XMLentry('ScenResistance', 'linesink')
-        self.chkScenario = self.tf2flag(self._get_XMLentry('chkScenario', 'True'))
-        self.global_streambed_thickness = self._get_XMLentry('global_streambed_thickness',
-                                                             3, float)  # streambed thickness
-        self.ComputationalUnits = self._get_XMLentry('ComputationalUnits', 'feet').lower() # 'feet' or 'meters'; for XML output file
-        self.BasemapUnits = self._get_XMLentry('BasemapUnits', 'meters').lower()
+        self.ScenResistance = self._get_xml_entry('ScenResistance', 'linesink')
+        self.chkScenario = self.tf2flag(self._get_xml_entry('chkScenario', 'True'))
+        self.global_streambed_thickness = self._get_xml_entry('global_streambed_thickness',
+                                                              3, float)  # streambed thickness
+        self.ComputationalUnits = self._get_xml_entry('ComputationalUnits', 'feet').lower() # 'feet' or 'meters'; for XML output file
+        self.BasemapUnits = self._get_xml_entry('BasemapUnits', 'meters').lower()
         # elevation units multiplier (from NHDPlus cm to model units)
         self.zmult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
 
         # model domain
-        self.farfield = self._get_XMLentry('farfield', None)
-        self.routed_area = self._get_XMLentry('routed_area', None)
-        self.nearfield = self._get_XMLentry('nearfield', None)
+        self.farfield = self._get_xml_entry('farfield', None)
+        self.routed_area = self._get_xml_entry('routed_area', None)
+        self.nearfield = self._get_xml_entry('nearfield', None)
         try: # get the projection file and crs from either the nearfield or routed area
-            self.prj = self._get_XMLentry('prj', self.nearfield[:-4] +'.prj')
+            self.prj = self._get_xml_entry('prj', self.nearfield[:-4] + '.prj')
             self.crs = fiona.open(self.nearfield).crs
         except:
-            self.prj = self._get_XMLentry('prj', self.routed_area[:-4] + '.prj')
+            self.prj = self._get_xml_entry('prj', self.routed_area[:-4] + '.prj')
             self.crs = fiona.open(self.routed_area).crs
             self.nearfield = self.routed_area
         self.crs_str = to_string(self.crs)  # self.crs, in proj string format
-        self.farfield_buffer = self._get_XMLentry('farfield_buffer', 10000, int)
-        self.clip_farfield = self.tf2flag(self._get_XMLentry('clip_farfield', 'False'))
-        self.split_by_HUC = self.tf2flag(self._get_XMLentry('split_by_HUC', 'False'))
-        self.HUC_shp = self._get_XMLentry('HUC_shp', None)
-        self.HUC_name_field = self.tf2flag(self._get_XMLentry('HUC_name_field', 'False'))
+        self.farfield_buffer = self._get_xml_entry('farfield_buffer', 10000, int)
+        self.clip_farfield = self.tf2flag(self._get_xml_entry('clip_farfield', 'False'))
+        self.split_by_HUC = self.tf2flag(self._get_xml_entry('split_by_HUC', 'False'))
+        self.HUC_shp = self._get_xml_entry('HUC_shp', None)
+        self.HUC_name_field = self.tf2flag(self._get_xml_entry('HUC_name_field', 'False'))
 
         # simplification
         self.refinement_areas = []  # list of n areas within routed area with additional refinement
-        self.nearfield_tolerance = self._get_XMLentry('nearfield_tolerance', 100, int)
-        self.routed_area_tolerance = self._get_XMLentry('routed_area_tolerance', 100, int)
-        self.farfield_tolerance = self._get_XMLentry('farfield_tolerance', 300, int)
-        self.min_farfield_order = self._get_XMLentry('min_farfield_order', 2, int)
-        self.min_nearfield_wb_size = self._get_XMLentry('min_nearfield_waterbody_size', 1.0, float)
-        self.min_waterbody_size = self._get_XMLentry('min_waterbody_size', 1.0, float)
-        self.min_farfield_wb_size = self._get_XMLentry('min_farfield_waterbody_size',
-                                                       self.min_waterbody_size, float)
-        self.farfield_length_threshold = self._get_XMLentry('farfield_length_threshold', 0., float)
-        self.routed_area_length_threshold = self._get_XMLentry('routed_area_length_threshold', 0., float)
-        self.drop_intermittent = self.tf2flag(self._get_XMLentry('drop_intermittent', 'False'))
-        self.drop_crossing = self.tf2flag(self._get_XMLentry('drop_crossing', 'False'))
-        self.asum_thresh_ra = self._get_XMLentry('routed_area_arbolate_sum_threshold', 0., float)
-        self.asum_thresh_nf = self._get_XMLentry('nearfield_arbolate_sum_threshold', 0., float)
-        self.asum_thresh_ff = self._get_XMLentry('farfield_arbolate_sum_threshold', 0., float)
+        self.nearfield_tolerance = self._get_xml_entry('nearfield_tolerance', 100, int)
+        self.routed_area_tolerance = self._get_xml_entry('routed_area_tolerance', 100, int)
+        self.farfield_tolerance = self._get_xml_entry('farfield_tolerance', 300, int)
+        self.min_farfield_order = self._get_xml_entry('min_farfield_order', 2, int)
+        self.min_nearfield_wb_size = self._get_xml_entry('min_nearfield_waterbody_size', 1.0, float)
+        self.min_waterbody_size = self._get_xml_entry('min_waterbody_size', 1.0, float)
+        self.min_farfield_wb_size = self._get_xml_entry('min_farfield_waterbody_size',
+                                                        self.min_waterbody_size, float)
+        self.farfield_length_threshold = self._get_xml_entry('farfield_length_threshold', 0., float)
+        self.routed_area_length_threshold = self._get_xml_entry('routed_area_length_threshold', 0., float)
+        self.drop_intermittent = self.tf2flag(self._get_xml_entry('drop_intermittent', 'False'))
+        self.drop_crossing = self.tf2flag(self._get_xml_entry('drop_crossing', 'False'))
+        self.asum_thresh_ra = self._get_xml_entry('routed_area_arbolate_sum_threshold', 0., float)
+        self.asum_thresh_nf = self._get_xml_entry('nearfield_arbolate_sum_threshold', 0., float)
+        self.asum_thresh_ff = self._get_xml_entry('farfield_arbolate_sum_threshold', 0., float)
 
         # NHD files
-        self.flowlines = self._get_XMLentry('flowlines', [], str, raise_error=True)
-        self.elevslope = self._get_XMLentry('elevslope', [], str, raise_error=True)
-        self.PlusFlowVAA = self._get_XMLentry('PlusFlowVAA', [], str, raise_error=True)
-        self.waterbodies = self._get_XMLentry('waterbodies', [], str, raise_error=True)
+        self.flowlines = self._get_xml_entry('flowlines', [], str, raise_error=True)
+        self.elevslope = self._get_xml_entry('elevslope', [], str, raise_error=True)
+        self.PlusFlowVAA = self._get_xml_entry('PlusFlowVAA', [], str, raise_error=True)
+        self.waterbodies = self._get_xml_entry('waterbodies', [], str, raise_error=True)
 
         # columns to retain in NHD files (when joining to GIS lines)
         # Note: may need to add method to handle case discrepancies
@@ -585,25 +583,25 @@ class linesinks:
         self.dtypes.update(self.wb_cols_dtypes)
 
         # preprocessed files
-        self.DEM = self._get_XMLentry('DEM', None)
-        self.elevs_field = self._get_XMLentry('elevs_field', 'elev')
-        self.DEM_zmult = self._get_XMLentry('DEM_zmult', 1.0, float)
+        self.DEM = self._get_xml_entry('DEM', None)
+        self.elevs_field = self._get_xml_entry('elevs_field', 'elev')
+        self.DEM_zmult = self._get_xml_entry('DEM_zmult', 1.0, float)
 
-        self.flowlines_clipped = self._get_XMLentry('flowlines_clipped',
+        self.flowlines_clipped = self._get_xml_entry('flowlines_clipped',
                                                     'preprocessed/flowlines_clipped.shp',
-                                                    relative_filepath=True)
-        self.waterbodies_clipped = self._get_XMLentry('waterbodies_clipped',
+                                                     relative_filepath=True)
+        self.waterbodies_clipped = self._get_xml_entry('waterbodies_clipped',
                                                       'preprocessed/waterbodies_clipped.shp',
-                                                    relative_filepath=True)
-        self.routed_mp = self._get_XMLentry('routed_area_multipolygon',
+                                                       relative_filepath=True)
+        self.routed_mp = self._get_xml_entry('routed_area_multipolygon',
                                             'preprocessed/ra_cutout.shp',
-                                                    relative_filepath=True)
-        self.farfield_mp = self._get_XMLentry('farfield_multipolygon',
+                                             relative_filepath=True)
+        self.farfield_mp = self._get_xml_entry('farfield_multipolygon',
                                               'preprocessed/ff_cutout.shp',
-                                                    relative_filepath=True)
-        self.preprocessed_lines = self._get_XMLentry('preprocessed_lines',
+                                               relative_filepath=True)
+        self.preprocessed_lines = self._get_xml_entry('preprocessed_lines',
                                                      'preprocessed/lines.shp',
-                                                    relative_filepath=True)
+                                                      relative_filepath=True)
         self.preprocdir = os.path.split(self.flowlines_clipped)[0]
 
         self.wb_centroids_w_elevations = self.waterbodies_clipped[
@@ -695,7 +693,7 @@ class linesinks:
         # outputs
         self.efp = open(self.error_reporting, 'w')
         
-    def _parse_XMLtext(self, findall_result, dtype, relative_filepath=False):
+    def _parse_xml_text(self, findall_result, dtype, relative_filepath=False):
         # handle either strings or lxml Elements
         txt = getattr(findall_result, 'text', findall_result)
         if dtype == str:
@@ -706,9 +704,9 @@ class linesinks:
                 txt = file_abspath
         return dtype(txt) if txt is not None else None
 
-    def _get_XMLentry(self, XMLentry, default, dtype=str,
-                      relative_filepath=False,
-                      raise_error=False):
+    def _get_xml_entry(self, XMLentry, default, dtype=str,
+                       relative_filepath=False,
+                       raise_error=False):
         try:
             tmp = self.inpars.findall('.//{}'.format(XMLentry))
             if len(tmp) == 0:
@@ -719,9 +717,9 @@ class linesinks:
                 else:
                     raise ValueError('Nothing specified for {} in input XML file!'.format(XMLentry))
             if len(tmp) == 1: # and not isinstance(default, list):
-                return self._parse_XMLtext(tmp[0], dtype, relative_filepath=relative_filepath)
+                return self._parse_xml_text(tmp[0], dtype, relative_filepath=relative_filepath)
             elif len(tmp) >= 1:
-                return [self._parse_XMLtext(s, dtype, relative_filepath=relative_filepath)
+                return [self._parse_xml_text(s, dtype, relative_filepath=relative_filepath)
                         for s in tmp]
                 #return [dtype(s.text) for s in tmp]
             else:
@@ -731,7 +729,6 @@ class linesinks:
                 return default
             else:
                 raise ValueError('Nothing specified for {} in input XML file!'.format(XMLentry))
-
 
     def _enforce_dtypes(self, df):
         """Ensure that dataframe column dtypes are correct."""
@@ -1034,7 +1031,6 @@ class linesinks:
                 wb_points_df = wb_points_df.append(wb_points_df2)
                 gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
 
-
     def preprocess(self, save=True, use_arcpy=False):
         """
         This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and
@@ -1121,7 +1117,7 @@ class linesinks:
         ff = gisutils.shp2df(self.farfield_mp)
         ffg = ff.iloc[0]['geometry']  # shapely geometry object for farfield (polygon with interior ring for nearfield)
 
-        print('\nidentifying farfield and nearfield linesinks...')
+        print('\nidentifying farfield and nearfield LinesinkData...')
         df['farfield'] = [line.intersects(ffg) and not line.intersects(rag) for line in df.geometry]
         wbs['farfield'] = [poly.intersects(ffg) and not poly.intersects(rag) for poly in wbs.geometry]
         df['routed'] = [line.intersects(rag) for line in df.geometry]
@@ -1217,7 +1213,6 @@ class linesinks:
 
         self.df = df
 
-
     def simplify_lines(self, nearfield_tolerance=None, routed_area_tolerance=None, farfield_tolerance=None,
                        nearfield_refinement={}):
         """Reduces the number of vertices in the GIS linework representing streams and lakes,
@@ -1238,7 +1233,7 @@ class linesinks:
             a 'ls_coords' column containing lists of coordinate tuples defining each simplified line.
         """
         if not hasattr(self, 'df'):
-            print('No dataframe attribute for linesinks instance. Run preprocess first.')
+            print('No dataframe attribute for LinesinkData instance. Run preprocess first.')
             return
 
         if nearfield_tolerance is None:
@@ -1264,7 +1259,7 @@ class linesinks:
         [simplification.pop(k) for k, v in tols.items() if v is None]
 
         for k, within in simplification.items():
-            # simplify the linesinks in the domain; add simplified geometries to global geometry column
+            # simplify the LinesinkData in the domain; add simplified geometries to global geometry column
             # assign geometries to numpy array first and then to df (had trouble assigning with pandas)
             ls_geom[within] = [g.simplify(tols[k]) for g in df.loc[within, 'geometry'].tolist()]
 
@@ -1601,7 +1596,7 @@ class linesinks:
         df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
         return df
 
-    def makeLineSinks(self, shp=None):
+    def make_linesinks(self, shp=None):
         self.efp = open(self.error_reporting, 'a')
         self.efp.write('\nMaking the lines...\n')
 
@@ -1635,7 +1630,7 @@ class linesinks:
         print('Assigning attributes for GFLOW input...')
 
         # routing
-        # need to reformulate simplification so that "routed" means all routed linesinks,
+        # need to reformulate simplification so that "routed" means all routed LinesinkData,
         # not just those between the nearfield and farfield
         df['routing'] = (df.routed.values | df.nearfield.values).astype(int)
 
@@ -1649,10 +1644,10 @@ class linesinks:
         # list upstream and downstream comids
         df = self.list_updown_comids(df)
 
-        # discard duplicate linesinks that result from braids in NHD and line simplification
+        # discard duplicate LinesinkData that result from braids in NHD and line simplification
         df = self.drop_duplicates(df)
 
-        # method to represent lakes with linesinks
+        # method to represent lakes with LinesinkData
         df = self.setup_linesink_lakes(df)
 
         print('\nmerging or splitting lines with only two vertices...')
@@ -1674,7 +1669,7 @@ class linesinks:
         df['ls_coords'] = [bisect(line) if singlesegment[i]
                            else line for i, line in enumerate(ls_coords)]
 
-        # fix linesinks where max and min elevations are the same
+        # fix LinesinkData where max and min elevations are the same
         df = self.adjust_zero_gradient(df)
 
         # end streams
@@ -1897,7 +1892,6 @@ class linesinks:
         df['ls_coords'] = [list(g.coords) for g in df.geometry]
         return df
 
-
     def write_lss_by_huc(self, df):
 
         print('\nGrouping segments by hydrologic unit...')
@@ -1915,7 +1909,6 @@ class linesinks:
             dfh = dfg.get_group(HUC)
             outfile = '{}_{}.lss.xml'.format(self.outfile_basename, HUC)
             self.write_lss(dfh, outfile)
-
 
     def write_lss(self, df, outfile):
         """write GFLOW linesink XML (lss) file from dataframe df
@@ -1975,7 +1968,6 @@ class linesinks:
         ofp.write('</LinesinkStringFile>')
         ofp.close()
 
-
     def write_shapefile(self, outfile=None, use_ls_coords=True):
         if outfile is None:
             outfile = self.outfile_basename.split('.')[0] + '.shp'
@@ -1990,6 +1982,13 @@ class linesinks:
             df = df.drop(['ls_coords'], axis=1)
 
         gisutils.df2shp(df, outfile, proj_str=self.crs_str)
+
+
+class linesinks(LinesinkData):
+    def __init__(self, *args, **kwargs):
+        warnings.warn("The 'linesinks' class was renamed to LinesinkData to better follow pep 8.",
+                      DeprecationWarning)
+        LinesinkData.__init__(self, *args, **kwargs)
 
 
 class InputFileMissing(Exception):

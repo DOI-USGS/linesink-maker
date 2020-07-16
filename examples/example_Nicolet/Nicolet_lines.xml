@@ -14,7 +14,7 @@ Notes on linesinkMaker input:
     elevation units multiplier (from NHDPlus cm to model units) -->
     <zmult>0.03280839895013123</zmult>
     <!-- resistance:
-    global resistance value to apply to all resistance linesinks (c in GFLOW documentation) -->
+    global resistance value to apply to all resistance LinesinkData (c in GFLOW documentation) -->
     <resistance>0.3</resistance>
     <!-- H:
     aquifer thickness in model units -->
@@ -23,7 +23,7 @@ Notes on linesinkMaker input:
     Hydraulic conductivity in model units -->
     <k>10</k>
     <!-- ScenResistance:
-    name for global resistance parameter to assign to linesinks-->
+    name for global resistance parameter to assign to LinesinkData-->
     <ScenResistance>Rlinesink</ScenResistance>
     <!-- ComputationalUnits: ('Feet' or 'Meters')
     model units-->
@@ -36,13 +36,13 @@ Notes on linesinkMaker input:
 <modelDomain>
     <!-- farfield:
     polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area
-    linesinks within this area will be zero resistance (specified head) -->
+    LinesinkData within this area will be zero resistance (specified head) -->
     <farfield>shps/Nicolet_north_FF.shp</farfield>
     <!-- nearfield:
-    polygon of the model nearfield area, where linesinks will be given resistance and routed -->
+    polygon of the model nearfield area, where LinesinkData will be given resistance and routed -->
     <nearfield>shps/Nicolet_north_NF.shp</nearfield>
     <!-- split_by_HUC:
-    option to split out linesinks by HUC, writing one lss file per HUC -->
+    option to split out LinesinkData by HUC, writing one lss file per HUC -->
     <split_by_HUC>False</split_by_HUC>
     <HUC_shp>None</HUC_shp>
     <HUC_name_field>None</HUC_name_field>

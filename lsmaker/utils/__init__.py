@@ -1,1 +1,1 @@
-from .GFLOWresults import *
+from .gflow_results import *

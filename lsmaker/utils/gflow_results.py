@@ -1,11 +1,9 @@
-import sys
-sys.path.append('../lsmaker')
-sys.path.insert(0, '../../GIS_utils')
 import os
 import shutil
 import numpy as np
 import pandas as pd
 from shapely.geometry import LineString
+import gisutils
 
 
 def get_ls_skiprows_nrows(xtr):
@@ -47,7 +45,7 @@ def get_linesink_results(xtr):
 def write_heads_raster(grdfile, outraster='heads.tiff',
                        solver_x0=0, solver_y0=0, scale_xy=.3048,
                        epsg=26715):
-    hds = surferGrid(grdfile)
+    hds = SurferGrid(grdfile)
     hds.scale_xy(scale_xy)
     hds.offset_xy(solver_x0, solver_y0)
     hds.write_raster(outraster, epsg=epsg)
@@ -239,7 +237,7 @@ def plot_flooding_arcpy(grdfile, dem,
     solver_y0 = solver_y0
     wtfile = os.path.join(outpath,'heads_prj.tiff')
     print('reading {}...'.format(grdfile))
-    hds = surferGrid(grdfile)
+    hds = SurferGrid(grdfile)
     hds.scale_xy(scale_xy)
     hds.offset_xy(solver_x0, solver_y0)
     hds.write_raster(wtfile, epsg=epsg)
@@ -259,7 +257,6 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     To get the solve origin (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer, 
     then View > Base Tables > Model.
     """
-    from GISio import df2shp
     if outshp is None:
         outshp = '{}_streamflow.shp'.format(xtr[:-4])
     df = get_linesink_results(xtr)
@@ -267,10 +264,10 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     df[['x1', 'x2']] = df[['x1', 'x2']] * coords_mult + solver_x0
     df[['y1', 'y2']] = df[['y1', 'y2']] * coords_mult + solver_y0
     df['geometry'] = [LineString([(r.x1, r.y1), (r.x2, r.y2)]) for i, r in df.iterrows()]
-    df2shp(df, outshp, epsg=epsg)
+    gisutils.df2shp(df, outshp, epsg=epsg)
 
 
-class surferGrid:
+class SurferGrid:
     def __init__(self, grdfile=None, data=None):
         self.header = None
         self.nrow = None

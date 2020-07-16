@@ -6,10 +6,10 @@ GlobalSettings:
   # So input coordinate projections and output prj should be consistent
   # projection file for output shapefiles
   prj: shps/Medford_nf.prj
-  # global resistance value to apply to all resistance linesinks 
+  # global resistance value to apply to all resistance LinesinkData
   # (c parameter in the GFLOW documentation)
   resistance: 0.3
-  # global global_streambed_thickness value to apply to all resistance linesinks 
+  # global global_streambed_thickness value to apply to all resistance LinesinkData
   # (delta parameter in the GFLOW documentation)
   global_streambed_thickness: 3
   # aquifer thickness in model units
@@ -28,14 +28,14 @@ GlobalSettings:
 
 modelDomain:
   # polygon shapefile indicating the desired model extent
-  # linesinks within this area but outside of the near or mid-fields
+  # LinesinkData within this area but outside of the near or mid-fields
   # will be zero resistance (specified head)
   farfield:
   # A distance (in GIS or Basemap units; typically meters) that defines 
   # the extent of model farfield area as a buffer distance around the nearfield polygon
   # (can be specified in lieu of a polygon shapefile under the farfield: key)
   farfield_buffer: 15000
-  # polygon of the model nearfield area, where linesinks will be given 
+  # polygon of the model nearfield area, where LinesinkData will be given
   # resistance and routed
   routed_area: shps/Medford_nf.shp
   # polygon of area of focus within routed area (optional)

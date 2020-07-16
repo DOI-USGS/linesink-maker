@@ -9,7 +9,7 @@ except:
 from shapely.geometry import shape
 
 
-class inhomogeneity:
+class Inhomogeneity:
     fields = ['Label',
               'HydCond',
               'BottomElevation',

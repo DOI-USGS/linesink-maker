@@ -22,7 +22,7 @@ Notes on linesinkMaker input:
     elevation units multiplier (from NHDPlus cm to model units) -->
     <zmult>0.03280839895013123</zmult>
     <!-- resistance:
-    global resistance value to apply to all resistance linesinks (c in GFLOW documentation) -->
+    global resistance value to apply to all resistance LinesinkData (c in GFLOW documentation) -->
     <resistance>0.3</resistance>
     <!-- H:
     aquifer thickness in model units -->
@@ -31,9 +31,9 @@ Notes on linesinkMaker input:
     Hydraulic conductivity in model units -->
     <k>10</k>
     <!-- ScenResistance:
-    name for global resistance parameter to assign to linesinks-->
+    name for global resistance parameter to assign to LinesinkData-->
     <!-- global_streambed_thickness:
-    Streambed thickness depth value to assign to all linesinks-->
+    Streambed thickness depth value to assign to all LinesinkData-->
     <global_streambed_thickness>3</global_streambed_thickness>
     <ScenResistance>Rlinesink</ScenResistance>
     <!-- ComputationalUnits: ('Feet' or 'Meters')
@@ -47,7 +47,7 @@ Notes on linesinkMaker input:
 <modelDomain>
     <!-- farfield:
     polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area
-    linesinks within this area will be zero resistance (specified head) -->
+    LinesinkData within this area will be zero resistance (specified head) -->
     <farfield></farfield>
     <!-- farfield_buffer: numeric, default is 10,0000
     A distance (in GIS units) that defines the extent of model farfield area as a 
@@ -56,7 +56,7 @@ Notes on linesinkMaker input:
      -->
     <farfield_buffer>15000</farfield_buffer>
     <!-- routed_area:
-    polygon of the model nearfield area, where linesinks will be given resistance and routed -->
+    polygon of the model nearfield area, where LinesinkData will be given resistance and routed -->
     <routed_area>shps/Medford_nf.shp</routed_area>
     <!-- nearfield:
     polygon of area of focus within routed area (optional) -->

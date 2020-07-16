@@ -1,9 +1,6 @@
-__author__ = 'aleaf'
-
 import os
-import numpy as np
-from shapely.geometry import LineString
-from . import GISio
+import gisutils
+
 
 class Diagnostics:
 
@@ -12,7 +9,7 @@ class Diagnostics:
         if lsm_object is not None:
             self.__dict__ = lsm_object.__dict__.copy()
         elif ls_shapefile is not None:
-            self.df = GISio.shp2df(ls_shapefile, index='COMID')
+            self.df = gisutils.shp2df(ls_shapefile, index='COMID')
             self.prj = ls_shapefile[:-4] + '.prj'
         else:
             print('Provide either LinesinkMaker object of shapefile as input.')
@@ -33,7 +30,7 @@ class Diagnostics:
             [crosses.add(comids[j]) for j, g in enumerate(geoms) if linesink.crosses(g)]
 
         if len(crosses) > 0:
-            print('Warning! Crossing linesinks found. Check these before running GFLOW.\n' \
+            print('Warning! Crossing LinesinkData found. Check these before running GFLOW.\n' \
                   'See {} for more details'.format(self.diagnostics_file))
             ofp.write('The following line segments cross, and should be fixed manually before running GFLOW:\n')
             for c in crosses:

@@ -5,7 +5,7 @@ import os
 import numpy as np
 from shapely.geometry import LineString, Point
 import pytest
-from lsmaker.lsmaker import linesinks
+from lsmaker.lsmaker import LinesinkData
 from lsmaker import get_elevation_from_epqs, get_elevations_from_epqs
 
 
@@ -22,7 +22,7 @@ def preprocessed_folder():
 def test1(test_data_path, test_output_path, preprocessed_folder):
 
     input_file = os.path.join(test_data_path, 'test_input.xml')
-    ls = linesinks(input_file)
+    ls = LinesinkData(input_file)
 
     # verify that input is being read correctly
     nearfield_tol = 50
@@ -41,7 +41,7 @@ def test1(test_data_path, test_output_path, preprocessed_folder):
 
     ls.preprocess(save=True)
 
-    ls.makeLineSinks(shp=os.path.join(preprocessed_folder, 'lines.shp'))
+    ls.make_linesinks(shp=os.path.join(preprocessed_folder, 'lines.shp'))
 
     # verify that drainage lakes are included properly
     assert 'Chequamegon Waters 125 Reservoir' in ls.df.GNIS_NAME.values
@@ -94,7 +94,7 @@ def test1(test_data_path, test_output_path, preprocessed_folder):
                           (2, 0.001, 586)))
 def test2(test_data_path, test_output_path, case, min_waterbody_size, expected_nlines):
     input_file = os.path.join(test_data_path, 'test_input.xml')
-    ls = linesinks(input_file)
+    ls = LinesinkData(input_file)
     ls.nearfield = os.path.join(test_data_path, 'testarea.shp')
     ls.routed_area = None
     ls.routed_area_tolerance = None
@@ -108,7 +108,7 @@ def test2(test_data_path, test_output_path, case, min_waterbody_size, expected_n
 
     ls.preprocess(save=True)
 
-    ls.makeLineSinks()
+    ls.make_linesinks()
 
     assert sum([len(p) - 1 for p in ls.df.ls_coords]) == expected_nlines # not sure why this is 586 vs. 585 above
     # likewise number above changed from 683 to 684 after debugging
