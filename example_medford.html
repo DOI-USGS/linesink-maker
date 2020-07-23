@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+ga5dd695 documentation</title>
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+g7e4d82d documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+ga5dd695
+                0.post65.dev0+g7e4d82d
               </div>
             
           
@@ -108,8 +108,8 @@
 <p class="caption"><span class="caption-text">Usage</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Input requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-xml-input-file-for-linesinkmaker">Creating the XML Input file for LinesinkMaker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesinkmaker">Running LinesinkMaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesink-maker">Running Linesink-maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
@@ -287,20 +287,16 @@
 65
 66
 67
-68
-69
-70</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">GlobalSettings</span><span class="p">:</span>
+68</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">GlobalSettings</span><span class="p">:</span>
   <span class="c1"># full path to working folder where intermediate (preprocessed) files</span>
   <span class="c1"># and output will be generated.</span>
   <span class="nt">working_dir</span><span class="p">:</span> <span class="s">&#39;.&#39;</span>
-  <span class="c1"># Note: Currently LinesinkMaker does not do transformations</span>
-  <span class="c1"># So input coordinate projections and output prj should be consistent</span>
-  <span class="c1"># projection file for output shapefiles</span>
+  <span class="c1"># The projected coordinate reference system (CRS) for the model</span>
   <span class="nt">prj</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.prj</span>
   <span class="c1"># global resistance value to apply to all resistance LinesinkData</span>
   <span class="c1"># (c parameter in the GFLOW documentation)</span>
   <span class="nt">resistance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.3</span>
-  <span class="c1"># global global_streambed_thickness value to apply to all resistance LinesinkData</span>
+  <span class="c1"># global streambed thickness value to apply to all resistance LinesinkData</span>
   <span class="c1"># (delta parameter in the GFLOW documentation)</span>
   <span class="nt">global_streambed_thickness</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
   <span class="c1"># aquifer thickness in model units</span>
@@ -317,7 +313,7 @@
   <span class="c1"># units for the model basemaps (projected coordinate system)</span>
   <span class="nt">BasemapUnits</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">meters</span>
 
-<span class="nt">modelDomain</span><span class="p">:</span>
+<span class="nt">ModelDomain</span><span class="p">:</span>
   <span class="c1"># polygon shapefile indicating the desired model extent</span>
   <span class="c1"># LinesinkData within this area but outside of the near or mid-fields</span>
   <span class="c1"># will be zero resistance (specified head)</span>
@@ -332,7 +328,7 @@
   <span class="c1"># polygon of area of focus within routed area (optional)</span>
   <span class="nt">nearfield</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
 
-<span class="nt">NHDfiles</span><span class="p">:</span>
+<span class="nt">NHDFiles</span><span class="p">:</span>
   <span class="nt">flowlines</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_flowlines.shp</span>
   <span class="nt">elevslope</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/elevslope.dbf</span>
   <span class="nt">PlusFlowVAA</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/PlusFlowlineVAA.dbf</span>
@@ -593,7 +589,7 @@
 7
 8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">lsmaker</span>
 
-<span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.xml&#39;</span>
+<span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.yml&#39;</span>
 <span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
 
 <span class="n">ls</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -625,7 +621,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 16, 2020.
+        Last updated on Jul 23, 2020.
       </span>
 
     </p>

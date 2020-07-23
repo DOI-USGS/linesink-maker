@@ -5,6 +5,7 @@
 ./_modules/index.html
 ./_modules/lsmaker/lsmaker.html
 ./_sources/api/index.rst.txt
+./_sources/config-file-defaults.rst.txt
 ./_sources/contributing.rst.txt
 ./_sources/example_medford.rst.txt
 ./_sources/examples.rst.txt
@@ -56,6 +57,7 @@
 ./_static/underscore-1.3.1.js
 ./_static/underscore.js
 ./api/index.html
+./config-file-defaults.html
 ./contributing.html
 ./example_medford.html
 ./examples.html

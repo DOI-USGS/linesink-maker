@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Input requirements &mdash; linesink-maker 0.post65.dev0+ga5dd695 documentation</title>
+  <title>Input requirements &mdash; linesink-maker 0.post65.dev0+g7e4d82d documentation</title>
   
 
   
@@ -40,7 +40,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API reference" href="api/index.html" />
+    <link rel="next" title="Default configuration settings for Linesink-maker" href="config-file-defaults.html" />
     <link rel="prev" title="Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation" href="notebooks/GFLOW_results_visualization.html" /> 
 </head>
 
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+ga5dd695
+                0.post65.dev0+g7e4d82d
               </div>
             
           
@@ -105,8 +105,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#other-inputs">Other inputs</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#creating-the-xml-input-file-for-linesinkmaker">Creating the XML Input file for LinesinkMaker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#running-linesinkmaker">Running LinesinkMaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config-file-defaults.html">Configuration defaults</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#running-linesink-maker">Running Linesink-maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
@@ -226,43 +229,66 @@
 <li><p>PlusFlowlineVAA.dbf</p></li>
 </ul>
 <p>These are available at: &lt;<a class="reference external" href="http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php">http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php</a>&gt;  in the <strong>`NHDPlusV21_GL_04_NHDSnapshot_07.7z`</strong> and <strong>`NHDPlusV21_GL_04_NHDPlusAttributes_08.7z`</strong>
-downloads. The NHDPlus files are specified in the XML input file under the tag <strong>&lt;NHDfiles&gt;</strong>.</p>
+downloads. The NHDPlus files are specified in the YAML input file under the <code class="docutils literal notranslate"><span class="pre">flowlines:</span></code>, <code class="docutils literal notranslate"><span class="pre">elevslope:</span></code>, <code class="docutils literal notranslate"><span class="pre">PlusFlowVAA:</span></code> and <code class="docutils literal notranslate"><span class="pre">waterbodies:</span></code> keys, as illustrated in the <a class="reference external" href="https://aleaf.github.io/linesink-maker/medford.html">Medford National Forest Unit example</a>.</p>
 </div>
 <div class="section" id="model-domain-specification">
 <h2>Model domain specification<a class="headerlink" href="#model-domain-specification" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><strong>shapefile of the model nearfield area</strong> (where LinesinkData will be routed and have resistance) <strong>(required)</strong></p></li>
-<li><p><strong>shapefile of the model farfield area</strong> (where LinesinkData will be zero-resistance and not routed) (<strong>optional</strong>; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag <strong>&lt;farfield_buffer&gt;</strong>.</p></li>
-<li><p>in addition, a <strong>third shapefile</strong> defining an intermediate area with routed, resistance LinesinkData can be supplied with the <strong>&lt;routed_area&gt;</strong> tag. This allows for 3 levels of line simplification, with the most detail limited to the immediate nearfield.</p></li>
+<li><p><strong>shapefile of the model farfield area</strong> (where LinesinkData will be zero-resistance and not routed) (<strong>optional</strong>; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the YAML input file under the <code class="docutils literal notranslate"><span class="pre">farfield_buffer:</span></code> key.</p></li>
+<li><p>in addition, a <strong>third shapefile</strong> defining an intermediate area with routed, resistance LinesinkData can be supplied with the <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> key. This allows for 3 levels of line simplification, with the most detail limited to the immediate nearfield.</p></li>
 </ul>
 </div>
 <div class="section" id="line-simplification">
 <h2>Line simplification<a class="headerlink" href="#line-simplification" title="Permalink to this headline">¶</a></h2>
-<p>Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of LinesinkData are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (<strong>&lt;nearfield_tolerance&gt;</strong> and <strong>&lt;farfield_tolerance&gt;farfield_tolerance&gt;</strong>). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.</p>
+<p>Linesink-maker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of LinesinkData are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the YAML input file (<code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> and <code class="docutils literal notranslate"><span class="pre">farfield_tolerance:</span></code>). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.</p>
 </div>
 <div class="section" id="other-inputs">
 <h2>Other inputs<a class="headerlink" href="#other-inputs" title="Permalink to this headline">¶</a></h2>
-<p>Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the XML input file. See the example XML input files for more details.</p>
+<p>Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the YAML input file. See the <a class="reference external" href="https://aleaf.github.io/linesink-maker/medford.html">Medford National Forest Unit example</a> input file and <a class="reference external" href="https://aleaf.github.io/linesink-maker/config-file-defaults.html">default configuration settings</a> for more details.</p>
 </div>
 </div>
-<div class="section" id="creating-the-xml-input-file-for-linesinkmaker">
-<h1>Creating the XML Input file for LinesinkMaker<a class="headerlink" href="#creating-the-xml-input-file-for-linesinkmaker" title="Permalink to this headline">¶</a></h1>
-<p>The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an <strong>XML input file</strong>. See the example folders for templates with input instructions (e.g. <strong>Nicolet_lines.xml</strong>). An editor that supports XML code highlighting, such as <strong>Notepad++</strong> or <strong>Text Wrangler</strong> is highly recommended for working with this file.</p>
+<div class="section" id="creating-the-yaml-input-file-for-linesink-maker">
+<h1>Creating the YAML Input file for Linesink-maker<a class="headerlink" href="#creating-the-yaml-input-file-for-linesink-maker" title="Permalink to this headline">¶</a></h1>
+<p>The input files, and other input settings such as default resistance and line simplification tolerances, are specified in a configuration file using the <a class="reference external" href="yaml.org">YAML format</a>, which maps <code class="docutils literal notranslate"><span class="pre">key:</span> <span class="pre">value</span></code> pairs similar to a Python dictionary. See the example folders for templates with input instructions (e.g. <strong>Nicolet_lines.yml</strong>). An editor that supports YAML code highlighting, such as <a class="reference external" href="https://code.visualstudio.com/">VS Code</a>, <a class="reference external" href="https://www.barebones.com/products/bbedit/">BBEdit</a> or <a class="reference external" href="https://www.sublimetext.com/">Sublime Text</a> is highly recommended for working with this file.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="config-file-defaults.html">Configuration defaults</a></li>
+</ul>
 </div>
-<div class="section" id="running-linesinkmaker">
-<h1>Running LinesinkMaker<a class="headerlink" href="#running-linesinkmaker" title="Permalink to this headline">¶</a></h1>
-<p>LinesinkMaker can be run from the command line by calling the script make_linesinks.py with an XML input file as an argument:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">make_linesinks</span><span class="o">.</span><span class="n">py</span> <span class="n">Medford_lines</span><span class="o">.</span><span class="n">xml</span>
+</div>
+<div class="section" id="running-linesink-maker">
+<h1>Running Linesink-maker<a class="headerlink" href="#running-linesink-maker" title="Permalink to this headline">¶</a></h1>
+<p>Linesink-maker can be run with the following python script by replacing <code class="docutils literal notranslate"><span class="pre">'Medford_lines.yml'</span></code> with the name of your configuration file.</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">lsmaker</span>
+
+<span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.yml&#39;</span>
+<span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+
+<span class="n">ls</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">ls</span><span class="o">.</span><span class="n">make_linesinks</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="s1">&#39;preprocessed/lines.shp&#39;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p>Which can be executed at the command line with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">make_linesinks</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="importing-the-linesink-string-file-into-gflow">
 <h1>Importing the linesink string file into GFLOW<a class="headerlink" href="#importing-the-linesink-string-file-into-gflow" title="Permalink to this headline">¶</a></h1>
-<p>LinesinkMaker outputs a linesink string file of the form <strong>&lt;basename&gt;.lss.xml</strong>, which can be imported into GFLOW under <cite>Tools&gt;Import&gt;Line-sink Strings</cite>. It can also be inspected in any text editor.</p>
+<p>Linesink-maker outputs a linesink string file of the form <strong>&lt;basename&gt;.lss.xml</strong>, which can be imported into GFLOW under <cite>Tools&gt;Import&gt;Line-sink Strings</cite>. It can also be inspected in any text editor.</p>
 </div>
 <div class="section" id="viewing-the-linesinkdata-in-a-gis">
 <h1>Viewing the LinesinkData in a GIS<a class="headerlink" href="#viewing-the-linesinkdata-in-a-gis" title="Permalink to this headline">¶</a></h1>
-<p>LinesinkMaker also outputs a shapefile representation of the linesink network (<strong>&lt;basename&gt;.shp</strong>), for visualization in a GIS. For an example, see <strong>Medford.shp</strong> after running the <a class="reference internal" href="example_medford.html#medford-national-forest-unit"><span class="std std-ref">Medford National Forest Unit</span></a> example.</p>
+<p>Linesink-maker also outputs a shapefile representation of the linesink network (<strong>&lt;basename&gt;.shp</strong>), for visualization in a GIS. For an example, see <strong>Medford.shp</strong> after running the <a class="reference internal" href="example_medford.html#medford-national-forest-unit"><span class="std std-ref">Medford National Forest Unit</span></a> example.</p>
 </div>
 
 
@@ -273,7 +299,7 @@ downloads. The NHDPlus files are specified in the XML input file under the tag <
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api/index.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="config-file-defaults.html" class="btn btn-neutral float-right" title="Default configuration settings for Linesink-maker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="notebooks/GFLOW_results_visualization.html" class="btn btn-neutral float-left" title="Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -286,7 +312,7 @@ downloads. The NHDPlus files are specified in the XML input file under the tag <
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 16, 2020.
+        Last updated on Jul 23, 2020.
       </span>
 
     </p>
