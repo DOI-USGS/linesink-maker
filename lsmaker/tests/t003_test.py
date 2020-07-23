@@ -6,7 +6,7 @@ import pytest
 
 @pytest.fixture(scope='module')
 def lsmaker_instance_from_xml():
-    config_file = 'examples/example_Medford/Medford_lines.xml'
+    config_file = 'examples/medford/Medford_lines.xml'
     ls = lsmaker.LinesinkData(config_file)
     return ls
 
@@ -32,6 +32,6 @@ def test_diagnostics(lsmaker_instance_with_linesinks):
 def test_medford_yaml(lsmaker_instance_from_xml):
     """Test that the xml and yaml config files yield equivalent results.
     """
-    config_file = 'examples/example_Medford/Medford_lines.yml'
+    config_file = 'examples/medford/Medford_lines.yml'
     ls = lsmaker.LinesinkData(config_file)
     ls == lsmaker_instance_from_xml

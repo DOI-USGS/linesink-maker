@@ -14,45 +14,55 @@ For each major drainage area encompassed by the model (e.g. Area 04 representing
 * PlusFlowlineVAA.dbf
 
 These are available at: <http://www.horizon-systems.com/nhdplus/NHDPlusV2_data.php>  in the **`NHDPlusV21_GL_04_NHDSnapshot_07.7z`** and **`NHDPlusV21_GL_04_NHDPlusAttributes_08.7z`** 
-downloads. The NHDPlus files are specified in the XML input file under the tag **\<NHDfiles\>**.
+downloads. The NHDPlus files are specified in the YAML input file under the ``flowlines:``, ``elevslope:``, ``PlusFlowVAA:`` and ``waterbodies:`` keys, as illustrated in the `Medford National Forest Unit example <https://aleaf.github.io/linesink-maker/medford.html>`_.
 
 
 Model domain specification
 +++++++++++++++++++++++++++++++++++++++  
 
 * **shapefile of the model nearfield area** (where LinesinkData will be routed and have resistance) **(required)**
-* **shapefile of the model farfield area** (where LinesinkData will be zero-resistance and not routed) (**optional**; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the XML input file under the tag **\<farfield_buffer\>**.
-* in addition, a **third shapefile** defining an intermediate area with routed, resistance LinesinkData can be supplied with the **\<routed_area\>** tag. This allows for 3 levels of line simplification, with the most detail limited to the immediate nearfield.
+* **shapefile of the model farfield area** (where LinesinkData will be zero-resistance and not routed) (**optional**; if no farfield shapefile is provided, a buffer is drawn around the provided nearfield. The default for this buffer is 10,000 basemap units. Alternatively, the size of the buffer can be specified in the YAML input file under the ``farfield_buffer:`` key.
+* in addition, a **third shapefile** defining an intermediate area with routed, resistance LinesinkData can be supplied with the ``routed_area:`` key. This allows for 3 levels of line simplification, with the most detail limited to the immediate nearfield.
 
 
 Line simplification
 +++++++++++++++++++++++++++++++++++++++
-Linesinkmaker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of LinesinkData are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the XML input file (**\<nearfield_tolerance\>** and **\<farfield_tolerance\>farfield_tolerance>**). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.
+Linesink-maker uses the line simplification algorithm in the shapely package to reduce the vertices in the NHDPlus GIS flowline coverages so that a reasonable number of LinesinkData are produced. Vertices are removed until the simplified line deviates from the original line by a specified distance tolerance. Tolerances for the model nearfield and farfield areas are specified in the YAML input file (``nearfield_tolerance:`` and ``farfield_tolerance:``). The user may want to adjust these values depending on the desired level of detail for the model, and the constraint of keeping the linesink equations beneath the maxmimum for GFLOW. Reasonable starting values are 100-200 m for the nearfield, and 300-500 m for the farfield.
 
 Other inputs
 +++++++++++++++++++++++++++++++++++++++
-Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the XML input file. See the example XML input files for more details.
+Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the YAML input file. See the `Medford National Forest Unit example <https://aleaf.github.io/linesink-maker/medford.html>`_ input file and `default configuration settings <https://aleaf.github.io/linesink-maker/config-file-defaults.html>`_ for more details.
 
 
-Creating the XML Input file for LinesinkMaker
+Creating the YAML Input file for Linesink-maker
 ------------------------------------------------
-The input files, and other input settings such as default resistance and line simplification tolerances, are specified in an **XML input file**. See the example folders for templates with input instructions (e.g. **Nicolet_lines.xml**). An editor that supports XML code highlighting, such as **Notepad++** or **Text Wrangler** is highly recommended for working with this file. 
+The input files, and other input settings such as default resistance and line simplification tolerances, are specified in a configuration file using the `YAML format <yaml.org>`_, which maps ``key: value`` pairs similar to a Python dictionary. See the example folders for templates with input instructions (e.g. **Nicolet_lines.yml**). An editor that supports YAML code highlighting, such as `VS Code <https://code.visualstudio.com/>`_, `BBEdit <https://www.barebones.com/products/bbedit/>`_ or `Sublime Text <https://www.sublimetext.com/>`_ is highly recommended for working with this file. 
+
+.. toctree::
+   :maxdepth: 1
+
+   Configuration defaults <config-file-defaults>
 
 
 
-Running LinesinkMaker
+Running Linesink-maker
 --------------------------------
-LinesinkMaker can be run from the command line by calling the script make_linesinks.py with an XML input file as an argument::
+Linesink-maker can be run with the following python script by replacing ``'Medford_lines.yml'`` with the name of your configuration file. 
 
-    python make_linesinks.py Medford_lines.xml
+.. literalinclude:: ../../examples/medford/make_linesinks.py
+    :language: python
+    :linenos:
+
+Which can be executed at the command line with::
+
+    python make_linesinks.py
 
 
 
 Importing the linesink string file into GFLOW  
 ----------------------------------------------------------------
-LinesinkMaker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under `Tools>Import>Line-sink Strings`. It can also be inspected in any text editor. 
+Linesink-maker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under `Tools>Import>Line-sink Strings`. It can also be inspected in any text editor. 
 
 Viewing the LinesinkData in a GIS
 ----------------------------------------------------------------
-LinesinkMaker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS. For an example, see **Medford.shp** after running the :ref:`Medford National Forest Unit` example.
-
+Linesink-maker also outputs a shapefile representation of the linesink network (**\<basename>.shp**), for visualization in a GIS. For an example, see **Medford.shp** after running the :ref:`Medford National Forest Unit` example.

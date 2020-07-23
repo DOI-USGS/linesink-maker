@@ -418,8 +418,10 @@ class LinesinkData:
         # read in the configuration file
         if infile is not None and infile.endswith('.xml'):
             self.read_lsmaker_xml(infile)
-        if infile is not None and infile.endswith('.yml'):
-            self.read_lsmaker_yaml(infile)
+        if infile is not None:
+            for extension in 'yml', 'yaml':
+                if infile.endswith(extension):
+                    self.read_lsmaker_yaml(infile)
 
         # or create instance from a GFLOW LSS XML file
         elif GFLOW_lss_xml is not None:

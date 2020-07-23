@@ -17,7 +17,7 @@ Required python packages
 
 GFLOW 2.2 or higher required
 ------------------------------------------------
-Linesinkmaker requires GFLOW 2.2 or higher, which has the capability of importing linesink string (LSS) xml files.
+Linesink-maker requires GFLOW 2.2 or higher, which has the capability of importing linesink string (LSS) xml files.
 
 
 Installing the required Python packages
@@ -39,7 +39,7 @@ You should see `(lsmaker)` to the left of the command prompt.
     **The `lsmaker` conda environment needs to be activated to use linksink-maker!**
 
 
-To install LinesinkMaker
+To install Linesink-maker
 ++++++++++++++++++++++++++++++++++++++++++++++++++++  
 From the main page of the `GitHub repository <https://github.com/aleaf/linesink-maker>`_
 , click on the green Code button in the upper right, and select an option to clone or download the repository. Once the files have downloaded, navigate to the ``linesink-maker`` folder (which should contain **setup.py**) and run::

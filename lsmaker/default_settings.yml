@@ -2,9 +2,7 @@ GlobalSettings:
   # full path to working folder where intermediate (preprocessed) files
   # and output will be generated.
   working_dir: '.'
-  # Note: Currently LinesinkMaker does not do transformations
-  # So input coordinate projections and output prj should be consistent
-  # projection file for output shapefiles
+  # The projected coordinate reference system (CRS) for the model
   prj: shps/Medford_nf.prj
   # elevation units multiplier (from NHDPlus cm to model units)
   zmult: 0.03280839895013123
@@ -31,7 +29,7 @@ GlobalSettings:
   chkScenario: True
   preproc: True  # whether or not to run preprocessing
 
-modelDomain:
+ModelDomain:
   # polygon shapefile indicating the desired model extent
   # LinesinkData within this area but outside of the near or mid-fields
   # will be zero resistance (specified head)
@@ -54,13 +52,13 @@ modelDomain:
   # field in HUC_shp with polygon names
   HUC_name_field: False
 
-NHDfiles:
+NHDFiles:
   flowlines: shps/Medford_flowlines.shp
   elevslope: shps/elevslope.dbf
   PlusFlowVAA: shps/PlusFlowlineVAA.dbf
   waterbodies: shps/Medford_waterbodies.shp
 
-preprocessedFiles:
+PreprocessedFiles:
   DEM:
   DEM_zmult: 1.
   flowlines_clipped: 'preprocessed/flowlines_clipped.shp'

@@ -2,14 +2,12 @@ GlobalSettings:
   # full path to working folder where intermediate (preprocessed) files
   # and output will be generated.
   working_dir: '.'
-  # Note: Currently LinesinkMaker does not do transformations
-  # So input coordinate projections and output prj should be consistent
-  # projection file for output shapefiles
+  # The projected coordinate reference system (CRS) for the model
   prj: shps/Medford_nf.prj
   # global resistance value to apply to all resistance LinesinkData
   # (c parameter in the GFLOW documentation)
   resistance: 0.3
-  # global global_streambed_thickness value to apply to all resistance LinesinkData
+  # global streambed thickness value to apply to all resistance LinesinkData
   # (delta parameter in the GFLOW documentation)
   global_streambed_thickness: 3
   # aquifer thickness in model units
@@ -26,7 +24,7 @@ GlobalSettings:
   # units for the model basemaps (projected coordinate system)
   BasemapUnits: meters
 
-modelDomain:
+ModelDomain:
   # polygon shapefile indicating the desired model extent
   # LinesinkData within this area but outside of the near or mid-fields
   # will be zero resistance (specified head)
@@ -41,7 +39,7 @@ modelDomain:
   # polygon of area of focus within routed area (optional)
   nearfield: shps/Medford_unit.shp
 
-NHDfiles:
+NHDFiles:
   flowlines: shps/Medford_flowlines.shp
   elevslope: shps/elevslope.dbf
   PlusFlowVAA: shps/PlusFlowlineVAA.dbf
