@@ -1,8 +1,8 @@
 GlobalSettings:
-  # full path to working folder where intermediate (preprocessed) files
-  # and output will be generated.
+  # file path where intermediate and output will be generated.
   working_dir: '.'
-  # The projected coordinate reference system (CRS) for the model
+  # ESRI projection file specifying the
+  # projected coordinate reference system (CRS) for the model
   prj: shps/Medford_nf.prj
   # global resistance value to apply to all resistance LinesinkData
   # (c parameter in the GFLOW documentation)

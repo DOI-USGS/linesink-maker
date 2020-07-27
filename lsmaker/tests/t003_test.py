@@ -17,8 +17,7 @@ def lsmaker_instance_from_xml():
 @pytest.fixture(scope='module')
 def lsmaker_instance_with_linesinks(lsmaker_instance_from_xml):
     ls = lsmaker_instance_from_xml
-    ls.preprocess(save=True)
-    ls.make_linesinks(shp='preprocessed/lines.shp')
+    ls.make_linesinks()
     return ls
 
 

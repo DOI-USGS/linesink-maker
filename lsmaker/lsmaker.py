@@ -16,11 +16,12 @@ from shapely.ops import unary_union, transform
 import pyproj
 import math
 import gisutils
+import lsmaker
 try:
     import matplotlib.pyplot as plt
 except:
     pass
-from .diagnostics import Diagnostics
+from lsmaker.diagnostics import Diagnostics
 
 
 # ## Functions #############################
@@ -408,7 +409,7 @@ class LinesinkData:
         # outputs
         self.outfile_basename = None
         self.error_reporting = 'error_reporting.txt'
-        self.efp = open(self.error_reporting, 'w')
+        self.efp = None
 
         # attributes
         self.from_lss_xml = False
@@ -416,7 +417,7 @@ class LinesinkData:
         self.lss = pd.DataFrame() # dataframe of GFLOW linesink strings (with attributes)
         self.outsegs = pd.DataFrame()
         self.confluences = pd.DataFrame()
-        
+
         # read in the configuration file
         if infile is not None and infile.endswith('.xml'):
             self.read_lsmaker_xml(infile)
@@ -433,6 +434,14 @@ class LinesinkData:
         # create a pyproj CRS instance
         # set the CRS (basemap) length units
         self.set_crs(prjfile=self.prj)
+
+        # logging/diagnostics
+        # todo: more robust/detail logging
+        if os.path.exists(self.error_reporting):
+            os.remove(self.error_reporting)
+        self.efp = open(self.error_reporting, 'w')
+        self.efp.write('Linesink-maker version {}\n'.format(lsmaker.__version__))
+        self.dg = Diagnostics(lsm_object=self, logfile=self.efp)
 
     def __eq__(self, other):
         """Test for equality to another linesink object."""
@@ -661,7 +670,6 @@ class LinesinkData:
                                              inpars.findall('.//outfile_basename')[0].text)
         self.error_reporting = os.path.join(self._lsmaker_config_file_path,
                                             inpars.findall('.//error_reporting')[0].text)
-        self.efp = open(self.error_reporting, 'w')
 
         # attributes
         self.df = pd.DataFrame() # working dataframe for translating NHDPlus data to linesink strings
@@ -737,9 +745,6 @@ class LinesinkData:
         self.wb_centroids_w_elevations = self.waterbodies_clipped[
                                          :-4] + '_points.shp'  # elevations extracted during preprocessing routine
         self.elevs_field = 'DEM'  # field in wb_centroids_w_elevations containing elevations
-
-        # outputs
-        self.efp = open(self.error_reporting, 'w')
         
     def _parse_xml_text(self, findall_result, dtype, relative_filepath=False):
         # handle either strings or lxml Elements
@@ -1051,7 +1056,6 @@ class LinesinkData:
                 gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
 
         # open error reporting file
-        self.efp = open(self.error_reporting, 'a')
         self.efp.write('\nPreprocessing...\n')
 
         print('\nAssembling input...')
@@ -1297,9 +1301,9 @@ class LinesinkData:
 
     def adjust_zero_gradient(self, df, increment=0.01):
 
-        dg = Diagnostics(lsm_object=self)
+        dg = self.dg
         dg.df = df
-        comids0 = dg.check4zero_gradient()
+        comids0 = dg.check4zero_gradient(log=False)
 
         if len(comids0) > 0:
 
@@ -1347,11 +1351,11 @@ class LinesinkData:
 
                         # check again for zero-gradient lines
             dg.df = df
-            comids0 = dg.check4zero_gradient()
+            comids0 = dg.check4zero_gradient(log=False)
 
             if len(comids0) > 0:
                 for c in comids0:
-                    self.efp.write('{} '.format(c))
+                    self.efp.write('{}\n'.format(c))
                 print("\nWarning!, the following comids had zero gradients:\n{}".format(comids0))
                 print("routing for these was turned off. Elevations must be fixed manually.\n" \
                       "See {}".format(self.error_reporting))
@@ -1359,7 +1363,7 @@ class LinesinkData:
 
     def drop_crossing_lines(self, df):
 
-        dg = Diagnostics(lsm_object=self)
+        dg = self.dg
         crosses = dg.check4crossing_lines()
 
     def drop_duplicates(self, df):
@@ -1573,7 +1577,6 @@ class LinesinkData:
         return df
 
     def make_linesinks(self, shp=None):
-        self.efp = open(self.error_reporting, 'a')
         self.efp.write('\nMaking the lines...\n')
 
         if shp is None:
@@ -1725,6 +1728,9 @@ class LinesinkData:
         else:
             self.write_lss(df, '{}.lss.xml'.format(self.outfile_basename))
 
+        # run diagnostics on lines and report errors
+        self.run_diagnostics()
+
         # write shapefile of results
         # convert lists in dn and upcomid columns to strings (for writing to shp)
         # clean up any dtypes that were altered from sloppy use of pandas
@@ -1766,7 +1772,9 @@ class LinesinkData:
 
     def run_diagnostics(self):
 
-        dg = Diagnostics(lsm_object=self)
+        if self.efp.closed:
+            self.efp = open(self.error_reporting, 'a')
+        dg = self.dg
         dg.check_vertices()
         dg.check4crossing_lines()
         dg.check4zero_gradient()

@@ -1,10 +1,12 @@
 import os
+from shapely.geometry import LineString
 import gisutils
 
 
 class Diagnostics:
 
-    def __init__(self, lsm_object=None, ls_shapefile=None):
+    def __init__(self, lsm_object=None, ls_shapefile=None,
+                 logfile='lsmaker-log.txt'):
 
         if lsm_object is not None:
             self.__dict__ = lsm_object.__dict__.copy()
@@ -15,34 +17,59 @@ class Diagnostics:
             print('Provide either LinesinkMaker object of shapefile as input.')
             return
 
-        self.diagnostics_file = 'lsm_diagnostics.txt'
-        if os.path.exists(self.diagnostics_file):
-            os.remove(self.diagnostics_file)
+        self._ofp = None
+        self.ofp = logfile  # pointer to log file
+
+        self.diagnostics_file = self.ofp.name
+
+    @property
+    def ofp(self):
+        if self._ofp is None:
+            ofp = open('lsmaker-log.txt', 'a')
+        elif self._ofp.closed:
+            ofp = open(self._ofp.name, 'a')
+        else:
+            return self._ofp
+        self._ofp = ofp
+        return self._ofp
+
+    @ofp.setter
+    def ofp(self, logfile):
+        if isinstance(logfile, str):
+            self._ofp = open(logfile, 'a')
+        elif logfile.closed:
+            self._ofp = open(logfile.name, 'a')
+        else:
+            self._ofp = logfile
 
     def check4crossing_lines(self):
-        ofp = open(self.diagnostics_file, 'a')
-        print('Checking for lines that cross...')
-        comids = self.df.index.values
-        geoms = self.df.geometry.tolist()
+        ofp = self.ofp
+        print('\nChecking for lines that cross...')
+        ofp.write('\nChecking for lines that cross...')
+        comids = self.df.COMID.values
+        geoms = [LineString(ls_coords) for ls_coords in self.df.ls_coords]
 
         crosses = set()
-        for i, linesink in enumerate(geoms):
-            [crosses.add(comids[j]) for j, g in enumerate(geoms) if linesink.crosses(g)]
+        for comid, linesink in zip(comids, geoms):
+            for other_comid, other_linesink in zip(comids, geoms):
+                if linesink.crosses(other_linesink):
+                    crosses.add((comid, other_comid))
 
         if len(crosses) > 0:
             print('Warning! Crossing LinesinkData found. Check these before running GFLOW.\n' \
                   'See {} for more details'.format(self.diagnostics_file))
-            ofp.write('The following line segments cross, and should be fixed manually before running GFLOW:\n')
+            ofp.write('\nThe following line segments cross, and should be fixed manually before running GFLOW:\n')
             for c in crosses:
-                ofp.write('{} '.format(c))
+                ofp.write('{}, {}\n'.format(*c))
             ofp.write('\r\n')
         else:
-            print('passed.')
-        ofp.close()
+            print('passed.\n')
         return crosses
 
     def check_vertices(self):
-        print('Checking for duplicate vertices...')
+        ofp = self.ofp
+        print('\nChecking for duplicate vertices...')
+        ofp.write('\nChecking for duplicate vertices...')
         if 'ls_coords' not in self.df.columns:
             # convert geometries to coordinates
             def xy_coords(x):
@@ -64,21 +91,28 @@ class Diagnostics:
         if len(duplicate_coords) > 0:
             print('Duplicate coordinates found at:\n{}'.format(duplicate_coords))
             print('See {}'.format(self.diagnostics_file))
-            ofp = open(self.diagnostics_file, 'a')
             ofp.write('Duplicate coordinates:')
             for crd in duplicate_coords:
                 ofp.write('{} {}\n'.format(crd, self.df.ix[crd, 'ls_coords']))
-            ofp.close()
         else:
-            print('passed.')
+            print('passed.\n')
+            ofp.write('passed.\n')
 
-    def check4zero_gradient(self):
-
-        print('Checking for lines with zero gradient...')
+    def check4zero_gradient(self, log=True):
+        txt = ''
+        msg = '\nChecking for lines with zero gradient...'
+        print(msg)
+        txt += msg
         self.df['dStage'] = self.df.maxElev - self.df.minElev
         comids0 = list(self.df[self.df['dStage'] == 0].index)
         if len(comids0) > 0:
-            print('{} lines with zero gradient found'.format(len(comids0)))
+            msg = '{} lines with zero gradient found\n'.format(len(comids0))
+            print(msg)
+            txt += msg
         else:
-            print('No zero-gradient lines found.')
+            msg = 'No zero-gradient lines found.\n'
+            print(msg)
+            txt += msg
+        if log:
+            self.ofp.write(txt)
         return comids0

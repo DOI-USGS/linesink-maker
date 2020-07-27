@@ -1,19 +1,15 @@
 <linesinkInput>
 <!--
 Notes on linesinkMaker input:
-    All shps should be in (same) model coordinate units (e.g. ft.)
-    If model domain contains a major divide, need to merge relevant NHD datasets
-        (e.g. 04 and 07) prior to running this script
     Put in paths to input/output files as-is (i.e. no double \)
 -->
 <GlobalSettings>
     <!-- working_dir:
-    full path to working folder where intermediate and output will be generated. -->
+    file path where intermediate and output will be generated. -->
     <working_dir></working_dir>
     <!-- prj:
-    Note: Currently LinesinkMaker does not do transformations
-    So input coordinate projections and output prj should be consistent
-    projection file for output shapefiles -->
+    ESRI projection file specifying the
+    projected coordinate reference system (CRS) for the model -->
     <prj>shps/Medford_nf.prj</prj>
     <!-- preprocess:
     Whether or not preprocessing is needed (requires arcpy) -->
