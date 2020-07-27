@@ -23,8 +23,6 @@ GlobalSettings:
   ScenResistance: Rlinesink
   # model length units (feet or meters)
   ComputationalUnits: feet
-  # units for the model basemaps (projected coordinate system)
-  BasemapUnits: meters
   # 
   chkScenario: True
   preproc: True  # whether or not to run preprocessing

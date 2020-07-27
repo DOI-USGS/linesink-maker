@@ -318,6 +318,7 @@ class LinesinkData:
         self.prj = None
         self.crs = None
         self.crs_str = None  # self.crs, in proj string format
+        self.pyproj_crs = None  # pyproj.CRS instance based on prj input
         self.farfield_buffer = None
         self.clip_farfield = None
         self.split_by_HUC = None
@@ -410,6 +411,7 @@ class LinesinkData:
         self.efp = open(self.error_reporting, 'w')
 
         # attributes
+        self.from_lss_xml = False
         self.df = pd.DataFrame() # working dataframe for translating NHDPlus data to linesink strings
         self.lss = pd.DataFrame() # dataframe of GFLOW linesink strings (with attributes)
         self.outsegs = pd.DataFrame()
@@ -425,39 +427,81 @@ class LinesinkData:
 
         # or create instance from a GFLOW LSS XML file
         elif GFLOW_lss_xml is not None:
+            self.from_lss_xml = True
             self.df = self.read_lss(GFLOW_lss_xml)
+            
+        # create a pyproj CRS instance
+        # set the CRS (basemap) length units
+        self.set_crs(prjfile=self.prj)
 
     def __eq__(self, other):
         """Test for equality to another linesink object."""
         if not isinstance(other, self.__class__):
             return False
+        exclude_attrs = ['_lsmaker_config_file_path',
+                         'crs',
+                         'crs_str',
+                         'inpars',
+                         'cfg',
+                         'efp',
+                         ]
+        # LinesinkData instances from lss xml won't have some attributes
+        # or some df columns that came from NHDPlus
+        compare_df_columns = slice(None)
+        if self.from_lss_xml or other.from_lss_xml:
+            # todo: expose default values that are being set on write of lss_xml
+            # (many of the columns in LinesinkData instance from lss xml aren't in
+            # LinesinkData instance that was created from scratch, because the variables
+            # are only being set in LinesinkData.write_lss method)
+            compare_df_columns = set(self.df.columns).intersection(other.df.columns)
+            # the geometries and coordinates won't be exactly the same
+            # explicitly compare the coordinates separately
+            compare_df_columns = compare_df_columns.difference({'geometry',
+                                                                'ls_coords',
+                                                                'width'
+                                                                })
         for k, v in self.__dict__.items():
             # items to skip
-             # todo: implement pyproj.CRS class to robustly compare CRSs
-            if k in ['_lsmaker_config_file_path', 
-                     'crs', 
-                     'crs_str',
-                     'inpars',
-                     'cfg',
-                     'efp'
-                     ]:
+            # todo: implement pyproj.CRS class to robustly compare CRSs
+            if k in exclude_attrs:
                 continue
+            elif self.from_lss_xml or other.from_lss_xml:
+                if k not in ('df', 'ComputationalUnits', 'BasemapUnits'):
+                    continue
             elif k not in other.__dict__:
                 return False
             elif type(v) == bool:
                 if not v == other.__dict__[k]:
                     return False
-            elif type(v) == pd.DataFrame:
+            elif k == 'df':
                 if len(v) == 0 and len(other.__dict__[k]) == 0:
                     continue
-                if not pd.testing.assert_frame_equal(v, other.__dict__[k]):
-                    return False 
+                try:
+                    df1 = v[compare_df_columns]
+                    df2 = other.__dict__[k][compare_df_columns]
+                    #
+                    pd.testing.assert_frame_equal(df1, df2)
+                    # compare the coordinates
+                    for dim in 0, 1:  # (x, y)
+                        x1 = [crd[dim] for line in v.ls_coords for crd in line]
+                        x2 = [crd[dim] for line in other.__dict__[k].ls_coords for crd in line]
+                        assert np.allclose(x1, x2)
+                    assert np.allclose(v.width.values, other.__dict__[k].width.values, rtol=0.01)
+                except:
+                    return False
+            elif type(v) == pd.DataFrame:
+                try:
+                    pd.testing.assert_frame_equal(v, other.__dict__[k])
+                except:
+                    return False
+
             elif v != other.__dict__[k]:
                 try:
                     if not np.allclose(v, other.__dict__[k]):
                         return False
                 except:
-                    return False
+                    continue
+                    #return False
             #elif type(v) in [str, int, float, dict, list]:
             #    if v != other.__dict__[k]:
             #        pass
@@ -495,7 +539,9 @@ class LinesinkData:
         self.global_streambed_thickness = self._get_xml_entry('global_streambed_thickness',
                                                               3, float)  # streambed thickness
         self.ComputationalUnits = self._get_xml_entry('ComputationalUnits', 'feet').lower() # 'feet' or 'meters'; for XML output file
-        self.BasemapUnits = self._get_xml_entry('BasemapUnits', 'meters').lower()
+        self.BasemapUnits = self._get_xml_entry('BasemapUnits', None)
+        if self.BasemapUnits is not None:
+            self.BasemapUnits = self.BasemapUnits.lower()
         # elevation units multiplier (from NHDPlus cm to model units)
         self.zmult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
 
@@ -731,7 +777,7 @@ class LinesinkData:
                 return default
             else:
                 raise ValueError('Nothing specified for {} in input XML file!'.format(XMLentry))
-
+            
     def _enforce_dtypes(self, df):
         """Ensure that dataframe column dtypes are correct."""
         for c in df.columns:
@@ -775,9 +821,61 @@ class LinesinkData:
         # converts text written in XML file to True or False flag
         if intxt.lower() == 'true':
             return True
+        elif intxt.lower() == 'none':
+            return
         else:
             return False
 
+    def set_crs(self, epsg=None, proj_str=None, prjfile=None):
+        """Set the projected coordinate reference system, and the BasemapUnits.
+        If no arguments are supplied, default to existing BasemapUnits.
+        
+        Parameters
+        ----------
+        epsg: int
+            EPSG code identifying Coordinate Reference System (CRS)
+            for features in df.geometry
+            (optional)
+        proj_str: str
+            proj_str string identifying CRS for features in df.geometry
+            (optional)
+        prjfile: str
+            File path to projection (.prj) file identifying CRS
+            for features in df.geometry
+            (optional)
+        
+        Returns
+        -------
+        sets the LinesinkData.pyproj_crs attribute.
+        """
+        args = any(arg for arg in (epsg, proj_str, prjfile))
+        pyproj_crs = None
+        if self.BasemapUnits is None or args:
+            if epsg is not None:
+                pyproj_crs = pyproj.CRS.from_epsg(epsg)
+            elif proj_str is not None:
+                pyproj_crs = pyproj.CRS.from_string(proj_str)
+            elif prjfile is not None:
+                with open(prjfile) as src:
+                    wkt = src.read()
+                pyproj_crs = pyproj.CRS.from_wkt(wkt)
+            # if possible, have pyproj try to find the closest
+            # authority name and code matching the crs
+            # so that input from epsg codes, proj strings, and prjfiles
+            # results in equal pyproj_crs instances
+            if pyproj_crs is not None:
+                try:
+                    authority = pyproj_crs.to_authority()
+                    if authority is not None:
+                        self.pyproj_crs = pyproj.CRS.from_user_input(pyproj_crs.to_authority())
+                    else:
+                        self.pyproj_crs = pyproj_crs
+                except:
+                    pass
+                units = pyproj_crs.axis_info[0].unit_name
+                translate_units = {'metre': 'meters'}
+                self.BasemapUnits = translate_units.get(units, units)
+            
     def preprocess(self, save=True):
         """
         This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and
@@ -1629,6 +1727,8 @@ class LinesinkData:
 
         # write shapefile of results
         # convert lists in dn and upcomid columns to strings (for writing to shp)
+        # clean up any dtypes that were altered from sloppy use of pandas
+        self._enforce_dtypes(df)
         self.df = df
         self.write_shapefile()
         self.efp.close()
@@ -1750,7 +1850,7 @@ class LinesinkData:
         comids = []
         for i, r in df.iterrows():
             try:
-                comids.append(int(r.Label.split()[0].strip()))
+                comids.append(r.Label.split()[0].strip())
             except ValueError:
                 comids.append(i)
         df.index = comids

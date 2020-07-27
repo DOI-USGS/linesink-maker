@@ -21,8 +21,6 @@ GlobalSettings:
   ScenResistance: Rlinesink
   # model length units (feet or meters)
   ComputationalUnits: feet
-  # units for the model basemaps (projected coordinate system)
-  BasemapUnits: meters
 
 ModelDomain:
   # polygon shapefile indicating the desired model extent

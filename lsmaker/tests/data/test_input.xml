@@ -14,7 +14,7 @@ Notes on linesinkMaker input:
     Note: Currently LinesinkMaker does not do transformations
     So input coordinate projections and output prj should be consistent
     projection file for output shapefiles -->
-    <prj>data/testarea.prj</prj>
+    <prj>testarea.prj</prj>
     <!-- preprocess:
     Whether or not preprocessing is needed (requires arcpy) -->
     <preprocess>False</preprocess>

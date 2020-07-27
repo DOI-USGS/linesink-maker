@@ -39,9 +39,7 @@ Notes on linesinkMaker input:
     <!-- ComputationalUnits: ('Feet' or 'Meters')
     model units-->
     <ComputationalUnits>Feet</ComputationalUnits>
-    <!-- BasemapUnits: ('Feet' or 'Meters')
-    Units of the model basemaps-->
-    <BasemapUnits>Meters</BasemapUnits>
+
 </GlobalSettings>
 
 <modelDomain>
