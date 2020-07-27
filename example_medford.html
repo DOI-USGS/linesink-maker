@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+g494d4f8 documentation</title>
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.post65.dev0+g65ddbae documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g494d4f8
+                0.post65.dev0+g65ddbae
               </div>
             
           
@@ -286,10 +286,10 @@
 64
 65
 66</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">GlobalSettings</span><span class="p">:</span>
-  <span class="c1"># full path to working folder where intermediate (preprocessed) files</span>
-  <span class="c1"># and output will be generated.</span>
+  <span class="c1"># file path where intermediate and output will be generated.</span>
   <span class="nt">working_dir</span><span class="p">:</span> <span class="s">&#39;.&#39;</span>
-  <span class="c1"># The projected coordinate reference system (CRS) for the model</span>
+  <span class="c1"># ESRI projection file specifying the</span>
+  <span class="c1"># projected coordinate reference system (CRS) for the model</span>
   <span class="nt">prj</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.prj</span>
   <span class="c1"># global resistance value to apply to all resistance LinesinkData</span>
   <span class="c1"># (c parameter in the GFLOW documentation)</span>
@@ -457,26 +457,18 @@
  99
 100
 101
-102
-103
-104
-105
-106</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">&lt;linesinkInput&gt;</span>
+102</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">&lt;linesinkInput&gt;</span>
 <span class="c">&lt;!--</span>
 <span class="c">Notes on linesinkMaker input:</span>
-<span class="c">    All shps should be in (same) model coordinate units (e.g. ft.)</span>
-<span class="c">    If model domain contains a major divide, need to merge relevant NHD datasets</span>
-<span class="c">        (e.g. 04 and 07) prior to running this script</span>
 <span class="c">    Put in paths to input/output files as-is (i.e. no double \)</span>
 <span class="c">--&gt;</span>
 <span class="nt">&lt;GlobalSettings&gt;</span>
     <span class="c">&lt;!-- working_dir:</span>
-<span class="c">    full path to working folder where intermediate and output will be generated. --&gt;</span>
+<span class="c">    file path where intermediate and output will be generated. --&gt;</span>
     <span class="nt">&lt;working_dir&gt;&lt;/working_dir&gt;</span>
     <span class="c">&lt;!-- prj:</span>
-<span class="c">    Note: Currently LinesinkMaker does not do transformations</span>
-<span class="c">    So input coordinate projections and output prj should be consistent</span>
-<span class="c">    projection file for output shapefiles --&gt;</span>
+<span class="c">    ESRI projection file specifying the</span>
+<span class="c">    projected coordinate reference system (CRS) for the model --&gt;</span>
     <span class="nt">&lt;prj&gt;</span>shps/Medford_nf.prj<span class="nt">&lt;/prj&gt;</span>
     <span class="c">&lt;!-- preprocess:</span>
 <span class="c">    Whether or not preprocessing is needed (requires arcpy) --&gt;</span>
@@ -576,17 +568,11 @@
 2
 3
 4
-5
-6
-7
-8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">lsmaker</span>
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">lsmaker</span>
 
 <span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.yml&#39;</span>
 <span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
-
-<span class="n">ls</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">ls</span><span class="o">.</span><span class="n">make_linesinks</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="s1">&#39;preprocessed/lines.shp&#39;</span><span class="p">)</span>
+<span class="n">ls</span><span class="o">.</span><span class="n">make_linesinks</span><span class="p">()</span>
 </pre></div>
 </td></tr></table></div>
 </div>
