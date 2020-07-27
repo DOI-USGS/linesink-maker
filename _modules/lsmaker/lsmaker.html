@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+g7e4d82d documentation</title>
+  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+g494d4f8 documentation</title>
   
 
   
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g7e4d82d
+                0.post65.dev0+g494d4f8
               </div>
             
           
@@ -497,6 +497,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">prj</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">crs_str</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># self.crs, in proj string format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pyproj_crs</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pyproj.CRS instance based on prj input</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">farfield_buffer</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clip_farfield</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">split_by_HUC</span> <span class="o">=</span> <span class="kc">None</span>
@@ -589,6 +590,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
 
         <span class="c1"># attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_lss_xml</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="c1"># working dataframe for translating NHDPlus data to linesink strings</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lss</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="c1"># dataframe of GFLOW linesink strings (with attributes)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outsegs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
@@ -604,39 +606,81 @@
 
         <span class="c1"># or create instance from a GFLOW LSS XML file</span>
         <span class="k">elif</span> <span class="n">GFLOW_lss_xml</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_lss_xml</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_lss</span><span class="p">(</span><span class="n">GFLOW_lss_xml</span><span class="p">)</span>
+            
+        <span class="c1"># create a pyproj CRS instance</span>
+        <span class="c1"># set the CRS (basemap) length units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">prjfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prj</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test for equality to another linesink object.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">exclude_attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;_lsmaker_config_file_path&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;crs&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;crs_str&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;inpars&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;cfg&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;efp&#39;</span><span class="p">,</span>
+                         <span class="p">]</span>
+        <span class="c1"># LinesinkData instances from lss xml won&#39;t have some attributes</span>
+        <span class="c1"># or some df columns that came from NHDPlus</span>
+        <span class="n">compare_df_columns</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_lss_xml</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">from_lss_xml</span><span class="p">:</span>
+            <span class="c1"># todo: expose default values that are being set on write of lss_xml</span>
+            <span class="c1"># (many of the columns in LinesinkData instance from lss xml aren&#39;t in</span>
+            <span class="c1"># LinesinkData instance that was created from scratch, because the variables</span>
+            <span class="c1"># are only being set in LinesinkData.write_lss method)</span>
+            <span class="n">compare_df_columns</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="c1"># the geometries and coordinates won&#39;t be exactly the same</span>
+            <span class="c1"># explicitly compare the coordinates separately</span>
+            <span class="n">compare_df_columns</span> <span class="o">=</span> <span class="n">compare_df_columns</span><span class="o">.</span><span class="n">difference</span><span class="p">({</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span>
+                                                                <span class="s1">&#39;ls_coords&#39;</span><span class="p">,</span>
+                                                                <span class="s1">&#39;width&#39;</span>
+                                                                <span class="p">})</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="c1"># items to skip</span>
-             <span class="c1"># todo: implement pyproj.CRS class to robustly compare CRSs</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;_lsmaker_config_file_path&#39;</span><span class="p">,</span> 
-                     <span class="s1">&#39;crs&#39;</span><span class="p">,</span> 
-                     <span class="s1">&#39;crs_str&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;inpars&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;cfg&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;efp&#39;</span>
-                     <span class="p">]:</span>
+            <span class="c1"># todo: implement pyproj.CRS class to robustly compare CRSs</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">exclude_attrs</span><span class="p">:</span>
                 <span class="k">continue</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_lss_xml</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="n">from_lss_xml</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;df&#39;</span><span class="p">,</span> <span class="s1">&#39;ComputationalUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;BasemapUnits&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
             <span class="k">elif</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
             <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">v</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
                     <span class="k">return</span> <span class="kc">False</span>
-            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;df&#39;</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">continue</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
-                    <span class="k">return</span> <span class="kc">False</span> 
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">df1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">compare_df_columns</span><span class="p">]</span>
+                    <span class="n">df2</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">compare_df_columns</span><span class="p">]</span>
+                    <span class="c1">#</span>
+                    <span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">df1</span><span class="p">,</span> <span class="n">df2</span><span class="p">)</span>
+                    <span class="c1"># compare the coordinates</span>
+                    <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># (x, y)</span>
+                        <span class="n">x1</span> <span class="o">=</span> <span class="p">[</span><span class="n">crd</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">ls_coords</span> <span class="k">for</span> <span class="n">crd</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]</span>
+                        <span class="n">x2</span> <span class="o">=</span> <span class="p">[</span><span class="n">crd</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">ls_coords</span> <span class="k">for</span> <span class="n">crd</span> <span class="ow">in</span> <span class="n">line</span><span class="p">]</span>
+                        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">width</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">width</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+
             <span class="k">elif</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
                         <span class="k">return</span> <span class="kc">False</span>
                 <span class="k">except</span><span class="p">:</span>
-                    <span class="k">return</span> <span class="kc">False</span>
+                    <span class="k">continue</span>
+                    <span class="c1">#return False</span>
             <span class="c1">#elif type(v) in [str, int, float, dict, list]:</span>
             <span class="c1">#    if v != other.__dict__[k]:</span>
             <span class="c1">#        pass</span>
@@ -674,7 +718,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">global_streambed_thickness</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;global_streambed_thickness&#39;</span><span class="p">,</span>
                                                               <span class="mi">3</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>  <span class="c1"># streambed thickness</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;ComputationalUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;feet&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="c1"># &#39;feet&#39; or &#39;meters&#39;; for XML output file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;BasemapUnits&#39;</span><span class="p">,</span> <span class="s1">&#39;meters&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;BasemapUnits&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="c1"># elevation units multiplier (from NHDPlus cm to model units)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zmult</span> <span class="o">=</span> <span class="mf">0.03280839895013123</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ComputationalUnits</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;feet&#39;</span> <span class="k">else</span> <span class="mf">0.01</span>
 
@@ -910,7 +956,7 @@
                 <span class="k">return</span> <span class="n">default</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Nothing specified for </span><span class="si">{}</span><span class="s1"> in input XML file!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">XMLentry</span><span class="p">))</span>
-
+            
     <span class="k">def</span> <span class="nf">_enforce_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Ensure that dataframe column dtypes are correct.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
@@ -954,9 +1000,61 @@
         <span class="c1"># converts text written in XML file to True or False flag</span>
         <span class="k">if</span> <span class="n">intxt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">intxt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
+<div class="viewcode-block" id="LinesinkData.set_crs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_crs">[docs]</a>    <span class="k">def</span> <span class="nf">set_crs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prjfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the projected coordinate reference system, and the BasemapUnits.</span>
+<span class="sd">        If no arguments are supplied, default to existing BasemapUnits.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        epsg: int</span>
+<span class="sd">            EPSG code identifying Coordinate Reference System (CRS)</span>
+<span class="sd">            for features in df.geometry</span>
+<span class="sd">            (optional)</span>
+<span class="sd">        proj_str: str</span>
+<span class="sd">            proj_str string identifying CRS for features in df.geometry</span>
+<span class="sd">            (optional)</span>
+<span class="sd">        prjfile: str</span>
+<span class="sd">            File path to projection (.prj) file identifying CRS</span>
+<span class="sd">            for features in df.geometry</span>
+<span class="sd">            (optional)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        sets the LinesinkData.pyproj_crs attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">(</span><span class="n">epsg</span><span class="p">,</span> <span class="n">proj_str</span><span class="p">,</span> <span class="n">prjfile</span><span class="p">))</span>
+        <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">epsg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_epsg</span><span class="p">(</span><span class="n">epsg</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">proj_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_str</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">prjfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">prjfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+                    <span class="n">wkt</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_wkt</span><span class="p">(</span><span class="n">wkt</span><span class="p">)</span>
+            <span class="c1"># if possible, have pyproj try to find the closest</span>
+            <span class="c1"># authority name and code matching the crs</span>
+            <span class="c1"># so that input from epsg codes, proj strings, and prjfiles</span>
+            <span class="c1"># results in equal pyproj_crs instances</span>
+            <span class="k">if</span> <span class="n">pyproj_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">authority</span> <span class="o">=</span> <span class="n">pyproj_crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">authority</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">pyproj_crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">())</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj_crs</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="n">pyproj_crs</span><span class="o">.</span><span class="n">axis_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">unit_name</span>
+                <span class="n">translate_units</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;metre&#39;</span><span class="p">:</span> <span class="s1">&#39;meters&#39;</span><span class="p">}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="n">translate_units</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span></div>
+            
 <div class="viewcode-block" id="LinesinkData.preprocess"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and</span>
@@ -1808,6 +1906,8 @@
 
         <span class="c1"># write shapefile of results</span>
         <span class="c1"># convert lists in dn and upcomid columns to strings (for writing to shp)</span>
+        <span class="c1"># clean up any dtypes that were altered from sloppy use of pandas</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enforce_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_shapefile</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1929,7 +2029,7 @@
         <span class="n">comids</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">comids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Label</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+                <span class="n">comids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">Label</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="n">comids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">comids</span>
@@ -2075,7 +2175,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 23, 2020.
+        Last updated on Jul 27, 2020.
       </span>
 
     </p>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API reference &mdash; linesink-maker 0.post65.dev0+g7e4d82d documentation</title>
+  <title>API reference &mdash; linesink-maker 0.post65.dev0+g494d4f8 documentation</title>
   
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g7e4d82d
+                0.post65.dev0+g494d4f8
               </div>
             
           
@@ -325,6 +325,35 @@ Flowlines and Waterbodies datasets. The following edits are made to the Flowline
 <dd></dd></dl>
 
 <dl class="py method">
+<dt id="lsmaker.lsmaker.LinesinkData.set_crs">
+<code class="sig-name descname">set_crs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epsg</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">proj_str</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prjfile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#LinesinkData.set_crs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.LinesinkData.set_crs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the projected coordinate reference system, and the BasemapUnits.
+If no arguments are supplied, default to existing BasemapUnits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>epsg: int</strong></dt><dd><p>EPSG code identifying Coordinate Reference System (CRS)
+for features in df.geometry
+(optional)</p>
+</dd>
+<dt><strong>proj_str: str</strong></dt><dd><p>proj_str string identifying CRS for features in df.geometry
+(optional)</p>
+</dd>
+<dt><strong>prjfile: str</strong></dt><dd><p>File path to projection (.prj) file identifying CRS
+for features in df.geometry
+(optional)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>sets the LinesinkData.pyproj_crs attribute.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="lsmaker.lsmaker.LinesinkData.setup_linesink_lakes">
 <code class="sig-name descname">setup_linesink_lakes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#LinesinkData.setup_linesink_lakes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.LinesinkData.setup_linesink_lakes" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -530,7 +559,7 @@ described by Feinstein et al (2010), Appendix 2, p 266.</p>
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 23, 2020.
+        Last updated on Jul 27, 2020.
       </span>
 
     </p>
