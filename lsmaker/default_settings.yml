@@ -3,7 +3,7 @@ GlobalSettings:
   # and output will be generated.
   working_dir: '.'
   # The projected coordinate reference system (CRS) for the model
-  prj: shps/Medford_nf.prj
+  prj: 
   # elevation units multiplier (from NHDPlus cm to model units)
   zmult: 0.03280839895013123
   # global resistance value to apply to all resistance LinesinkData
@@ -38,9 +38,9 @@ ModelDomain:
   farfield_buffer: 15000
   # polygon of the model nearfield area, where LinesinkData will be given
   # resistance and routed
-  routed_area: shps/Medford_nf.shp
+  routed_area: 
   # polygon of area of focus within routed area (optional)
-  nearfield: shps/Medford_unit.shp
+  nearfield: 
   # option to clip linestrings that intersect the outer edge of the farfield area
   clip_farfield: False
   # options to write a separate LSS XML file for each polgyon in the HUC_shp shapefile
@@ -51,10 +51,10 @@ ModelDomain:
   HUC_name_field: False
 
 NHDFiles:
-  flowlines: shps/Medford_flowlines.shp
-  elevslope: shps/elevslope.dbf
-  PlusFlowVAA: shps/PlusFlowlineVAA.dbf
-  waterbodies: shps/Medford_waterbodies.shp
+  flowlines: 
+  elevslope: 
+  PlusFlowVAA: 
+  waterbodies: 
 
 PreprocessedFiles:
   DEM:
@@ -96,7 +96,7 @@ Simplification:
   asum_thresh_ff: 0
 
 Outputs:
-  outfile_basename: Medford
+  outfile_basename: Model
   error_reporting: linesinkMaker_errors.txt
 
 
