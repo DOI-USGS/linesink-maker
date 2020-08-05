@@ -72,6 +72,10 @@ Simplification:
   routed_area_tolerance: 100
   # maximum distance a simplified line can deviate from the original linework
   farfield_tolerance: 300
+  # minimum stream order to retain in the nearfield -->
+  min_nearfield_order: 1
+  # minimum stream order to retain in the routed area -->
+  min_routed_area_order: 1
   # minimum stream order to retain in farfield -->
   min_farfield_order: 2
   # minimum sized waterbodies to retain in routed area (km2)

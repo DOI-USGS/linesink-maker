@@ -331,6 +331,8 @@ class LinesinkData:
         self.nearfield_tolerance = None
         self.routed_area_tolerance = None
         self.farfield_tolerance = None
+        self.min_nearfield_order = None
+        self.min_routed_area_order = None
         self.min_farfield_order = None
         self.min_nearfield_wb_size = None
         self.min_waterbody_size = None
@@ -431,6 +433,10 @@ class LinesinkData:
             self.from_lss_xml = True
             self.df = self.read_lss(GFLOW_lss_xml)
             
+        # nearfield can't be coarser than the routed area
+        if infile is not None:
+            self.min_nearfield_order = min((self.min_nearfield_order, 
+                                            self.min_routed_area_order))
         # create a pyproj CRS instance
         # set the CRS (basemap) length units
         self.set_crs(prjfile=self.prj)
@@ -578,6 +584,8 @@ class LinesinkData:
         self.routed_area_tolerance = self._get_xml_entry('routed_area_tolerance', 100, int)
         self.farfield_tolerance = self._get_xml_entry('farfield_tolerance', 300, int)
         self.min_farfield_order = self._get_xml_entry('min_farfield_order', 2, int)
+        self.min_nearfield_order = self._get_xml_entry('min_nearfield_order', 1, int)
+        self.min_routed_area_order = self._get_xml_entry('min_routed_area_order', 1, int)
         self.min_nearfield_wb_size = self._get_xml_entry('min_nearfield_waterbody_size', 1.0, float)
         self.min_waterbody_size = self._get_xml_entry('min_waterbody_size', 1.0, float)
         self.min_farfield_wb_size = self._get_xml_entry('min_farfield_waterbody_size',
@@ -1121,6 +1129,19 @@ class LinesinkData:
             criteria = ~df.farfield.values | df.farfield.values & (df.ArbolateSu.values > self.asum_thresh_ff)
             df = df.loc[criteria].copy()
 
+        if self.min_nearfield_order > 1.:
+            print('removing nearfield streams lower than {} order...'.format(self.min_nearfield_order))
+            # retain all streams in the nearfield of order > min_farfield_order
+            criteria = ~df.nearfield.values | (df.nearfield.values & (df.StreamOrde.values >= self.min_nearfield_order))
+            df = df[criteria].copy()
+        
+        if self.min_routed_area_order > 1.:
+            print('removing streams in the routed area of lower than {} order...'.format(self.min_routed_area_order))
+            # retain all streams in the nearfield of order > min_farfield_order
+            routed = df.routed.values & ~df.nearfield.values
+            criteria = ~routed | (routed & (df.StreamOrde.values >= self.min_routed_area_order))
+            df = df[criteria].copy()
+            
         if self.min_farfield_order > 1.:
             print('removing farfield streams lower than {} order...'.format(self.min_farfield_order))
             # retain all streams in the nearfield or in the farfield and of order > min_farfield_order
@@ -1576,19 +1597,23 @@ class LinesinkData:
         df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
         return df
 
-    def make_linesinks(self, shp=None):
+    def make_linesinks(self, reuse_preprocessed_lines=False,
+                       shp=None):
         self.efp.write('\nMaking the lines...\n')
 
         if shp is None:
             shp = self.preprocessed_lines
 
-        try:
-            self.df = gisutils.shp2df(shp, index='COMID',
-                                   index_dtype=self.int_dtype,
-                                   true_values=['True'],
-                                   false_values=['False'])
-            self._enforce_dtypes(self.df)
-        except:
+        if reuse_preprocessed_lines:
+            try:
+                self.df = gisutils.shp2df(shp, index='COMID',
+                                    index_dtype=self.int_dtype,
+                                    true_values=['True'],
+                                    false_values=['False'])
+                self._enforce_dtypes(self.df)
+            except:
+                self.preprocess(save=True)
+        else:
             self.preprocess(save=True)
 
         # enforce integers columns
