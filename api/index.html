@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>API reference &mdash; linesink-maker 0.post65.dev0+g65ddbae documentation</title>
+  <title>API reference &mdash; linesink-maker 0.post64.dev0+g621c6d6 documentation</title>
   
 
   
@@ -34,14 +34,16 @@
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Release History" href="../release-history.html" />
-    <link rel="prev" title="Default configuration settings for Linesink-maker" href="../config-file-defaults.html" /> 
+    <link rel="next" title="Default configuration settings for Linesink-maker" href="../config-file-defaults.html" />
+    <link rel="prev" title="Input requirements" href="../usage.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -65,7 +67,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g65ddbae
+                0.post64.dev0+g621c6d6
               </div>
             
           
@@ -104,12 +106,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code reference</span></p>
+<p class="caption"><span class="caption-text">Reference</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#"> Modules</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Release history</span></p>
-<ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"> Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../config-file-defaults.html"> Configuration defaults</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release-history.html"> Release History</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer</span></p>
@@ -267,7 +267,7 @@ projected in the destination coordinate system.</p>
 
 <dl class="py method">
 <dt id="lsmaker.lsmaker.LinesinkData.make_linesinks">
-<code class="sig-name descname">make_linesinks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#LinesinkData.make_linesinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.LinesinkData.make_linesinks" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">make_linesinks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">reuse_preprocessed_lines</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">shp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/lsmaker/lsmaker.html#LinesinkData.make_linesinks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lsmaker.lsmaker.LinesinkData.make_linesinks" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -546,10 +546,10 @@ described by Feinstein et al (2010), Appendix 2, p 266.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../release-history.html" class="btn btn-neutral float-right" title="Release History" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../config-file-defaults.html" class="btn btn-neutral float-right" title="Default configuration settings for Linesink-maker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../config-file-defaults.html" class="btn btn-neutral float-left" title="Default configuration settings for Linesink-maker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../usage.html" class="btn btn-neutral float-left" title="Input requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -559,7 +559,7 @@ described by Feinstein et al (2010), Appendix 2, p 266.</p>
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 27, 2020.
+        Last updated on Aug 06, 2020.
       </span>
 
     </p>

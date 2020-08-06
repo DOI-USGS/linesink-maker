@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Input requirements &mdash; linesink-maker 0.post65.dev0+g65ddbae documentation</title>
+  <title>Input requirements &mdash; linesink-maker 0.post64.dev0+g621c6d6 documentation</title>
   
 
   
@@ -34,13 +34,15 @@
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Default configuration settings for Linesink-maker" href="config-file-defaults.html" />
+    <link rel="next" title="API reference" href="api/index.html" />
     <link rel="prev" title="Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation" href="notebooks/GFLOW_results_visualization.html" /> 
 </head>
 
@@ -65,7 +67,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g65ddbae
+                0.post64.dev0+g621c6d6
               </div>
             
           
@@ -105,20 +107,15 @@
 <li class="toctree-l2"><a class="reference internal" href="#other-inputs">Other inputs</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="config-file-defaults.html">Configuration defaults</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#running-linesink-maker">Running Linesink-maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code reference</span></p>
+<p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="api/index.html"> Modules</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Release history</span></p>
-<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html"> Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-file-defaults.html"> Configuration defaults</a></li>
 <li class="toctree-l1"><a class="reference internal" href="release-history.html"> Release History</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer</span></p>
@@ -245,17 +242,12 @@ downloads. The NHDPlus files are specified in the YAML input file under the <cod
 </div>
 <div class="section" id="other-inputs">
 <h2>Other inputs<a class="headerlink" href="#other-inputs" title="Permalink to this headline">¶</a></h2>
-<p>Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the YAML input file. See the <a class="reference external" href="https://aleaf.github.io/linesink-maker/medford.html">Medford National Forest Unit example</a> input file and <a class="reference external" href="https://aleaf.github.io/linesink-maker/config-file-defaults.html">default configuration settings</a> for more details.</p>
+<p>Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the YAML input file.</p>
 </div>
 </div>
 <div class="section" id="creating-the-yaml-input-file-for-linesink-maker">
 <h1>Creating the YAML Input file for Linesink-maker<a class="headerlink" href="#creating-the-yaml-input-file-for-linesink-maker" title="Permalink to this headline">¶</a></h1>
-<p>The input files, and other input settings such as default resistance and line simplification tolerances, are specified in a configuration file using the <a class="reference external" href="yaml.org">YAML format</a>, which maps <code class="docutils literal notranslate"><span class="pre">key:</span> <span class="pre">value</span></code> pairs similar to a Python dictionary. See the example folders for templates with input instructions (e.g. <strong>Nicolet_lines.yml</strong>). An editor that supports YAML code highlighting, such as <a class="reference external" href="https://code.visualstudio.com/">VS Code</a>, <a class="reference external" href="https://www.barebones.com/products/bbedit/">BBEdit</a> or <a class="reference external" href="https://www.sublimetext.com/">Sublime Text</a> is highly recommended for working with this file.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="config-file-defaults.html">Configuration defaults</a></li>
-</ul>
-</div>
+<p>The above inputs and other settings are specified in a configuration file using the <a class="reference external" href="yaml.org">YAML format</a>, which maps <code class="docutils literal notranslate"><span class="pre">key:</span> <span class="pre">value</span></code> pairs similar to a Python dictionary. See the <a class="reference internal" href="example_medford.html#medford-national-forest-unit"><span class="std std-ref">Medford National Forest Unit</span></a> example for more details for more details on how to make a configuration file. An editor that supports YAML code highlighting, such as <a class="reference external" href="https://code.visualstudio.com/">VS Code</a>, <a class="reference external" href="https://www.barebones.com/products/bbedit/">BBEdit</a> or <a class="reference external" href="https://www.sublimetext.com/">Sublime Text</a> is highly recommended. A <a class="reference internal" href="config-file-defaults.html#default-configuration-settings-for-linesink-maker"><span class="std std-ref">default configuration file</span></a> contains a more comprehensive listing of settings and default values that are used for any variables not specified by the user.</p>
 </div>
 <div class="section" id="running-linesink-maker">
 <h1>Running Linesink-maker<a class="headerlink" href="#running-linesink-maker" title="Permalink to this headline">¶</a></h1>
@@ -293,7 +285,7 @@ downloads. The NHDPlus files are specified in the YAML input file under the <cod
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="config-file-defaults.html" class="btn btn-neutral float-right" title="Default configuration settings for Linesink-maker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="api/index.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="notebooks/GFLOW_results_visualization.html" class="btn btn-neutral float-left" title="Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -306,7 +298,7 @@ downloads. The NHDPlus files are specified in the YAML input file under the <cod
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 27, 2020.
+        Last updated on Aug 06, 2020.
       </span>
 
     </p>

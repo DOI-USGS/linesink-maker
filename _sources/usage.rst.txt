@@ -31,18 +31,12 @@ Linesink-maker uses the line simplification algorithm in the shapely package to 
 
 Other inputs
 +++++++++++++++++++++++++++++++++++++++
-Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the YAML input file. See the `Medford National Forest Unit example <https://aleaf.github.io/linesink-maker/medford.html>`_ input file and `default configuration settings <https://aleaf.github.io/linesink-maker/config-file-defaults.html>`_ for more details.
+Other options, such as minimum lake size and minimum stream order to retain in the model farfield, may be specified in the YAML input file. 
 
 
 Creating the YAML Input file for Linesink-maker
 ------------------------------------------------
-The input files, and other input settings such as default resistance and line simplification tolerances, are specified in a configuration file using the `YAML format <yaml.org>`_, which maps ``key: value`` pairs similar to a Python dictionary. See the example folders for templates with input instructions (e.g. **Nicolet_lines.yml**). An editor that supports YAML code highlighting, such as `VS Code <https://code.visualstudio.com/>`_, `BBEdit <https://www.barebones.com/products/bbedit/>`_ or `Sublime Text <https://www.sublimetext.com/>`_ is highly recommended for working with this file. 
-
-.. toctree::
-   :maxdepth: 1
-
-   Configuration defaults <config-file-defaults>
-
+The above inputs and other settings are specified in a configuration file using the `YAML format <yaml.org>`_, which maps ``key: value`` pairs similar to a Python dictionary. See the :ref:`Medford National Forest Unit` example for more details for more details on how to make a configuration file. An editor that supports YAML code highlighting, such as `VS Code <https://code.visualstudio.com/>`_, `BBEdit <https://www.barebones.com/products/bbedit/>`_ or `Sublime Text <https://www.sublimetext.com/>`_ is highly recommended. A :ref:`default configuration file <Default configuration settings for Linesink-maker>` contains a more comprehensive listing of settings and default values that are used for any variables not specified by the user.
 
 
 Running Linesink-maker

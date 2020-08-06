@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post65.dev0+g65ddbae documentation</title>
+  <title>lsmaker.lsmaker &mdash; linesink-maker 0.post64.dev0+g621c6d6 documentation</title>
   
 
   
@@ -34,6 +34,8 @@
         <script src="../../_static/clipboard.min.js"></script>
         <script src="../../_static/copybutton.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -63,7 +65,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g65ddbae
+                0.post64.dev0+g621c6d6
               </div>
             
           
@@ -102,12 +104,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code reference</span></p>
+<p class="caption"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html"> Modules</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Release history</span></p>
-<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html"> Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../config-file-defaults.html"> Configuration defaults</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../release-history.html"> Release History</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer</span></p>
@@ -510,6 +510,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nearfield_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">routed_area_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">farfield_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_routed_area_order</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_order</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_wb_size</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_waterbody_size</span> <span class="o">=</span> <span class="kc">None</span>
@@ -610,6 +612,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">from_lss_xml</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_lss</span><span class="p">(</span><span class="n">GFLOW_lss_xml</span><span class="p">)</span>
             
+        <span class="c1"># nearfield can&#39;t be coarser than the routed area</span>
+        <span class="k">if</span> <span class="n">infile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">min_routed_area_order</span><span class="p">))</span>
         <span class="c1"># create a pyproj CRS instance</span>
         <span class="c1"># set the CRS (basemap) length units</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_crs</span><span class="p">(</span><span class="n">prjfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prj</span><span class="p">)</span>
@@ -757,6 +763,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">routed_area_tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;routed_area_tolerance&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">farfield_tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;farfield_tolerance&#39;</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;min_farfield_order&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;min_nearfield_order&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_routed_area_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;min_routed_area_order&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_wb_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;min_nearfield_waterbody_size&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_waterbody_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;min_waterbody_size&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_wb_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_xml_entry</span><span class="p">(</span><span class="s1">&#39;min_farfield_waterbody_size&#39;</span><span class="p">,</span>
@@ -1300,6 +1308,19 @@
             <span class="n">criteria</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">farfield</span><span class="o">.</span><span class="n">values</span> <span class="o">|</span> <span class="n">df</span><span class="o">.</span><span class="n">farfield</span><span class="o">.</span><span class="n">values</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">ArbolateSu</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">asum_thresh_ff</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">criteria</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;removing nearfield streams lower than </span><span class="si">{}</span><span class="s1"> order...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span><span class="p">))</span>
+            <span class="c1"># retain all streams in the nearfield of order &gt; min_farfield_order</span>
+            <span class="n">criteria</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">nearfield</span><span class="o">.</span><span class="n">values</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">nearfield</span><span class="o">.</span><span class="n">values</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">StreamOrde</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_nearfield_order</span><span class="p">))</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">criteria</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_routed_area_order</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;removing streams in the routed area of lower than </span><span class="si">{}</span><span class="s1"> order...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_routed_area_order</span><span class="p">))</span>
+            <span class="c1"># retain all streams in the nearfield of order &gt; min_farfield_order</span>
+            <span class="n">routed</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">routed</span><span class="o">.</span><span class="n">values</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">nearfield</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">criteria</span> <span class="o">=</span> <span class="o">~</span><span class="n">routed</span> <span class="o">|</span> <span class="p">(</span><span class="n">routed</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">StreamOrde</span><span class="o">.</span><span class="n">values</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_routed_area_order</span><span class="p">))</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">criteria</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_order</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;removing farfield streams lower than </span><span class="si">{}</span><span class="s1"> order...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_farfield_order</span><span class="p">))</span>
             <span class="c1"># retain all streams in the nearfield or in the farfield and of order &gt; min_farfield_order</span>
@@ -1755,19 +1776,23 @@
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;dncomid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">d</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">dncomid</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.make_linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.make_linesinks">[docs]</a>    <span class="k">def</span> <span class="nf">make_linesinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.make_linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.make_linesinks">[docs]</a>    <span class="k">def</span> <span class="nf">make_linesinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_preprocessed_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">shp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Making the lines...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">shp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">shp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_lines</span>
 
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">gisutils</span><span class="o">.</span><span class="n">shp2df</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s1">&#39;COMID&#39;</span><span class="p">,</span>
-                                   <span class="n">index_dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
-                                   <span class="n">true_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;True&#39;</span><span class="p">],</span>
-                                   <span class="n">false_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;False&#39;</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_enforce_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">reuse_preprocessed_lines</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">gisutils</span><span class="o">.</span><span class="n">shp2df</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s1">&#39;COMID&#39;</span><span class="p">,</span>
+                                    <span class="n">index_dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">,</span>
+                                    <span class="n">true_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;True&#39;</span><span class="p">],</span>
+                                    <span class="n">false_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;False&#39;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_enforce_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># enforce integers columns</span>
@@ -2183,7 +2208,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 27, 2020.
+        Last updated on Aug 06, 2020.
       </span>
 
     </p>

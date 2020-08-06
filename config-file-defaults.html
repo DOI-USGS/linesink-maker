@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Default configuration settings for Linesink-maker &mdash; linesink-maker 0.post65.dev0+g65ddbae documentation</title>
+  <title>Default configuration settings for Linesink-maker &mdash; linesink-maker 0.post64.dev0+g621c6d6 documentation</title>
   
 
   
@@ -34,14 +34,16 @@
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API reference" href="api/index.html" />
-    <link rel="prev" title="Input requirements" href="usage.html" /> 
+    <link rel="next" title="Release History" href="release-history.html" />
+    <link rel="prev" title="API reference" href="api/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -65,7 +67,7 @@
             
             
               <div class="version">
-                0.post65.dev0+g65ddbae
+                0.post64.dev0+g621c6d6
               </div>
             
           
@@ -97,22 +99,17 @@
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Usage</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Input requirements</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Configuration defaults</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesink-maker">Running Linesink-maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Code reference</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="api/index.html"> Modules</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Release history</span></p>
-<ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="api/index.html"> Code Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#"> Configuration defaults</a></li>
 <li class="toctree-l1"><a class="reference internal" href="release-history.html"> Release History</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Developer</span></p>
@@ -163,8 +160,6 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="usage.html">Input requirements</a> &raquo;</li>
         
       <li>Default configuration settings for Linesink-maker</li>
     
@@ -311,12 +306,16 @@
  97
  98
  99
-100</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">GlobalSettings</span><span class="p">:</span>
+100
+101
+102
+103
+104</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nt">GlobalSettings</span><span class="p">:</span>
   <span class="c1"># full path to working folder where intermediate (preprocessed) files</span>
   <span class="c1"># and output will be generated.</span>
   <span class="nt">working_dir</span><span class="p">:</span> <span class="s">&#39;.&#39;</span>
   <span class="c1"># The projected coordinate reference system (CRS) for the model</span>
-  <span class="nt">prj</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.prj</span>
+  <span class="nt">prj</span><span class="p">:</span> 
   <span class="c1"># elevation units multiplier (from NHDPlus cm to model units)</span>
   <span class="nt">zmult</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0.03280839895013123</span>
   <span class="c1"># global resistance value to apply to all resistance LinesinkData</span>
@@ -351,9 +350,9 @@
   <span class="nt">farfield_buffer</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">15000</span>
   <span class="c1"># polygon of the model nearfield area, where LinesinkData will be given</span>
   <span class="c1"># resistance and routed</span>
-  <span class="nt">routed_area</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.shp</span>
+  <span class="nt">routed_area</span><span class="p">:</span> 
   <span class="c1"># polygon of area of focus within routed area (optional)</span>
-  <span class="nt">nearfield</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
+  <span class="nt">nearfield</span><span class="p">:</span> 
   <span class="c1"># option to clip linestrings that intersect the outer edge of the farfield area</span>
   <span class="nt">clip_farfield</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
   <span class="c1"># options to write a separate LSS XML file for each polgyon in the HUC_shp shapefile</span>
@@ -364,10 +363,10 @@
   <span class="nt">HUC_name_field</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">False</span>
 
 <span class="nt">NHDFiles</span><span class="p">:</span>
-  <span class="nt">flowlines</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_flowlines.shp</span>
-  <span class="nt">elevslope</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/elevslope.dbf</span>
-  <span class="nt">PlusFlowVAA</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/PlusFlowlineVAA.dbf</span>
-  <span class="nt">waterbodies</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">shps/Medford_waterbodies.shp</span>
+  <span class="nt">flowlines</span><span class="p">:</span> 
+  <span class="nt">elevslope</span><span class="p">:</span> 
+  <span class="nt">PlusFlowVAA</span><span class="p">:</span> 
+  <span class="nt">waterbodies</span><span class="p">:</span> 
 
 <span class="nt">PreprocessedFiles</span><span class="p">:</span>
   <span class="nt">DEM</span><span class="p">:</span>
@@ -385,6 +384,10 @@
   <span class="nt">routed_area_tolerance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">100</span>
   <span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
   <span class="nt">farfield_tolerance</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">300</span>
+  <span class="c1"># minimum stream order to retain in the nearfield --&gt;</span>
+  <span class="nt">min_nearfield_order</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
+  <span class="c1"># minimum stream order to retain in the routed area --&gt;</span>
+  <span class="nt">min_routed_area_order</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">1</span>
   <span class="c1"># minimum stream order to retain in farfield --&gt;</span>
   <span class="nt">min_farfield_order</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">2</span>
   <span class="c1"># minimum sized waterbodies to retain in routed area (km2)</span>
@@ -409,7 +412,7 @@
   <span class="nt">asum_thresh_ff</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
 
 <span class="nt">Outputs</span><span class="p">:</span>
-  <span class="nt">outfile_basename</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Medford</span>
+  <span class="nt">outfile_basename</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Model</span>
   <span class="nt">error_reporting</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">linesinkMaker_errors.txt</span>
 </pre></div>
 </td></tr></table></div>
@@ -423,10 +426,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api/index.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="release-history.html" class="btn btn-neutral float-right" title="Release History" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="usage.html" class="btn btn-neutral float-left" title="Input requirements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="api/index.html" class="btn btn-neutral float-left" title="API reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -436,7 +439,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jul 27, 2020.
+        Last updated on Aug 06, 2020.
       </span>
 
     </p>
