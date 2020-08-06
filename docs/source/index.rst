@@ -25,14 +25,10 @@ Rapid creation of linesink elements for stream network simulation in the groundw
 
 .. toctree::
   :maxdepth: 1
-  :caption: Code reference
+  :caption: Reference
 
-   Modules <api/index>
-
-.. toctree::
-  :maxdepth: 1
-  :caption: Release history
-
+   Code Reference <api/index>
+   Configuration defaults <config-file-defaults>
    Release History <release-history>
 
 .. toctree::
