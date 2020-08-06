@@ -7998,7 +7998,7 @@
 		<Label>12981701 None</Label>
 		<HeadSpecified>1</HeadSpecified>
 		<StartingHead>1439.01</StartingHead>
-		<EndingHead>1387.66</EndingHead>
+		<EndingHead>1384.87</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>6.71</Width>
 		<Depth>3.00</Depth>
@@ -27278,7 +27278,7 @@
 		<Label>12981695 None</Label>
 		<HeadSpecified>1</HeadSpecified>
 		<StartingHead>1440.09</StartingHead>
-		<EndingHead>1387.07</EndingHead>
+		<EndingHead>1384.87</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>7.00</Width>
 		<Depth>3.00</Depth>
@@ -61040,8 +61040,8 @@
 	<LinesinkString>
 		<Label>13131919 Cranberry L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1433.39</StartingHead>
+		<EndingHead>1433.38</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61172,24 +61172,16 @@
 		<DefaultResistance>0.30</DefaultResistance>
 		<Vertices>
 			<Vertex>
-				<X> 699792.14</X>
-				<Y> 5022901.90</Y>
+				<X> 701884.32</X>
+				<Y> 5017858.19</Y>
 			</Vertex>
 			<Vertex>
-				<X> 702654.51</X>
-				<Y> 5016964.00</Y>
+				<X> 701888.83</X>
+				<Y> 5017853.62</Y>
 			</Vertex>
 			<Vertex>
-				<X> 702687.74</X>
-				<Y> 5016723.66</Y>
-			</Vertex>
-			<Vertex>
-				<X> 701890.90</X>
-				<Y> 5017625.30</Y>
-			</Vertex>
-			<Vertex>
-				<X> 699791.14</X>
-				<Y> 5022902.90</Y>
+				<X> 701893.33</X>
+				<Y> 5017849.06</Y>
 			</Vertex>
 		</Vertices>
 	</LinesinkString>
@@ -61197,8 +61189,8 @@
 	<LinesinkString>
 		<Label>14729216 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1443.24</StartingHead>
+		<EndingHead>1443.23</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61350,8 +61342,8 @@
 	<LinesinkString>
 		<Label>13102649 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1486.71</StartingHead>
+		<EndingHead>1486.70</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61464,8 +61456,8 @@
 	<LinesinkString>
 		<Label>12980673 N Twin L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1444.90</StartingHead>
+		<EndingHead>1444.89</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61519,8 +61511,8 @@
 	<LinesinkString>
 		<Label>12980691 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1523.98</StartingHead>
+		<EndingHead>1523.97</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61723,8 +61715,8 @@
 	<LinesinkString>
 		<Label>13102687 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1472.77</StartingHead>
+		<EndingHead>1472.76</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61774,8 +61766,8 @@
 	<LinesinkString>
 		<Label>12980723 Clarke L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1490.75</StartingHead>
+		<EndingHead>1490.74</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61825,8 +61817,8 @@
 	<LinesinkString>
 		<Label>13102691 Eska L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>0.00</StartingHead>
-		<EndingHead>-0.01</EndingHead>
+		<StartingHead>1455.05</StartingHead>
+		<EndingHead>1455.04</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
