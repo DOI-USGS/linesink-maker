@@ -62,21 +62,7 @@ def test_plot_flooding_NS():
         print('{} not found.'.format(grd))
 
 
-@pytest.mark.skip(reason='missing input files')
-def test_plot_flooding(test_data_path, test_output_path):
-    """Tests the plot_flooding utility."""
-    solver_x0 = 671467.1 # origin of GFLOW solver coordinates in NAD 27 UTM 16
-    solver_y0 = 4997427.91
-    epsg = 26715
-    grd = os.path.join(test_output_path, 'test_plot_flooding.GRD')
-    dem = os.path.join(test_data_path, 'dem.tif')
-    clipto = os.path.join(test_data_path, 'testnearfield.shp')
 
-    output_flooded_heads_file = os.path.join(test_output_path, 'flooding')
-    lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=clipto,
-                                      outpath=output_flooded_heads_file,
-                                      solver_x0=solver_x0, solver_y0=solver_y0, scale_xy=0.3048,
-                                      dem_mult=1/.3048)
 
 
 @pytest.mark.skip(reason='missing input files')
@@ -88,3 +74,41 @@ def test_write_raster(test_data_path, test_output_path):
     write_heads_raster(input_grid, out_raster,
                        solver_x0=model_x0, solver_y0=model_y0,
                        scale_xy=.3048, epsg=26715)
+
+
+@pytest.fixture()
+def xtr(test_data_path):
+    return test_data_path / 'test.xtr'
+
+
+@pytest.fixture()
+def solver_origin():
+    return 671467.1, 4997427.91
+
+
+def test_write_streamflow_shapefile(test_data_path, test_output_path, xtr, solver_origin):
+    x0, y0, = solver_origin
+    outshp = test_output_path / 'streamflow.shp'
+    lsmaker.utils.write_streamflow_shapefile(xtr, outshp=outshp,
+                                             solver_x0=x0, solver_y0=y0,
+                                             epsg=26715)
+    assert outshp.exists()
+
+
+def test_plot_flooding(test_data_path, test_output_path, solver_origin):
+    """Tests the plot_flooding utility."""
+    x0, y0, = solver_origin
+    epsg = 26715
+    grd = test_data_path / 'test.grd'
+    dem = test_data_path / 'dem.tif'
+    clipto = test_data_path / 'testnearfield.shp'
+
+    output_flooded_heads_path = test_output_path / 'flooding'
+    lsmaker.utils.plot_flooding(grd, dem=dem, epsg=epsg, clipto=clipto,
+                                outpath=output_flooded_heads_path,
+                                solver_x0=x0, solver_y0=y0, scale_xy=0.3048,
+                                dem_mult=1/.3048)
+    assert output_flooded_heads_path.is_dir()
+    assert (output_flooded_heads_path / 'dtw.tif').exists()
+    assert (output_flooded_heads_path / 'flooding.tif').exists()
+    assert (output_flooded_heads_path / 'heads_prj.tif').exists()

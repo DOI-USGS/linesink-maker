@@ -4,14 +4,6 @@ import os
 import pytest
 
 
-@pytest.fixture(scope="session")
-def project_root_path():
-    """Relative path to the root level of the project.
-    """
-    filepath = os.path.split(os.path.abspath(__file__))[0]
-    return os.path.normpath(os.path.join(filepath, '../../'))
-
-
 def included_notebooks():
     include = ['examples']  # folders relative to project_root_path
     # explicitly set paths relative to project_root_path
@@ -48,19 +40,18 @@ def kernel_name():
 
 
 # even though test runs locally on Windows 10, and on Travis
-@pytest.mark.skip(reason='missing input files')
 @pytest.mark.xfail(os.environ.get('APPVEYOR') == 'True',
                    reason="jupyter kernel has timeout issue on appveyor for some reason")
 def test_notebook(notebook, kernel_name, tmpdir, project_root_path):
     # run autotest on each notebook
-    notebook = os.path.join(project_root_path, notebook).replace(' ', '\ ')
+    notebook = project_root_path / notebook
     path, fname = os.path.split(notebook)
 
     # save the rendered notebook to the documentation folder
     # so that nbsphinx can render it in the docs
     # the docs get built when the tests are run on travis
     # so successful execution of this test will build the notebooks for the docs
-    output_folder = os.path.join(project_root_path, 'docs/source/notebooks')
+    output_folder = project_root_path / 'docs/source/notebooks'
     print('saving {} to {}'.format(fname, output_folder))
 
     cmd = ('jupyter ' + 'nbconvert '

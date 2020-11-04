@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import shutil
 import numpy as np
 import pandas as pd
@@ -91,21 +92,21 @@ def plot_flooding(grdfile, dem, epsg,
         (x, y) resolution of output rasters. Must be chosen carefully with coordinate system.
         Default is (30, 30).
     """
-    from GISops import project_raster, clip_raster, _to_geojson
     try:
         import rasterio
         from rasterio import transform
         from rasterio.warp import reproject, Resampling
         from rasterio.mask import mask
         from rasterio.crs import CRS
-    except ImportError:
-        print('This method requires Rasterio')
-        return
+        from gisutils.raster import clip_raster, project_raster
+    except ImportError as e:
+        print('This method requires rasterio and the raster module of gis-utils.')
+        raise Exception(e)
 
     # make a temporary folder to house all the cruft
-    tmpath = outpath + '/tmp/'
-    if not os.path.isdir(tmpath):
-        os.makedirs(tmpath)
+    outpath = Path(outpath)
+    tmpath =outpath / 'tmp'
+    tmpath.mkdir(parents=True, exist_ok=True)
 
     # convert the heads surfer grid to raster
     solver_x0 = solver_x0
@@ -116,21 +117,21 @@ def plot_flooding(grdfile, dem, epsg,
                        scale_xy=scale_xy, epsg=epsg)
 
     # clipto must be a list (should add conversion if not)
-    clipto = _to_geojson(clipto) # convert input to geojson
+    #clipto = _to_geojson(clipto) # convert input to geojson
 
-    heads_rs = os.path.join(tmpath, 'heads_rs.tif')
-    dem_rs = os.path.join(tmpath, 'dem_rs.tif')
-    dem_cp = os.path.join(tmpath, 'dem_cp.tif')
-    heads_cp = outpath+'/heads_cp.tif'#os.path.join(tmpath, 'heads_cp.tif')
-    aq_bot_rs = os.path.join(tmpath, 'botm_rs.tif')
-    aq_bot_cp = os.path.join(tmpath, 'botm_cp.tif')
+    heads_rs = tmpath / 'heads_rs.tif'
+    dem_rs = tmpath / 'dem_rs.tif'
+    dem_cp = tmpath / 'dem_cp.tif'
+    heads_cp = outpath / 'heads_cp.tif'#os.path.join(tmpath, 'heads_cp.tif')
+    aq_bot_rs = tmpath / 'botm_rs.tif'
+    aq_bot_cp = tmpath / 'botm_cp.tif'
 
-    project_raster(wtfile, heads_rs, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
-    project_raster(dem, dem_rs, dst_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
+    project_raster(wtfile, heads_rs, dest_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
+    project_raster(dem, dem_rs, dest_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
     clip_raster(dem_rs, clipto, dem_cp)
     clip_raster(heads_rs, clipto, heads_cp)
     if aquifer_bottom is not None:
-        project_raster(aquifer_bottom, aq_bot_rs, dst_crs='epsg:{}'.format(epsg),
+        project_raster(aquifer_bottom, aq_bot_rs, dest_crs='epsg:{}'.format(epsg),
                        resampling=1, resolution=resolution)
         clip_raster(aq_bot_rs, clipto, aq_bot_cp)
 
@@ -150,9 +151,9 @@ def plot_flooding(grdfile, dem, epsg,
             out_meta.update({'dtype': 'float64', 'compress': 'LZW',
                              'width': w, 'height': h})
 
-            out_dtw = outpath+'/dtw.tif'
-            out_fld = outpath+'/flooding.tif'
-            out_sth = outpath+'/sat_thickness.tif'
+            out_dtw = outpath / 'dtw.tif'
+            out_fld = outpath / 'flooding.tif'
+            out_sth = outpath / 'sat_thickness.tif'
             with rasterio.open(out_dtw, "w", **out_meta) as dest:
                 dest.write(dtw, 1)
                 print('wrote {}'.format(out_dtw))
