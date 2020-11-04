@@ -2,8 +2,13 @@
 Release History
 ===============
 
-Initial Release (2020-08-06)
-----------------------------
+Version 0.1.1 (2020-11-04)
+--------------------------
+* refactor utils module to support `gis-utils <https://github.com/aleaf/gis-utils>`_
+* update Exporting and Visualizing GFLOW output example
+
+Version 0.1 (Initial Release; 2020-08-06)
+------------------------------------------
 * implement YAML as primary config file format (XML still supported)
 * adopted a `modified version <https://github.com/aleaf/scientific-python-cookiecutter>`_ of the `Scientific Python Cookiecutter <https://github.com/NSLS-II/scientific-python-cookiecutter>`_ structure
 * added documentation, testing, CI, etc.

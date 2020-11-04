@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation &mdash; linesink-maker 0.1.post1.dev0+ged2d16c documentation</title>
+  <title>Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation &mdash; linesink-maker 0.1.post2.dev0+g02055ab documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.1.post1.dev0+ged2d16c
+                0.1.post2.dev0+g02055ab
               </div>
             
           
@@ -456,7 +456,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib.collections</span> <span class="kn">import</span> <span class="n">PatchCollection</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
@@ -464,7 +464,6 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">lsmaker</span>
 <span class="kn">from</span> <span class="nn">gisutils</span> <span class="kn">import</span> <span class="n">shp2df</span>
 
-<span class="o">%</span> <span class="n">matplotlib</span> <span class="n">inline</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
 </pre></div>
 </div>
@@ -478,18 +477,17 @@ div.rendered_html tbody tr:hover {
 <span class="n">solver_x0</span> <span class="o">=</span> <span class="mf">671467.1</span> <span class="c1"># origin of GFLOW solver coordinates in NAD 27 UTM 15</span>
 <span class="n">solver_y0</span> <span class="o">=</span> <span class="mf">4997427.91</span>
 <span class="n">epsg</span> <span class="o">=</span> <span class="mi">26715</span> <span class="c1"># projected coordinate system reference</span>
-<span class="n">inpath</span> <span class="o">=</span> <span class="s1">&#39;../test/input/&#39;</span>
-<span class="n">dem</span> <span class="o">=</span> <span class="n">inpath</span> <span class="o">+</span> <span class="s1">&#39;dem.tif&#39;</span> <span class="c1"># dem for model area</span>
-<span class="n">clipto</span> <span class="o">=</span> <span class="n">inpath</span> <span class="o">+</span> <span class="s1">&#39;testnearfield.shp&#39;</span> <span class="c1"># extent for output rasters</span>
-<span class="n">grd</span> <span class="o">=</span> <span class="s1">&#39;../test/output/test.GRD&#39;</span> <span class="c1"># Surfer GRD file from GFLOW solution</span>
-<span class="n">xtr</span> <span class="o">=</span> <span class="s1">&#39;../test/output/test.XTR&#39;</span> <span class="c1"># Extract file from GFLOW solution</span>
-<span class="n">output_folder</span> <span class="o">=</span> <span class="s1">&#39;temp&#39;</span> <span class="c1"># folder for writing output rasters</span>
+<span class="n">inpath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;../lsmaker/tests/data/&#39;</span><span class="p">)</span>
+<span class="n">dem</span> <span class="o">=</span> <span class="n">inpath</span> <span class="o">/</span> <span class="s1">&#39;dem.tif&#39;</span> <span class="c1"># dem for model area</span>
+<span class="n">clipto</span> <span class="o">=</span> <span class="n">inpath</span> <span class="o">/</span> <span class="s1">&#39;testnearfield.shp&#39;</span> <span class="c1"># extent for output rasters</span>
+<span class="n">grd</span> <span class="o">=</span> <span class="n">inpath</span> <span class="o">/</span> <span class="s1">&#39;test.grd&#39;</span> <span class="c1"># Surfer GRD file from GFLOW solution</span>
+<span class="n">xtr</span> <span class="o">=</span> <span class="n">inpath</span> <span class="o">/</span> <span class="s1">&#39;test.xtr&#39;</span> <span class="c1"># Extract file from GFLOW solution</span>
+<span class="n">output_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;temp&#39;</span><span class="p">)</span> <span class="c1"># folder for writing output rasters</span>
 
 <span class="c1"># make the output folder if it doesn&#39;t exist</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_folder</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_folder</span><span class="p">)</span>
+<span class="n">output_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">output_streamflow_shapefile</span> <span class="o">=</span> <span class="n">output_folder</span> <span class="o">+</span> <span class="s1">&#39;/streamflow.shp&#39;</span>
+<span class="n">output_streamflow_shapefile</span> <span class="o">=</span> <span class="n">output_folder</span> <span class="o">/</span> <span class="s1">&#39;streamflow.shp&#39;</span>
 </pre></div>
 </div>
 </div>
@@ -542,6 +540,19 @@ reading temp/streamflow.shp...
 </div>
 <div class="output_area rendered_html docutils container">
 <div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
@@ -557,7 +568,7 @@ reading temp/streamflow.shp...
       <th>resistance</th>
       <th>depth</th>
       <th>baseflow</th>
-      <th>overland11</th>
+      <th>overlandfl</th>
       <th>BC_pct_err</th>
       <th>label</th>
       <th>geometry</th>
@@ -692,7 +703,7 @@ reading temp/streamflow.shp...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 
-reading ../test/input/testnearfield.shp...
+reading ../lsmaker/tests/data/testnearfield.shp...
 --&gt; building dataframe... (may take a while for large shapefiles)
 </pre></div></div>
 </div>
@@ -726,18 +737,38 @@ reading ../test/input/testnearfield.shp...
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-reading ../test/output/test.GRD...
-wrote temp\heads_prj.tif.
-reprojecting temp\heads_prj.tif from +init=epsg:26715, res: 1.47e+02, 1.17e+02
-to epsg:26715, res: 3.00e+01, 3.00e+01...
+reading ../lsmaker/tests/data/test.grd...
+wrote temp/heads_prj.tif.
+reprojecting temp/heads_prj.tif...
+from:
+EPSG:26715, res: 1.31e+02, 1.32e+02
+to:
+EPSG:26715, res: 3.00e+01, 3.00e+01...
 wrote temp/tmp/heads_rs.tif.
-reprojecting ../test/input/dem.tif from +init=epsg:4269, res: 9.26e-05, 9.26e-05
-to epsg:26715, res: 3.00e+01, 3.00e+01...
+reprojecting ../lsmaker/tests/data/dem.tif...
+from:
+EPSG:4269, res: 9.25e-04, 9.27e-04
+to:
+EPSG:26715, res: 3.00e+01, 3.00e+01...
 wrote temp/tmp/dem_rs.tif.
+input raster crs:
+EPSG:26715
+
+ clip feature crs:
+EPSG:26715
+
 clipping temp/tmp/dem_rs.tif...
 wrote temp/tmp/dem_cp.tif
+Done.
+input raster crs:
+EPSG:26715
+
+ clip feature crs:
+EPSG:26715
+
 clipping temp/tmp/heads_rs.tif...
-wrote temp/tmp/heads_cp.tif
+wrote temp/heads_cp.tif
+Done.
 wrote temp/dtw.tif
 wrote temp/flooding.tif
 </pre></div></div>
@@ -747,8 +778,8 @@ wrote temp/flooding.tif
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-C:\Users\aleaf\AppData\Local\Continuum\Anaconda3\lib\site-packages\rasterio\__init__.py:168: FutureWarning: GDAL-style transforms are deprecated and will not be supported in Rasterio 1.0.
-  transform = guard_transform(transform)
+/home/travis/build/aleaf/linesink-maker/lsmaker/utils/gflow_results.py:146: RuntimeWarning: overflow encountered in multiply
+  dtw = demarr[:h, :w] * dem_mult - hdsarr[:h, :w]
 </pre></div></div>
 </div>
 </div>
@@ -760,11 +791,11 @@ C:\Users\aleaf\AppData\Local\Continuum\Anaconda3\lib\site-packages\rasterio\__in
 <li><p><code class="docutils literal notranslate"><span class="pre">heads_prj</span></code> is the projected, but unclipped heads</p></li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;temp\heads_prj.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rst</span><span class="p">:</span>
+<span></span><span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="s1">&#39;heads_prj.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rst</span><span class="p">:</span>
     <span class="n">hds</span> <span class="o">=</span> <span class="n">rst</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hds</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Blues_r&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Gridded simulated heads from GFLOW&#39;</span><span class="p">)</span>
@@ -786,7 +817,7 @@ C:\Users\aleaf\AppData\Local\Continuum\Anaconda3\lib\site-packages\rasterio\__in
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;temp/flooding.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rst</span><span class="p">:</span>
+<span></span><span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="s1">&#39;flooding.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rst</span><span class="p">:</span>
     <span class="n">fld</span> <span class="o">=</span> <span class="n">rst</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fld</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Blues_r&#39;</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Height of simulated water table above land surface&#39;</span><span class="p">)</span>
@@ -808,7 +839,7 @@ C:\Users\aleaf\AppData\Local\Continuum\Anaconda3\lib\site-packages\rasterio\__in
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;temp/dtw.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rst</span><span class="p">:</span>
+<span></span><span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">output_folder</span> <span class="o">/</span> <span class="s1">&#39;dtw.tif&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">rst</span><span class="p">:</span>
     <span class="n">dtw</span> <span class="o">=</span> <span class="n">rst</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">dtw</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;Simulated depth to groundwater&#39;</span><span class="p">)</span>
@@ -855,7 +886,7 @@ C:\Users\aleaf\AppData\Local\Continuum\Anaconda3\lib\site-packages\rasterio\__in
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Oct 14, 2020.
+        Last updated on Nov 04, 2020.
       </span>
 
     </p>
