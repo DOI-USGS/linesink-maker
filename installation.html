@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; linesink-maker 0.1.1.post0.dev0+gdfabe60 documentation</title>
+  <title>Installation &mdash; linesink-maker 0.1.1.post1.dev0+ge5d5335 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.1.1.post0.dev0+gdfabe60
+                0.1.1.post1.dev0+ge5d5335
               </div>
             
           
@@ -96,10 +96,27 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="philosophy.html">Philosophy</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#required-python-packages">Required python packages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gflow-2-2-or-higher-required">GFLOW 2.2 or higher required</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#installing-the-required-python-packages">Installing the required Python packages</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#to-install-linesink-maker">To install Linesink-maker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#required-gflow-version">Required GFLOW version</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-python-dependencies-with-conda">Installing python dependencies with Conda</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-conda-environment">Creating a Conda environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keeping-the-conda-environment-up-to-date">Keeping the Conda environment up to date</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-linesink-maker">Installing Linesink-maker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installing-and-updating-linesink-maker-from-pypi">Installing and updating Linesink-maker from PyPI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-the-latest-develop-version-of-linesink-maker">Installing the latest develop version of Linesink-maker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-the-linesink-maker-source-code-in-place">Installing the Linesink-maker source code in-place</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Considerations for USGS Users</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Installing the DOI SSL certificate for use with pip</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-the-doi-ssl-certificate-for-use-with-conda">Installing the DOI SSL certificate for use with conda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#troubleshooting-issues-with-the-usgs-network">Troubleshooting issues with the USGS network</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ssl-related-error-messages-when-using-conda">SSL-related error messages when using conda</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ssl-related-error-messages-when-using-pip">SSL-related error messages when using pip</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#if-you-are-on-the-usgs-network-using-windows-and-you-get-this-error-message">If you are on the USGS network, using Windows, and you get this error message:</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -214,47 +231,201 @@
 </style>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="required-python-packages">
-<h2>Required python packages<a class="headerlink" href="#required-python-packages" title="Permalink to this headline">¶</a></h2>
-<p>(see below for installation instructions):</p>
-<ul class="simple">
-<li><p>lxml</p></li>
-<li><p>fiona</p></li>
-<li><p>shapely</p></li>
-<li><p>pandas</p></li>
-<li><p>pyproj</p></li>
-<li><p>requests</p></li>
-<li><p>gisutils</p></li>
-</ul>
-</div>
-<div class="section" id="gflow-2-2-or-higher-required">
-<h2>GFLOW 2.2 or higher required<a class="headerlink" href="#gflow-2-2-or-higher-required" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="required-gflow-version">
+<h2>Required GFLOW version<a class="headerlink" href="#required-gflow-version" title="Permalink to this headline">¶</a></h2>
 <p>Linesink-maker requires GFLOW 2.2 or higher, which has the capability of importing linesink string (LSS) xml files.</p>
-<div class="section" id="installing-the-required-python-packages">
-<h3>Installing the required Python packages<a class="headerlink" href="#installing-the-required-python-packages" title="Permalink to this headline">¶</a></h3>
-<p>The best way to install the required packages through <a class="reference external" href="https://www.anaconda.com/products/individual">Anaconda</a>. Once Anaconda is installed, open a command prompt with Anaconda python in the system path (i.e., so that if you run <cite>&gt;python</cite>, you get the Anaconda python). For Windows users, this probably means running the Anaconda command prompt from the start menu. Note that this shortcut can be copied to any folder for convenience. By right-clicking on the shortcut and selecting “properties”, you can also change the starting location of the command prompt to the folder it is in by replacing the “Start in” field with <code class="docutils literal notranslate"><span class="pre">%cd%</span></code>.</p>
-<p>Then at the command prompt:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">requirements</span><span class="o">.</span><span class="n">yml</span>
+</div>
+<div class="section" id="installing-python-dependencies-with-conda">
+<h2>Installing python dependencies with Conda<a class="headerlink" href="#installing-python-dependencies-with-conda" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Linesink-maker</span></code> depends on a number of python packages, many of which have external C library dependencies. The easiest way to install most of these is with <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>. A few packages are not available via conda, and must be installed with <a class="reference external" href="https://packaging.python.org/tutorials/installing-packages/#use-pip-for-installing">pip</a>. If you are on the USGS internal network, see the <a class="reference internal" href="#considerations-for-usgs-users">Considerations for USGS Users</a> section below first.</p>
+<ul class="simple">
+<li><p>Download and install the <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda python distribution</a>.</p>
+<ul>
+<li><p><strong>Make sure to install Anaconda to your username</strong> (not at the system level). More often than not, installing at the system level (for all users) seems to result in issues with library dependencies (for example, import of <code class="docutils literal notranslate"><span class="pre">fiona</span></code> or <code class="docutils literal notranslate"><span class="pre">rasterio</span></code> failing because gdal isn’t found). It is also good practice to periodically do a <a class="reference external" href="https://docs.anaconda.com/anaconda/install/uninstall/">clean uninstall</a> of Anaconda, which at the system level requires admin. privileges.</p>
+<ul>
+<li><p>In the installer, at the “Destination Select” step, select “Install for me only.” It should say something about how the software will be installed to your home folder.</p></li>
+<li><p>If your installer skips the “Destination Select” step, when you get to “Installation Type”, click “Change Install Location” and then “Install for me only.”</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Download an environment file:</p>
+<ul>
+<li><p><a class="reference external" href="https://github.com/aleaf/linesink-maker/blob/master/requirements.yml">requirements.yml</a> for a <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html">conda environment</a> with the minimum packages required to run Linesink-maker, or</p></li>
+<li><p><a class="reference external" href="https://github.com/aleaf/linesink-maker/blob/master/gis.yml">gis.yml</a> for a more full set of packages in the python geospatial stack, including Jupyter Notebooks and packages needed for testing, documentation and packaging. Note that the environment described by <code class="docutils literal notranslate"><span class="pre">requirements.yml</span></code> is called <cite>lsmaker</cite>, while the environment in <code class="docutils literal notranslate"><span class="pre">gis.yml</span></code> is called <cite>gis</cite>.</p></li>
+<li><p>Alternatively, clone (<a class="reference external" href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">using git</a>) or <a class="reference external" href="https://github.com/aleaf/linesink-maker/archive/master.zip">download</a> the <code class="docutils literal notranslate"><span class="pre">linesink-maker</span></code> repository, which includes the two environment files at the root level.</p></li>
+<li><p>Note that both of these environment files contain a <code class="docutils literal notranslate"><span class="pre">pip</span></code> section of packages that will be installed with pip, after the <code class="docutils literal notranslate"><span class="pre">conda</span></code> packages are installed.</p></li>
+</ul>
+</li>
+</ul>
+<div class="section" id="creating-a-conda-environment">
+<h3>Creating a <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html">Conda environment</a><a class="headerlink" href="#creating-a-conda-environment" title="Permalink to this headline">¶</a></h3>
+<p>If you are on the USGS internal network, see the <a class="reference internal" href="#considerations-for-usgs-users">Considerations for USGS Users</a> section below first.
+Open an Anaconda Command Prompt on Windows or a terminal window on OSX and point it to the location of <code class="docutils literal notranslate"><span class="pre">requirements.yml</span></code> or <code class="docutils literal notranslate"><span class="pre">gis.yml</span></code> and enter:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda env create -f requirements.yml
 </pre></div>
 </div>
-<p>This creates a conda environment with the required packages listed in requirements.yml. To use the environment:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">lsmaker</span>
+<p>Building the environment will probably take a while. If the build fails because of an SSL error, fix the problem (see <a class="reference internal" href="#considerations-for-usgs-users">Considerations for USGS Users</a> below) and either:</p>
+<blockquote>
+<div><ol class="loweralpha">
+<li><p>Update the environment</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda env update -f requirements.yml
 </pre></div>
 </div>
-<p>You should see <cite>(lsmaker)</cite> to the left of the command prompt.</p>
+</li>
+<li><p>or remove and reinstall it:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda env remove -n lsmaker
+conda env create -f requirements.yml
+</pre></div>
+</div>
+</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="keeping-the-conda-environment-up-to-date">
+<h3>Keeping the Conda environment up to date<a class="headerlink" href="#keeping-the-conda-environment-up-to-date" title="Permalink to this headline">¶</a></h3>
+<p>The python packages and other open source software libraries that Linesink-maker depends on are continually changing. Linesink-maker aims to mostly follow the <a class="reference external" href="https://numpy.org/neps/nep-0029-deprecation_policy.html">Numpy guidelines for package support</a>, which effectively means that the two latest minor versions of Python (e.g. 3.8 and 3.7) and their associated Numpy versions will be supported. However, occasionally backwards compatability with a particular package may be broken in a shorter timeframe, in which case the minimum required version of that package will be specified in the <code class="docutils literal notranslate"><span class="pre">requirements.yml</span></code> file. All of this to say that your Conda environment will eventually get out of date. The <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html">Conda documentation</a> has instructions for updating packages within a Conda environment, but at some point (perhaps a few times a year) it is good practice to simply delete the environment and rebuild it from the <cite>.yml</cite> file. Every so often, you may also want to reinstall Anaconda after a <a class="reference external" href="https://docs.anaconda.com/anaconda/install/uninstall/">clean uninstall</a>.</p>
+</div>
+</div>
+<div class="section" id="installing-linesink-maker">
+<h2>Installing Linesink-maker<a class="headerlink" href="#installing-linesink-maker" title="Permalink to this headline">¶</a></h2>
+<p>There are several ways to install Linesink-maker. Regardless of the method, the installation must be performed in a python
+environment with the required dependencies. In the case of the Conda environment created above, the environment must be activated, so that right version of python is called when <code class="docutils literal notranslate"><span class="pre">python</span></code> is entered at the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate lsmaker
+</pre></div>
+</div>
+<div class="section" id="installing-and-updating-linesink-maker-from-pypi">
+<h3>Installing and updating Linesink-maker from <a class="reference external" href="https://pypi.org/">PyPI</a><a class="headerlink" href="#installing-and-updating-linesink-maker-from-pypi" title="Permalink to this headline">¶</a></h3>
+<p>Once a suitable conda environment (that contains ALL of the dependencies) is made and activated, the simplest way to install Linesink-maker is from the Python Package Index using pip.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install linesink-maker
+</pre></div>
+</div>
+<p>Subsequent releases of Linesink-maker to PyPI can then be installed with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install --upgrade linesink-maker
+</pre></div>
+</div>
+<p>Note that in some situations you may have to <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">uninstall</span> <span class="pre">linesink-maker</span></code> and then <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">linesink-maker</span></code>. You can always check
+what version of Linesink-maker you have within a python session with</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">lsmaker</span>
+<span class="n">lsmaker</span><span class="o">.</span><span class="n">__version__</span>
+</pre></div>
+</div>
+<p>Or if you are using Conda, at the command line with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda list
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-the-latest-develop-version-of-linesink-maker">
+<h3>Installing the latest develop version of Linesink-maker<a class="headerlink" href="#installing-the-latest-develop-version-of-linesink-maker" title="Permalink to this headline">¶</a></h3>
+<p>In some situations you may want the bleeding-edge version of Linesink-maker that is being actively developed on GitHub. For example,
+to incorporate a bug fix that was made after the latest release. Pip can also be used to fetch Linesink-maker directly from GitHub:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install git+git://github.com/aleaf/linesink-maker@develop
+</pre></div>
+</div>
+<p>(for the develop branch). Subsequent updates can then be made with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip uninstall linesink-maker
+pip install git+git://github.com/aleaf/linesink-maker@develop
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-the-linesink-maker-source-code-in-place">
+<h3>Installing the Linesink-maker source code in-place<a class="headerlink" href="#installing-the-linesink-maker-source-code-in-place" title="Permalink to this headline">¶</a></h3>
+<p>Finally, if you intend to contribute to Linesink-maker (please do!) or update your install frequently, the best route is probably to clone the source code from git and install it in place.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/aleaf/linesink-maker.git
+<span class="nb">cd</span> linesink-maker
+pip install -e .
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>The `lsmaker` conda environment needs to be activated to use linksink-maker!</strong></p>
+<p>Don’t forget the <code class="docutils literal notranslate"><span class="pre">.</span></code> after <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span></code>!</p>
 </div>
-</div>
-<div class="section" id="to-install-linesink-maker">
-<h3>To install Linesink-maker<a class="headerlink" href="#to-install-linesink-maker" title="Permalink to this headline">¶</a></h3>
-<p>From the main page of the <a class="reference external" href="https://github.com/aleaf/linesink-maker">GitHub repository</a>
-, click on the green Code button in the upper right, and select an option to clone or download the repository. Once the files have downloaded, navigate to the <code class="docutils literal notranslate"><span class="pre">linesink-maker</span></code> folder (which should contain <strong>setup.py</strong>) and run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<p>Your local copy of the Linesink-maker repository can then be subsequently updated with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git pull origin master
 </pre></div>
 </div>
-<p>(Windows users can launch a command line at the folder by right clicking on the folder icon and then choosing <em>Open command window here</em>)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you are making local changes to Linesink-maker that you want to contribute, the workflow is slightly different. See the <a class="reference internal" href="contributing.html#contributing-to-linesink-maker"><span class="std std-ref">Contributing to linesink-maker</span></a> page for more details.</p>
+</div>
+<p>The advantage of installing the source code in-place is that any changes you make are automatically incorporated into your python environment, without any additional install commands. When debugging in an interactive development environment (IDE) such as Pycharm or VS Code, error tracebacks and inspection features go to the actual source code, not the version installed in the <code class="docutils literal notranslate"><span class="pre">site-packages</span></code> folder. Additionally, since this install is done through pip, <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">uninstall</span></code>
+will work to remove the package, and the current version of the package (including the latest commit information) will be visible with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">list</span></code>.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h2><span class="target" id="considerations-for-usgs-users">Considerations for USGS Users</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>Using conda or pip on the USGS network requires SSL verification, which can cause a number of issues.
+If you are encountering persistant issues with creating the conda environment,
+you may have better luck trying the install off of the USGS network (e.g. at home).
+See <a class="reference external" href="https://tst.usgs.gov/applications/application-and-script-signing/">here</a> for more information
+about SSL verification on the USGS network, and to download the DOI SSL certificate.</p>
+<div class="section" id="id2">
+<h3><span class="target" id="installing-the-doi-ssl-certificate-for-use-with-pip">Installing the DOI SSL certificate for use with pip</span><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://tst.usgs.gov/applications/application-and-script-signing/">Download the DOI SSL certificate</a></p></li>
+<li><p>On Windows, create the file <code class="docutils literal notranslate"><span class="pre">C:\Users\&lt;your</span> <span class="pre">username&gt;\AppData\Roaming\pip\pip.ini</span></code>.
+On OSX, create <code class="docutils literal notranslate"><span class="pre">/Users/&lt;your</span> <span class="pre">username&gt;/Library/Application</span> <span class="pre">Support/pip/pip.conf</span></code>.</p></li>
+</ol>
+<p>Include the following in this file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="k">global</span><span class="p">]</span>
+<span class="n">cert</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">DOI</span> <span class="n">certificate</span> <span class="n">file</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="n">DOIRootCA2</span><span class="o">.</span><span class="n">cer</span><span class="p">)</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Note that when you are off the USGS network, you may have to comment out the <code class="docutils literal notranslate"><span class="pre">cert=</span></code> line in the above pip configuration file to get <code class="docutils literal notranslate"><span class="pre">pip</span></code> to work.</p>
+</div>
+<div class="section" id="installing-the-doi-ssl-certificate-for-use-with-conda">
+<h3>Installing the DOI SSL certificate for use with conda<a class="headerlink" href="#installing-the-doi-ssl-certificate-for-use-with-conda" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html#ssl-verification-ssl-verify">these instructions</a>.
+This may or may not work. Basically, <code class="docutils literal notranslate"><span class="pre">ssl_verify:</span></code> needs to be set in your <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html">condarc</a> file to point
+to a valid SSL certificate, which may be different from the basic <code class="docutils literal notranslate"><span class="pre">DOIRootCA2.cer</span></code> file.</p>
+<p>You can find the location of your <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html">condarc</a> file with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">info</span> <span class="o">-</span><span class="n">a</span>
+</pre></div>
+</div>
+<p>which displays information about how Conda is configured. Note that you may have multiple <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html">condarc</a>
+files at the system, user and possibly project levels.</p>
+<p>Common issues:</p>
+<ul>
+<li><p>Conda Install fails on the USGS network without a certificate, or with an incorrectly formatted certificate.
+Possible solutions are to either get a correctly formatted SSL certificate from your IT person, or try installing off the network.</p></li>
+<li><p>Conda Install fails off the USGS network with a certificate (may or may not be correctly formatted). Solution:
+open your <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html">condarc</a> file
+and comment out the SSL certificate file, if it is specified. E.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssl_verify</span><span class="p">:</span> <span class="c1">#D:\certificates\DOIRootCA2.cer</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="troubleshooting-issues-with-the-usgs-network">
+<h3>Troubleshooting issues with the USGS network<a class="headerlink" href="#troubleshooting-issues-with-the-usgs-network" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="ssl-related-error-messages-when-using-conda">
+<h4>SSL-related error messages when using conda<a class="headerlink" href="#ssl-related-error-messages-when-using-conda" title="Permalink to this headline">¶</a></h4>
+<p>(with <code class="docutils literal notranslate"><span class="pre">SSL</span></code> mentioned in the message and possibly <code class="docutils literal notranslate"><span class="pre">bad</span> <span class="pre">handshake</span></code>)</p>
+<p>Make sure that the <code class="docutils literal notranslate"><span class="pre">conda</span></code> package installer is configured to use the USGS certificate
+(see <a class="reference internal" href="#installing-the-doi-ssl-certificate-for-use-with-conda"><span class="std std-ref">Installing the DOI SSL certificate for use with conda</span></a> above).</p>
+</div>
+<div class="section" id="ssl-related-error-messages-when-using-pip">
+<h4>SSL-related error messages when using pip<a class="headerlink" href="#ssl-related-error-messages-when-using-pip" title="Permalink to this headline">¶</a></h4>
+<p>(something similar to <code class="docutils literal notranslate"><span class="pre">SSL:</span> <span class="pre">CERTIFICATE_VERIFY_FAILED</span></code>).</p>
+<p>Make sure that the <code class="docutils literal notranslate"><span class="pre">pip</span></code> package installer is configured to use the USGS certificate
+(see <a class="reference internal" href="#installing-the-doi-ssl-certificate-for-use-with-pip">Installing the DOI SSL certificate for use with pip</a> above).</p>
+</div>
+<div class="section" id="if-you-are-on-the-usgs-network-using-windows-and-you-get-this-error-message">
+<h4>If you are on the USGS network, using Windows, and you get this error message:<a class="headerlink" href="#if-you-are-on-the-usgs-network-using-windows-and-you-get-this-error-message" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p>CondaHTTPError: HTTP 500 INTERNAL ERROR for url &lt;<a class="reference external" href="https://repo.anaconda.com/pkgs/msys2/win-64/m2w64-gettext-0.19.7-2.tar.bz2">https://repo.anaconda.com/pkgs/msys2/win-64/m2w64-gettext-0.19.7-2.tar.bz2</a>&gt;
+Elapsed: 00:30.647993</p>
+<p>An HTTP error occurred when trying to retrieve this URL.
+HTTP errors are often intermittent, and a simple retry will get you on your way.</p>
+</div></blockquote>
+<p>Adding the following line to <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> should work:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">msys2::m2w64-gettext</span>
+</pre></div>
+</div>
+<p>This tells conda to fetch <code class="docutils literal notranslate"><span class="pre">m2w64-gettext</span></code> from the <code class="docutils literal notranslate"><span class="pre">msys2</span></code> channel instead. Note that this is only a dependency on Windows,
+so it needs to be commented out on other operating systems (normally it wouldn’t need to be listed, but the above HTTP 500 error indicates that installation from the default source location failed.)</p>
+</div>
 </div>
 </div>
 </div>
@@ -280,7 +451,7 @@
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Nov 04, 2020.
+        Last updated on Nov 13, 2020.
       </span>
 
     </p>
