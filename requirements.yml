@@ -19,4 +19,6 @@ dependencies:
 - rasterio>=1.0
 - shapely
 - pyproj>=2.0
-- gis-utils>=0.2.5
+- pip
+- pip:
+  - gis-utils>=0.2.5

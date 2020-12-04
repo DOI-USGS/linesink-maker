@@ -19,7 +19,6 @@ dependencies:
 - rasterio>=1.0
 - shapely
 - pyproj>=2.0
-- gis-utils
 - codecov
 - coverage
 - flake8
@@ -32,6 +31,7 @@ dependencies:
 - twine
 - pip
 - pip:
+  - gis-utils>=0.2.5
   - doctr
   - versioneer
 
