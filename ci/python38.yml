@@ -4,7 +4,7 @@ channels:
 - defaults
 - atleaf
 dependencies:
-- python
+- python=3.8
 - ipython
 - jupyter
 - notebook

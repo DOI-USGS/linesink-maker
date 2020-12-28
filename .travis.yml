@@ -8,10 +8,10 @@ cache:
 matrix:
   include:
     # test with python 3.7
-    - env: ENV_FILE="ci/python37.yml"
+    - env: ENV_FILE="ci/python38.yml"
 
     # test with python 3.8
-    - env: ENV_FILE="ci/python38.yml"
+    - env: ENV_FILE="ci/python-latest.yml"
 
   #allow_failures:
   #  - env: ENV_FILE="ci/environment.yml"
