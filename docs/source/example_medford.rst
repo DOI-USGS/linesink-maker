@@ -1,6 +1,6 @@
 Medford National Forest Unit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In this example, a `GFLOW <https://www.haitjema.com/>`_ model of a National Forest Unit in Northern Wisconsin is constructed, similar to the one documented in `this study <https://wgnhs.wisc.edu/pubs/tr0041/>`_.
+In this example, a `GFLOW <https://www.haitjema.com/>`_ model of a National Forest Unit in Northern Wisconsin is constructed, similar to the one documented in `this study <https://wgnhs.wisc.edu/pubs/tr0041/>`_. The files for this example can be found in the `examples/medford subfolder <https://github.com/aleaf/linesink-maker/tree/develop/examples/medford>`_ of the Linesink-maker repository.
 
 Configuration file in yaml format (``Medford_lines.yml``)
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -22,6 +22,8 @@ Python script to build the model (``make_linesinks.py``):
     :language: python
     :linenos:
 
+.. note::
+    The ``input_file`` path given in the above script assumes that the script is being executed in the same folder as `Medford_lines.yml`.
 
 A shapefile representation of the linesinks is also produced, along with additional shapefiles of the source hydrography merged and clipped to the model area. The resulting linesinks are shown in Figure 1.
 
