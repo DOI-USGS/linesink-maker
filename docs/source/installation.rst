@@ -131,7 +131,7 @@ Your local copy of the Linesink-maker repository can then be subsequently update
 
 .. code-block:: bash
 
-    git pull origin master
+    git pull origin develop
 
 .. note::
     If you are making local changes to Linesink-maker that you want to contribute, the workflow is slightly different. See the :ref:`Contributing to Linesink-maker` page for more details.
@@ -233,12 +233,12 @@ so it needs to be commented out on other operating systems (normally it wouldn't
 .. _conda: https://docs.conda.io/en/latest/
 .. _conda environment: https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html
 .. _condarc: https://docs.conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html
-.. _download: https://github.com/aleaf/linesink-maker/archive/master.zip
-.. _gis.yml: https://raw.githubusercontent.com/aleaf/linesink-maker/master/gis.yml
+.. _download: https://github.com/aleaf/linesink-maker/archive/develop.zip
+.. _gis.yml: https://raw.githubusercontent.com/aleaf/linesink-maker/develop/gis.yml
 .. _Download the DOI SSL certificate: https://tst.usgs.gov/applications/application-and-script-signing/
 .. _pip: https://packaging.python.org/tutorials/installing-packages/#use-pip-for-installing
-.. _Readme file: https://github.com/aleaf/linesink-maker/blob/master/Readme.md
-.. _requirements.yml: https://raw.githubusercontent.com/aleaf/linesink-maker/master/requirements.yml
+.. _Readme file: https://github.com/aleaf/linesink-maker/blob/develop/Readme.md
+.. _requirements.yml: https://raw.githubusercontent.com/aleaf/linesink-maker/develop/requirements.yml
 .. _using git: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
 
