@@ -1799,7 +1799,7 @@ class LinesinkData:
         print('Done, see confluences attribute.')
 
     def run_diagnostics(self):
-
+        """Run the diagnostic suite on the LinesinkData instance."""
         if self.efp.closed:
             self.efp = open(self.error_reporting, 'a')
         dg = self.dg
@@ -1938,7 +1938,8 @@ class LinesinkData:
         ofp.write('<?xml version="1.0"?>\n')
         ofp.write('<LinesinkStringFile version="1">\n')
         ofp.write('\t<ComputationalUnits>{}</ComputationalUnits>\n'
-                  '\t<BasemapUnits>{}</BasemapUnits>\n\n'.format(self.ComputationalUnits, self.BasemapUnits))
+                  '\t<BasemapUnits>{}</BasemapUnits>\n\n'.format(self.ComputationalUnits.capitalize(),
+                                                                 self.BasemapUnits.capitalize()))
 
         for comid in df.index:
             ofp.write('\t<LinesinkString>\n')
