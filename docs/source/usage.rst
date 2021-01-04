@@ -52,10 +52,17 @@ Which can be executed at the command line with::
     python make_linesinks.py
 
 
+Diagnosing errors
+--------------------------------
+After making the Linesinks, Linesink-maker runs the :meth:`~lsmaker.lsmaker.LinesinkData.run_diagnostics` method, which checks for common issues such as zero gradients (in streambed), duplicate vertices, and linesinks that cross one another (a common side-effect of simplification). Results of the diagnostics are reported in file specified under the ``error_reporting:`` option in the configuration file (which defaults to **linesinkMaker_errors.txt**). Errors are generally referenced by NHDPlus COMID, allowing users to visualize the errors by importing the linesink shapefile into a GIS environment (see below). The errors can then be resolved either in the input linework, or within the GFLOW GUI after importing the lines.
 
-Importing the linesink string file into GFLOW  
+Importing the linesink string file into GFLOW
 ----------------------------------------------------------------
-Linesink-maker outputs a linesink string file of the form **\<basename>.lss.xml**, which can be imported into GFLOW under `Tools>Import>Line-sink Strings`. It can also be inspected in any text editor. 
+Linesink-maker outputs a linesink string file named **\<basename>.lss.xml**, where `basename` is the name specified under the ``outfile_basename:`` option in the configuration file (default **'Model'**). The steps for importing the linesinks into GFLOW are summarized below. Additional details are available in the GFLOW documentation.
+
+1) Create a new GFLOW database
+2) Make sure the computational and GIS units are properly specified within the GFLOW GUI
+3) Then within the GFLOW GUI, from the `Tools` menu, select `Import > Line-sink Strings`.
 
 Viewing the LinesinkData in a GIS
 ----------------------------------------------------------------

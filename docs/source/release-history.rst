@@ -2,6 +2,11 @@
 Release History
 ===============
 
+Version 0.1.2 (2021-01-04)
+--------------------------
+* fix bug in writing of lss.xml output where ComputationalUnits and BasemapUnits were lower case
+* some minor refactoring to address warnings
+
 Version 0.1.1 (2020-11-04)
 --------------------------
 * refactor utils module to support `gis-utils <https://github.com/aleaf/gis-utils>`_

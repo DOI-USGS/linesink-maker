@@ -40,8 +40,8 @@ def test_medford_from_lss_xml(lsmaker_instance_with_linesinks):
     assert os.path.exists(lss_xml_file)
     ls2 = lsmaker.LinesinkData(GFLOW_lss_xml=lss_xml_file)
 
-    assert ls.ComputationalUnits == ls2.ComputationalUnits
-    assert ls.BasemapUnits == ls2.BasemapUnits
+    assert ls.ComputationalUnits.lower() == ls2.ComputationalUnits.lower()
+    assert ls.BasemapUnits.lower() == ls2.BasemapUnits.lower()
 
     # compare the linesinks
     compare_df_columns = set(ls2.df.columns).intersection(ls.df.columns)
