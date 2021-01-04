@@ -185,7 +185,7 @@ def plot_flooding(grdfile, dem, epsg,
 
 
 def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
-                               coords_mult=0.3048, epsg=None):
+                               coords_mult=0.3048, crs=None, **kwargs):
     """Read linesink results from GFLOW extract (.xtr) file and write to shapefile.
     To get the solve origin (solver_x0, solver_y0), in GFLOW choose Tools > GFLOW Database Viewer, 
     then View > Base Tables > Model.
@@ -197,7 +197,7 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     df[['x1', 'x2']] = df[['x1', 'x2']] * coords_mult + solver_x0
     df[['y1', 'y2']] = df[['y1', 'y2']] * coords_mult + solver_y0
     df['geometry'] = [LineString([(r.x1, r.y1), (r.x2, r.y2)]) for i, r in df.iterrows()]
-    gisutils.df2shp(df, outshp, epsg=epsg)
+    gisutils.df2shp(df, outshp, crs=crs, **kwargs)
 
 
 class SurferGrid:

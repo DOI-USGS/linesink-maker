@@ -156,16 +156,16 @@ def _get_random_point_in_polygon(poly):
             return p
 
 
-def reproject(geoms, pr1, pr2):
-    """Reprojects a list of geometries from coordinate system pr1 to pr2
-    (given as proj strings)."""
-    print('reprojecting from {} to {}...'.format(pr1, pr2))
-    if not isinstance(geoms, list):
-        geoms = [geoms]
-    pr1 = pyproj.Proj(pr1, errcheck=True, preserve_units=True)
-    pr2 = pyproj.Proj(pr2, errcheck=True, preserve_units=True)
-    project = partial(pyproj.transform, pr1, pr2)
-    return [transform(project, g) for g in geoms]
+#def reproject(geoms, pr1, pr2):
+#    """Reprojects a list of geometries from coordinate system pr1 to pr2
+#    (given as proj strings)."""
+#    print('reprojecting from {} to {}...'.format(pr1, pr2))
+#    if not isinstance(geoms, list):
+#        geoms = [geoms]
+#    pr1 = pyproj.Proj(pr1, errcheck=True, preserve_units=True)
+#    pr2 = pyproj.Proj(pr2, errcheck=True, preserve_units=True)
+#    project = partial(pyproj.transform, pr1, pr2)
+#    return [transform(project, g) for g in geoms]
 
 
 def w_parameter(B, lmbda):
@@ -318,7 +318,7 @@ class LinesinkData:
         self.nearfield = None
         self.prj = None
         self.crs = None
-        self.crs_str = None  # self.crs, in proj string format
+        #self.crs_str = None  # self.crs, in proj string format
         self.pyproj_crs = None  # pyproj.CRS instance based on prj input
         self.farfield_buffer = None
         self.clip_farfield = None
@@ -571,7 +571,7 @@ class LinesinkData:
             self.prj = self._get_xml_entry('prj', self.routed_area[:-4] + '.prj')
             self.crs = fiona.open(self.routed_area).crs
             self.nearfield = self.routed_area
-        self.crs_str = to_string(self.crs)  # self.crs, in proj string format
+        #self.crs_str = str(self.crs)  # self.crs, in proj string format
         self.farfield_buffer = self._get_xml_entry('farfield_buffer', 10000, int)
         self.clip_farfield = self.tf2flag(self._get_xml_entry('clip_farfield', 'False'))
         self.split_by_HUC = self.tf2flag(self._get_xml_entry('split_by_HUC', 'False'))
@@ -728,12 +728,13 @@ class LinesinkData:
                     prjfile = name + '.prj'
                     if os.path.exists(prjfile):
                         self.prj = prjfile
-                        with fiona.open(filename) as src:
-                            self.crs = src.crs
-                            self.crs_str = to_string(self.crs)
+                        self.crs = gisutils.get_shapefile_crs(prjfile)
+                        #with fiona.open(filename) as src:
+                        #    self.crs = src.crs
+                        #    self.crs_str = to_string(self.crs)
         else:
-            self.crs_str = gisutils.get_proj_str(self.prj)
-            self.crs = from_string(self.crs_str)
+            #self.crs_str = gisutils.get_proj_str(self.prj)
+            self.crs = gisutils.get_shapefile_crs(self.prj)
         if self.crs is None or self.prj is None:
             msg = ("Invalid projection file or projection file not found: {}. \
                 Specify a valid ESRI projection file under the \
@@ -808,7 +809,7 @@ class LinesinkData:
                      else _get_random_point_in_polygon(wb)
                      for wb in wb_df.geometry.tolist()]
         # reproject the representative points into lat lon
-        wb_points_ll = reproject(wb_points, self.crs_str, "+init=epsg:4269")
+        wb_points_ll = gisutils.project(wb_points, self.crs, "epsg:4269")
         wb_elevations = get_elevations_from_epqs(wb_points_ll, units=self.ComputationalUnits)
 
         # add in elevations from waterbodies in stream network
@@ -821,13 +822,15 @@ class LinesinkData:
         """Load a shapefile and return the first polygon from its records,
         projected in the destination coordinate system."""
         if dest_crs is None:
-            dest_crs = self.crs_str
+            dest_crs = self.crs
+        else:
+            dest_crs = gisutils.get_authority_crs(dest_crs)
         print('reading {}...'.format(shapefile))
-        shp = fiona.open(shapefile)
-        geom = shape(shp.next()['geometry'])
-        shp_crs_str = to_string(shp.crs)
-        if shp_crs_str != dest_crs:
-            geom = reproject(geom, shp_crs_str, dest_crs)[0]
+        with fiona.open(shapefile) as src:
+            geom = shape(next(iter(src))['geometry'])
+        shp_crs = gisutils.get_shapefile_crs(shapefile)
+        if shp_crs != dest_crs:
+            geom = gisutils.project(geom, shp_crs, dest_crs)[0]
         return geom
 
     def tf2flag(self, intxt):
@@ -955,17 +958,17 @@ class LinesinkData:
                 shapefile = shapefiles[0]
             else:
                 shapefile = shapefiles
-            shp_crs_str = to_string(fiona.open(shapefile).crs)
+            shp_crs = gisutils.get_shapefile_crs(shapefile)
 
             # get bounding box of model area in nhd crs to speeding reading in data via filter
-            bounds = reproject([self.ff], self.crs_str, shp_crs_str)
+            bounds = gisutils.project([self.ff], self.crs, shp_crs)
             bounds = bounds[0].bounds
 
             self.__dict__[attr] = gisutils.shp2df(shapefiles, filter=bounds)
             # if NHD features not in model area coodinate system, reproject
-            if shp_crs_str != self.crs_str:
-                self.__dict__[attr]['geometry'] = reproject(self.__dict__[attr].geometry.tolist(), shp_crs_str,
-                                                            self.crs_str)
+            if shp_crs != self.crs:
+                self.__dict__[attr]['geometry'] = gisutils.project(self.__dict__[attr].geometry.tolist(), shp_crs,
+                                                            self.crs)
             # 1816107
             # for now, take intersection (don't truncate flowlines at farfield boundary)
             print('clipping to {}...'.format(self.farfield))
@@ -997,18 +1000,17 @@ class LinesinkData:
             if len(self.__dict__[df]) == 0:
                 raise EmptyDataFrame()
 
-        gisutils.df2shp(self.fl, self.flowlines_clipped, proj_str=self.crs_str)
-        gisutils.df2shp(self.wb, self.waterbodies_clipped, proj_str=self.crs_str)
+        gisutils.df2shp(self.fl, self.flowlines_clipped, crs=self.crs)
+        gisutils.df2shp(self.wb, self.waterbodies_clipped, crs=self.crs)
 
         print('\nmaking donut polygon of farfield (with routed area removed)...')
         ffdonut = self.ff.difference(self.ra)
-        with fiona.drivers():
-            with fiona.open(self.routed_area) as src:
-                with fiona.open(self.farfield_mp, 'w', **src.meta) as output:
-                    print(('writing {}'.format(self.farfield_mp)))
-                    f = next(src)
-                    f['geometry'] = mapping(ffdonut)
-                    output.write(f)
+        with fiona.open(self.routed_area) as src:
+            with fiona.open(self.farfield_mp, 'w', **src.meta) as output:
+                print(('writing {}'.format(self.farfield_mp)))
+                f = next(iter(src))
+                f['geometry'] = mapping(ffdonut)
+                output.write(f)
 
         if self.routed_area is not None and self.routed_area != self.nearfield:
             print('\nmaking donut polygon of routed area (with nearfield area removed)...')
@@ -1016,13 +1018,12 @@ class LinesinkData:
                 raise ValueError('Nearfield area must be within routed area!')
 
             donut = self.ra.difference(self.nf)
-            with fiona.drivers():
-                with fiona.open(self.nearfield) as src:
-                    with fiona.open(self.routed_mp, 'w', **src.meta) as output:
-                        print(('writing {}'.format(self.routed_mp)))
-                        f = next(src)
-                        f['geometry'] = mapping(donut)
-                        output.write(f)
+            with fiona.open(self.nearfield) as src:
+                with fiona.open(self.routed_mp, 'w', **src.meta) as output:
+                    print(('writing {}'.format(self.routed_mp)))
+                    f = next(iter(src))
+                    f['geometry'] = mapping(donut)
+                    output.write(f)
 
         # drop waterbodies that aren't lakes bigger than min size
         min_size = np.min([self.min_nearfield_wb_size, self.min_waterbody_size, self.min_farfield_wb_size])
@@ -1052,7 +1053,7 @@ class LinesinkData:
                                          'geometry': wb_points})
             '''
             wb_points_df = self._get_wb_elevations(isolated_wb)
-            gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
+            gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, crs=self.crs)
         else:
             print('\nreading elevations from {}...'.format(self.wb_centroids_w_elevations))
             wb_points_df = gisutils.shp2df(self.wb_centroids_w_elevations)
@@ -1061,7 +1062,7 @@ class LinesinkData:
                 isolated_wb = self.wb.loc[self.wb.COMID.isin(toget)].copy()
                 wb_points_df2 = self._get_wb_elevations(isolated_wb)
                 wb_points_df = wb_points_df.append(wb_points_df2)
-                gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, proj_str=self.crs_str)
+                gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, crs=self.crs)
 
         # open error reporting file
         self.efp.write('\nPreprocessing...\n')
@@ -1210,7 +1211,7 @@ class LinesinkData:
         '''
         print('\nDone with preprocessing.')
         if save:
-            gisutils.df2shp(df, self.preprocessed_lines, proj_str=self.crs_str)
+            gisutils.df2shp(df, self.preprocessed_lines, crs=self.crs)
 
         self.df = df
 
@@ -1271,7 +1272,9 @@ class LinesinkData:
             if shp not in self.refinement_areas:
                 self.refinement_areas.append(shp)
             area_name = os.path.split(shp)[-1][:-4]
-            poly = shape(fiona.open(shp).next()['geometry'])
+            with fiona.open(shp) as src:
+                poly = shape(next(iter(src))['geometry'])
+            #poly = shape(fiona.open(shp).next()['geometry'])
             df[area_name] = [g.intersects(poly) for g in df.geometry]
 
         # add column of lists, containing linesink coordinates
@@ -1312,7 +1315,7 @@ class LinesinkData:
             # make a shapefile of the simplified lines with nearfield_tol=tol
             df.drop(['ls_coords', 'geometry'], axis=1, inplace=True)
             outshp = 'prototypes/' + self.outfile_basename + '_dis_tol_{}.shp'.format(tol)
-            gisutils.df2shp(df, outshp, geo_column='ls_geom', proj_str=self.crs_str)
+            gisutils.df2shp(df, outshp, geo_column='ls_geom', crs=self.crs)
 
         plt.figure()
         plt.plot(nftol, nlines)
@@ -1591,8 +1594,8 @@ class LinesinkData:
             upcomids.append([u if u in lines else 0 for u in
                              list(df[df['DnHydroseq'] == df.loc[l, 'Hydroseq']].index)])
 
-        df.loc[lines, 'upcomids'] = upcomids
-        df.loc[lines, 'dncomid'] = dncomid
+        df.loc[lines, 'upcomids'] = np.array(upcomids, dtype=object)
+        df.loc[lines, 'dncomid'] = np.array(dncomid, dtype=object)
         # enforce list datatype (apparently pandas flattens lists of lists len()=1 on assignment
         df['dncomid'] = [[d] if not isinstance(d, list) else d for d in df.dncomid]
         return df
@@ -1992,7 +1995,7 @@ class LinesinkData:
             df['geometry'] = [LineString(g) for g in df.ls_coords]
             df = df.drop(['ls_coords'], axis=1)
 
-        gisutils.df2shp(df, outfile, proj_str=self.crs_str)
+        gisutils.df2shp(df, outfile, crs=self.crs)
 
 
 class linesinks(LinesinkData):

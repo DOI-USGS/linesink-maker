@@ -7998,7 +7998,7 @@
 		<Label>12981701 None</Label>
 		<HeadSpecified>1</HeadSpecified>
 		<StartingHead>1439.01</StartingHead>
-		<EndingHead>1384.87</EndingHead>
+		<EndingHead>1387.66</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>6.71</Width>
 		<Depth>3.00</Depth>
@@ -27278,7 +27278,7 @@
 		<Label>12981695 None</Label>
 		<HeadSpecified>1</HeadSpecified>
 		<StartingHead>1440.09</StartingHead>
-		<EndingHead>1384.87</EndingHead>
+		<EndingHead>1387.07</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>7.00</Width>
 		<Depth>3.00</Depth>
@@ -60361,8 +60361,8 @@
 	<LinesinkString>
 		<Label>13131975 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1457.01</StartingHead>
-		<EndingHead>1457.00</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -60628,8 +60628,8 @@
 	<LinesinkString>
 		<Label>13131905 Keyes L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1443.89</StartingHead>
-		<EndingHead>1443.88</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -60679,8 +60679,8 @@
 	<LinesinkString>
 		<Label>13131907 Scoof L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1446.84</StartingHead>
-		<EndingHead>1446.83</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -60832,8 +60832,8 @@
 	<LinesinkString>
 		<Label>13132007 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1322.85</StartingHead>
-		<EndingHead>1322.84</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -60883,8 +60883,8 @@
 	<LinesinkString>
 		<Label>13132013 Mud L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1324.46</StartingHead>
-		<EndingHead>1324.45</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -60938,8 +60938,8 @@
 	<LinesinkString>
 		<Label>13102705 Thief L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1463.90</StartingHead>
-		<EndingHead>1463.89</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -60989,8 +60989,8 @@
 	<LinesinkString>
 		<Label>13131973 L Eleven</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1444.22</StartingHead>
-		<EndingHead>1444.21</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61040,8 +61040,8 @@
 	<LinesinkString>
 		<Label>13131919 Cranberry L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1433.39</StartingHead>
-		<EndingHead>1433.38</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61172,16 +61172,24 @@
 		<DefaultResistance>0.30</DefaultResistance>
 		<Vertices>
 			<Vertex>
-				<X> 701884.32</X>
-				<Y> 5017858.19</Y>
+				<X> 699792.14</X>
+				<Y> 5022901.90</Y>
 			</Vertex>
 			<Vertex>
-				<X> 701888.83</X>
-				<Y> 5017853.62</Y>
+				<X> 702654.51</X>
+				<Y> 5016964.00</Y>
 			</Vertex>
 			<Vertex>
-				<X> 701893.33</X>
-				<Y> 5017849.06</Y>
+				<X> 702687.74</X>
+				<Y> 5016723.66</Y>
+			</Vertex>
+			<Vertex>
+				<X> 701890.90</X>
+				<Y> 5017625.30</Y>
+			</Vertex>
+			<Vertex>
+				<X> 699791.14</X>
+				<Y> 5022902.90</Y>
 			</Vertex>
 		</Vertices>
 	</LinesinkString>
@@ -61189,8 +61197,8 @@
 	<LinesinkString>
 		<Label>14729216 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1443.24</StartingHead>
-		<EndingHead>1443.23</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61342,8 +61350,8 @@
 	<LinesinkString>
 		<Label>13102649 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1486.71</StartingHead>
-		<EndingHead>1486.70</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61456,8 +61464,8 @@
 	<LinesinkString>
 		<Label>12980673 N Twin L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1444.90</StartingHead>
-		<EndingHead>1444.89</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61511,8 +61519,8 @@
 	<LinesinkString>
 		<Label>12980691 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1523.98</StartingHead>
-		<EndingHead>1523.97</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61715,8 +61723,8 @@
 	<LinesinkString>
 		<Label>13102687 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1472.77</StartingHead>
-		<EndingHead>1472.76</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61766,8 +61774,8 @@
 	<LinesinkString>
 		<Label>12980723 Clarke L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1490.75</StartingHead>
-		<EndingHead>1490.74</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -61817,8 +61825,8 @@
 	<LinesinkString>
 		<Label>13102691 Eska L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1455.05</StartingHead>
-		<EndingHead>1455.04</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62086,8 +62094,8 @@
 	<LinesinkString>
 		<Label>13102725 Chub L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1392.04</StartingHead>
-		<EndingHead>1392.03</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62188,8 +62196,8 @@
 	<LinesinkString>
 		<Label>14729214 1 Res</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1419.63</StartingHead>
-		<EndingHead>1419.62</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62239,8 +62247,8 @@
 	<LinesinkString>
 		<Label>12980685 S Twin L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1444.90</StartingHead>
-		<EndingHead>1444.89</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62341,8 +62349,8 @@
 	<LinesinkString>
 		<Label>12979423 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1525.12</StartingHead>
-		<EndingHead>1525.11</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62823,8 +62831,8 @@
 	<LinesinkString>
 		<Label>13102641 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1480.04</StartingHead>
-		<EndingHead>1480.03</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62874,8 +62882,8 @@
 	<LinesinkString>
 		<Label>13102643 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1472.09</StartingHead>
-		<EndingHead>1472.08</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62925,8 +62933,8 @@
 	<LinesinkString>
 		<Label>12980657 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1500.03</StartingHead>
-		<EndingHead>1500.02</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -62976,8 +62984,8 @@
 	<LinesinkString>
 		<Label>12980663 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1436.04</StartingHead>
-		<EndingHead>1436.03</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -63027,8 +63035,8 @@
 	<LinesinkString>
 		<Label>14729180 Lost L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1330.05</StartingHead>
-		<EndingHead>1330.04</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -63220,8 +63228,8 @@
 	<LinesinkString>
 		<Label>13132003 Spruce L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1334.63</StartingHead>
-		<EndingHead>1334.62</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -63330,8 +63338,8 @@
 	<LinesinkString>
 		<Label>13102449 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1454.07</StartingHead>
-		<EndingHead>1454.06</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -63381,8 +63389,8 @@
 	<LinesinkString>
 		<Label>13102535 Pickerel L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1444.26</StartingHead>
-		<EndingHead>1444.25</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -63655,8 +63663,8 @@
 	<LinesinkString>
 		<Label>13102595 Nancy L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1448.16</StartingHead>
-		<EndingHead>1448.15</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -63820,8 +63828,8 @@
 	<LinesinkString>
 		<Label>13102623 Long L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1414.04</StartingHead>
-		<EndingHead>1414.03</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -64117,8 +64125,8 @@
 	<LinesinkString>
 		<Label>12980595 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1383.25</StartingHead>
-		<EndingHead>1383.24</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -64227,8 +64235,8 @@
 	<LinesinkString>
 		<Label>13102583 None</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1443.24</StartingHead>
-		<EndingHead>1443.23</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -64333,8 +64341,8 @@
 	<LinesinkString>
 		<Label>13102587 L Thirty</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1456.03</StartingHead>
-		<EndingHead>1456.02</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -64384,8 +64392,8 @@
 	<LinesinkString>
 		<Label>13102549 L Nineteen</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1463.90</StartingHead>
-		<EndingHead>1463.89</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.3</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>
@@ -64550,8 +64558,8 @@
 	<LinesinkString>
 		<Label>13395361 Somo L</Label>
 		<HeadSpecified>1</HeadSpecified>
-		<StartingHead>1448.98</StartingHead>
-		<EndingHead>1448.97</EndingHead>
+		<StartingHead>0.00</StartingHead>
+		<EndingHead>-0.01</EndingHead>
 		<Resistance>0.0</Resistance>
 		<Width>17.32</Width>
 		<Depth>3.00</Depth>

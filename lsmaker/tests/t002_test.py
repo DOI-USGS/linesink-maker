@@ -91,7 +91,7 @@ def test_write_streamflow_shapefile(test_data_path, test_output_path, xtr, solve
     outshp = test_output_path / 'streamflow.shp'
     lsmaker.utils.write_streamflow_shapefile(xtr, outshp=outshp,
                                              solver_x0=x0, solver_y0=y0,
-                                             epsg=26715)
+                                             crs=26715)
     assert outshp.exists()
 
 
