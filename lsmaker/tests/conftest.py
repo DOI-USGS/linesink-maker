@@ -37,6 +37,6 @@ def test_output_path(project_root_path):
     reset = True
     if reset:
         if folder.is_dir():
-            shutil.rmtree(folder)
+            shutil.rmtree(folder, ignore_errors=True)
         folder.mkdir(parents=True)
     return folder

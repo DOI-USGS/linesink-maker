@@ -53,7 +53,7 @@ def test_medford_from_lss_xml(lsmaker_instance_with_linesinks):
                                                         })
     df1 = ls.df[compare_df_columns]
     df2 = ls2.df[compare_df_columns]
-    pd.testing.assert_frame_equal(df1, df2)
+    pd.testing.assert_frame_equal(df1, df2, check_dtype=False)
     # compare the coordinates
     for dim in 0, 1:  # (x, y)
         x1 = [crd[dim] for line in ls2.df.ls_coords for crd in line]

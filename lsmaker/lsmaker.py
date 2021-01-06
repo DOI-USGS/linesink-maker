@@ -3,6 +3,7 @@ import sys
 import warnings
 import numpy as np
 import os
+from pathlib import Path
 import pandas as pd
 import shutil
 import requests
@@ -411,7 +412,6 @@ class LinesinkData:
         # outputs
         self.outfile_basename = None
         self.error_reporting = 'error_reporting.txt'
-        self.efp = None
 
         # attributes
         self.from_lss_xml = False
@@ -443,11 +443,14 @@ class LinesinkData:
 
         # logging/diagnostics
         # todo: more robust/detail logging
-        if os.path.exists(self.error_reporting):
-            os.remove(self.error_reporting)
-        self.efp = open(self.error_reporting, 'w')
-        self.efp.write('Linesink-maker version {}\n'.format(lsmaker.__version__))
-        self.dg = Diagnostics(lsm_object=self, logfile=self.efp)
+        if Path(self.error_reporting).exists():
+            try:
+                Path(self.error_reporting).unlink()
+            except:
+                j=2
+        with open(self.error_reporting, 'w') as efp:
+            efp.write('Linesink-maker version {}\n'.format(lsmaker.__version__))
+        self.dg = Diagnostics(lsm_object=self, logfile=self.error_reporting)
 
     def __eq__(self, other):
         """Test for equality to another linesink object."""
@@ -1065,7 +1068,8 @@ class LinesinkData:
                 gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, crs=self.crs)
 
         # open error reporting file
-        self.efp.write('\nPreprocessing...\n')
+        with open(self.error_reporting, 'a') as efp:
+            efp.write('\nPreprocessing...\n')
 
         print('\nAssembling input...')
         # read linework shapefile into pandas dataframe
@@ -1338,51 +1342,52 @@ class LinesinkData:
                 self.df = df
                 self.map_outsegs()
 
-            self.efp.write('\nzero-gradient adjustments:\n')
-            self.efp.write('comid, old_elevmax, old_elevmin, new_elevmax, new_elevmin, downcomid\n')
+            with open(self.error_reporting, 'a') as efp:
+                efp.write('\nzero-gradient adjustments:\n')
+                efp.write('comid, old_elevmax, old_elevmin, new_elevmax, new_elevmin, downcomid\n')
 
-            print("adjusting elevations for comids with zero-gradient...")
-            for comid in comids0:
+                print("adjusting elevations for comids with zero-gradient...")
+                for comid in comids0:
 
-                outsegs = [o for o in self.outsegs.loc[comid].values if int(o) > 0]
-                for i, o in enumerate(outsegs):
+                    outsegs = [o for o in self.outsegs.loc[comid].values if int(o) > 0]
+                    for i, o in enumerate(outsegs):
 
-                    if i == len(outsegs) - 1:
-                        oo = 0
-                    else:
-                        oo = outsegs[i + 1]
+                        if i == len(outsegs) - 1:
+                            oo = 0
+                        else:
+                            oo = outsegs[i + 1]
 
-                    minElev, maxElev = df.loc[o, 'minElev'], df.loc[o, 'maxElev']
-                    # test if current segment has flat or negative gradient
-                    if minElev >= maxElev:
-                        minElev = maxElev - increment
-                        df.loc[o, 'minElev'] = minElev
-                        self.efp.write('{}, {:.2f}, {:.2f}, {:.2f}, {}\n'.format(o, maxElev,
-                                                                                 minElev + increment,
-                                                                                 maxElev,
-                                                                                 minElev, oo))
-                        # test if next segment is now higher
-                        if int(oo) > 0 and df.loc[oo, 'maxElev'] > minElev:
-                            self.efp.write('{}, {:.2f}, {:.2f}, {:.2f}, {}\n'.format(outsegs[i + 1],
-                                                                                     df.loc[outsegs[i + 1], 'maxElev'],
-                                                                                     df.loc[outsegs[i + 1], 'minElev'],
-                                                                                     minElev,
-                                                                                     df.loc[outsegs[i + 1], 'minElev'],
-                                                                                     oo))
-                            df.loc[oo, 'maxElev'] = minElev
-                    else:
-                        break
+                        minElev, maxElev = df.loc[o, 'minElev'], df.loc[o, 'maxElev']
+                        # test if current segment has flat or negative gradient
+                        if minElev >= maxElev:
+                            minElev = maxElev - increment
+                            df.loc[o, 'minElev'] = minElev
+                            efp.write('{}, {:.2f}, {:.2f}, {:.2f}, {}\n'.format(o, maxElev,
+                                                                                    minElev + increment,
+                                                                                    maxElev,
+                                                                                    minElev, oo))
+                            # test if next segment is now higher
+                            if int(oo) > 0 and df.loc[oo, 'maxElev'] > minElev:
+                                efp.write('{}, {:.2f}, {:.2f}, {:.2f}, {}\n'.format(outsegs[i + 1],
+                                                                                        df.loc[outsegs[i + 1], 'maxElev'],
+                                                                                        df.loc[outsegs[i + 1], 'minElev'],
+                                                                                        minElev,
+                                                                                        df.loc[outsegs[i + 1], 'minElev'],
+                                                                                        oo))
+                                df.loc[oo, 'maxElev'] = minElev
+                        else:
+                            break
 
-                        # check again for zero-gradient lines
-            dg.df = df
-            comids0 = dg.check4zero_gradient(log=False)
+                            # check again for zero-gradient lines
+                dg.df = df
+                comids0 = dg.check4zero_gradient(log=False)
 
-            if len(comids0) > 0:
-                for c in comids0:
-                    self.efp.write('{}\n'.format(c))
-                print("\nWarning!, the following comids had zero gradients:\n{}".format(comids0))
-                print("routing for these was turned off. Elevations must be fixed manually.\n" \
-                      "See {}".format(self.error_reporting))
+                if len(comids0) > 0:
+                    for c in comids0:
+                        efp.write('{}\n'.format(c))
+                    print("\nWarning!, the following comids had zero gradients:\n{}".format(comids0))
+                    print("routing for these was turned off. Elevations must be fixed manually.\n" \
+                        "See {}".format(self.error_reporting))
         return df
 
     def drop_crossing_lines(self, df):
@@ -1602,7 +1607,9 @@ class LinesinkData:
 
     def make_linesinks(self, reuse_preprocessed_lines=False,
                        shp=None):
-        self.efp.write('\nMaking the lines...\n')
+
+        with open(self.error_reporting, 'a') as efp:
+            efp.write('\nMaking the lines...\n')
 
         if shp is None:
             shp = self.preprocessed_lines
@@ -1765,7 +1772,6 @@ class LinesinkData:
         self._enforce_dtypes(df)
         self.df = df
         self.write_shapefile()
-        self.efp.close()
         print('Done!')
 
     def map_confluences(self):
@@ -1800,8 +1806,6 @@ class LinesinkData:
 
     def run_diagnostics(self):
         """Run the diagnostic suite on the LinesinkData instance."""
-        if self.efp.closed:
-            self.efp = open(self.error_reporting, 'a')
         dg = self.dg
         dg.check_vertices()
         dg.check4crossing_lines()
