@@ -2,10 +2,10 @@
 Release History
 ===============
 
-Version 0.1.2 (2021-01-04)
+Version 0.1.2 (2021-01-06)
 --------------------------
 * fix bug in writing of lss.xml output where ComputationalUnits and BasemapUnits were lower case
-* some minor refactoring to address warnings
+* some minor refactoring to address warnings and open file point issues on Windows with the log file
 
 Version 0.1.1 (2020-11-04)
 --------------------------
