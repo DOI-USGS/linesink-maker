@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8" />
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>lsmaker.lsmaker &mdash; linesink-maker 0.1.1.post10.dev0+gf62916d documentation</title>
+  <title>lsmaker.lsmaker &mdash; linesink-maker 0.1.1.post11.dev0+gf18e955 documentation</title>
   
 
   
@@ -17,7 +17,10 @@
 
   
   
+
   
+  
+
   
 
   
@@ -54,7 +57,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> linesink-maker
+            <a href="../../index.html" class="icon icon-home"> linesink-maker
           
 
           
@@ -64,7 +67,7 @@
             
             
               <div class="version">
-                0.1.1.post10.dev0+gf62916d
+                0.1.1.post11.dev0+gf18e955
               </div>
             
           
@@ -153,6 +156,8 @@
 
 
 
+
+
 <div role="navigation" aria-label="breadcrumbs navigation">
 
   <ul class="wy-breadcrumbs">
@@ -182,6 +187,7 @@
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">requests</span>
@@ -590,7 +596,6 @@
         <span class="c1"># outputs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span> <span class="o">=</span> <span class="s1">&#39;error_reporting.txt&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">from_lss_xml</span> <span class="o">=</span> <span class="kc">False</span>
@@ -622,11 +627,14 @@
 
         <span class="c1"># logging/diagnostics</span>
         <span class="c1"># todo: more robust/detail logging</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Linesink-maker version </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lsmaker</span><span class="o">.</span><span class="n">__version__</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dg</span> <span class="o">=</span> <span class="n">Diagnostics</span><span class="p">(</span><span class="n">lsm_object</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">)</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">j</span><span class="o">=</span><span class="mi">2</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">efp</span><span class="p">:</span>
+            <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Linesink-maker version </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lsmaker</span><span class="o">.</span><span class="n">__version__</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dg</span> <span class="o">=</span> <span class="n">Diagnostics</span><span class="p">(</span><span class="n">lsm_object</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Test for equality to another linesink object.&quot;&quot;&quot;</span>
@@ -1244,7 +1252,8 @@
                 <span class="n">gisutils</span><span class="o">.</span><span class="n">df2shp</span><span class="p">(</span><span class="n">wb_points_df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wb_centroids_w_elevations</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
         <span class="c1"># open error reporting file</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Preprocessing...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">efp</span><span class="p">:</span>
+            <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Preprocessing...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Assembling input...&#39;</span><span class="p">)</span>
         <span class="c1"># read linework shapefile into pandas dataframe</span>
@@ -1517,51 +1526,52 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">map_outsegs</span><span class="p">()</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">zero-gradient adjustments:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;comid, old_elevmax, old_elevmin, new_elevmax, new_elevmin, downcomid</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">efp</span><span class="p">:</span>
+                <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">zero-gradient adjustments:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;comid, old_elevmax, old_elevmin, new_elevmax, new_elevmin, downcomid</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;adjusting elevations for comids with zero-gradient...&quot;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">comid</span> <span class="ow">in</span> <span class="n">comids0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;adjusting elevations for comids with zero-gradient...&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">comid</span> <span class="ow">in</span> <span class="n">comids0</span><span class="p">:</span>
 
-                <span class="n">outsegs</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outsegs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">comid</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">outsegs</span><span class="p">):</span>
+                    <span class="n">outsegs</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outsegs</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">comid</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">outsegs</span><span class="p">):</span>
 
-                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">outsegs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="n">oo</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">oo</span> <span class="o">=</span> <span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">outsegs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">oo</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">oo</span> <span class="o">=</span> <span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-                    <span class="n">minElev</span><span class="p">,</span> <span class="n">maxElev</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;minElev&#39;</span><span class="p">],</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">]</span>
-                    <span class="c1"># test if current segment has flat or negative gradient</span>
-                    <span class="k">if</span> <span class="n">minElev</span> <span class="o">&gt;=</span> <span class="n">maxElev</span><span class="p">:</span>
-                        <span class="n">minElev</span> <span class="o">=</span> <span class="n">maxElev</span> <span class="o">-</span> <span class="n">increment</span>
-                        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;minElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minElev</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">maxElev</span><span class="p">,</span>
-                                                                                 <span class="n">minElev</span> <span class="o">+</span> <span class="n">increment</span><span class="p">,</span>
-                                                                                 <span class="n">maxElev</span><span class="p">,</span>
-                                                                                 <span class="n">minElev</span><span class="p">,</span> <span class="n">oo</span><span class="p">))</span>
-                        <span class="c1"># test if next segment is now higher</span>
-                        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">oo</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">oo</span><span class="p">,</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">minElev</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
-                                                                                     <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">],</span>
-                                                                                     <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;minElev&#39;</span><span class="p">],</span>
-                                                                                     <span class="n">minElev</span><span class="p">,</span>
-                                                                                     <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;minElev&#39;</span><span class="p">],</span>
-                                                                                     <span class="n">oo</span><span class="p">))</span>
-                            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">oo</span><span class="p">,</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minElev</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">break</span>
+                        <span class="n">minElev</span><span class="p">,</span> <span class="n">maxElev</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;minElev&#39;</span><span class="p">],</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">]</span>
+                        <span class="c1"># test if current segment has flat or negative gradient</span>
+                        <span class="k">if</span> <span class="n">minElev</span> <span class="o">&gt;=</span> <span class="n">maxElev</span><span class="p">:</span>
+                            <span class="n">minElev</span> <span class="o">=</span> <span class="n">maxElev</span> <span class="o">-</span> <span class="n">increment</span>
+                            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">o</span><span class="p">,</span> <span class="s1">&#39;minElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minElev</span>
+                            <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">maxElev</span><span class="p">,</span>
+                                                                                    <span class="n">minElev</span> <span class="o">+</span> <span class="n">increment</span><span class="p">,</span>
+                                                                                    <span class="n">maxElev</span><span class="p">,</span>
+                                                                                    <span class="n">minElev</span><span class="p">,</span> <span class="n">oo</span><span class="p">))</span>
+                            <span class="c1"># test if next segment is now higher</span>
+                            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">oo</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">oo</span><span class="p">,</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">minElev</span><span class="p">:</span>
+                                <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{:.2f}</span><span class="s1">, </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                                                                                        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">],</span>
+                                                                                        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;minElev&#39;</span><span class="p">],</span>
+                                                                                        <span class="n">minElev</span><span class="p">,</span>
+                                                                                        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outsegs</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;minElev&#39;</span><span class="p">],</span>
+                                                                                        <span class="n">oo</span><span class="p">))</span>
+                                <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">oo</span><span class="p">,</span> <span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">minElev</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">break</span>
 
-                        <span class="c1"># check again for zero-gradient lines</span>
-            <span class="n">dg</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
-            <span class="n">comids0</span> <span class="o">=</span> <span class="n">dg</span><span class="o">.</span><span class="n">check4zero_gradient</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                            <span class="c1"># check again for zero-gradient lines</span>
+                <span class="n">dg</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+                <span class="n">comids0</span> <span class="o">=</span> <span class="n">dg</span><span class="o">.</span><span class="n">check4zero_gradient</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comids0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">comids0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Warning!, the following comids had zero gradients:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">comids0</span><span class="p">))</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;routing for these was turned off. Elevations must be fixed manually.</span><span class="se">\n</span><span class="s2">&quot;</span> \
-                      <span class="s2">&quot;See </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comids0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">comids0</span><span class="p">:</span>
+                        <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Warning!, the following comids had zero gradients:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">comids0</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;routing for these was turned off. Elevations must be fixed manually.</span><span class="se">\n</span><span class="s2">&quot;</span> \
+                        <span class="s2">&quot;See </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
 <div class="viewcode-block" id="LinesinkData.drop_crossing_lines"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.drop_crossing_lines">[docs]</a>    <span class="k">def</span> <span class="nf">drop_crossing_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
@@ -1781,7 +1791,9 @@
 
 <div class="viewcode-block" id="LinesinkData.make_linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.make_linesinks">[docs]</a>    <span class="k">def</span> <span class="nf">make_linesinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_preprocessed_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                        <span class="n">shp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Making the lines...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">efp</span><span class="p">:</span>
+            <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Making the lines...</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">shp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">shp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocessed_lines</span>
@@ -1944,7 +1956,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_enforce_dtypes</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_shapefile</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done!&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LinesinkData.map_confluences"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.map_confluences">[docs]</a>    <span class="k">def</span> <span class="nf">map_confluences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1979,8 +1990,6 @@
 
 <div class="viewcode-block" id="LinesinkData.run_diagnostics"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.run_diagnostics">[docs]</a>    <span class="k">def</span> <span class="nf">run_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Run the diagnostic suite on the LinesinkData instance.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">efp</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">efp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
         <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dg</span>
         <span class="n">dg</span><span class="o">.</span><span class="n">check_vertices</span><span class="p">()</span>
         <span class="n">dg</span><span class="o">.</span><span class="n">check4crossing_lines</span><span class="p">()</span>
@@ -2205,14 +2214,13 @@
            
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jan 04, 2021.
+        Last updated on Jan 06, 2021.
       </span>
 
     </p>
@@ -2220,14 +2228,13 @@
     
     
     
-    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     
-    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
     
     provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
-
         </div>
       </div>
 
