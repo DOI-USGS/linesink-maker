@@ -14,7 +14,7 @@ See the [linesink-maker documentation](https://aleaf.github.io/linesink-maker/in
 
 Installation
 -----------------------------------------------
-See the [Installation Instructions](https://aleaf.github.io/linesink-maker/installation.html)
+See the [Installation Instructions](https://aleaf.github.io/linesink-maker/latest/installation.html)
 
 
 Disclaimer
