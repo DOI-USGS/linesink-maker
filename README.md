@@ -16,6 +16,14 @@ Installation
 -----------------------------------------------
 See the [Installation Instructions](https://aleaf.github.io/linesink-maker/latest/installation.html)
 
+How to cite
+--------------
+###### Citation for Linesink-maker
+
+Leaf, A.T., Fienen, M.N. and Reeves, H.W., 2021. SFRmaker and Linesink-maker: Rapid construction of streamflow routing networks from hydrography data, Groundwater xx (x), xx–xx (in revision). [\<waiting on DOI from journal>](https://doi.org/10.5066/P9U2T031)
+
+###### Software/Code citation for Linesink-maker (IP-122356):
+Leaf, A.T., 2021, Linesink-maker version 0.1.2: U.S. Geological Survey Software Release, xx Jan. 2021, [https://doi.org/10.5066/P99QSDDX](https://doi.org/10.5066/P99QSDDX)
 
 Disclaimer
 ----------
