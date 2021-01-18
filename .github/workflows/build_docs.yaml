@@ -4,8 +4,6 @@ name: Publish Docs
 on:
   push:
     branches: [ master, develop ]
-  release:
-    types: [ created ]
 
 jobs:
   docs:
@@ -65,16 +63,6 @@ jobs:
       run: |
         set -e
         make -C docs html
-
-    - name: Deploy 🚀
-      uses: JamesIves/github-pages-deploy-action@3.7.1
-      if: ${{ github.event_name == 'release' }}
-      with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BRANCH: gh-pages
-        FOLDER: docs/build/html
-        CLEAN: false
-        TARGET_FOLDER: ${{ github.ref }}
 
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@3.7.1
