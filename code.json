@@ -11,7 +11,7 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/water/sfrmaker/blob/master/LICENSE.md"
+          "URL": "https://code.usgs.gov/water/sfrmaker/raw/master/LICENSE.md"
         }
       ]
     },
@@ -42,7 +42,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2021-01-21"
+      "metadataLastUpdated": "2021-01-26"
     }
   }
 ]
