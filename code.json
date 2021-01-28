@@ -1,9 +1,9 @@
 [
   {
-    "name": "SFRmaker",
+    "name": "Linesink-maker",
     "organization": "U.S. Geological Survey",
-    "description": "Rapid construction of MODFLOW SFR Package input from hydrography data.",
-    "version": "0.7.0",
+    "description": "Rapidly build GFLOW models from GIS hydrography data.",
+    "version": "0.1.3",
     "status": "Production",
 
     "permissions": {
@@ -11,15 +11,15 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/water/sfrmaker/blob/master/LICENSE.md"
+          "URL": "https://code.usgs.gov/water/sfrmaker/raw/master/LICENSE.md"
         }
       ]
     },
 
-    "homepageURL": "https://code.usgs.gov/water/sfrmaker",
-    "downloadURL": "https://code.usgs.gov/water/sfrmaker/-/archive/v0.7.0/sfrmaker-v0.7.0.zip",
-    "disclaimerURL": "https://code.usgs.gov/water/sfrmaker/blob/master/DISCLAIMER.md",
-    "repositoryURL": "https://code.usgs.gov/water/sfrmaker.git",
+    "homepageURL": "https://code.usgs.gov/water/linesink-maker",
+    "downloadURL": "https://code.usgs.gov/water/linesink-maker/-/archive/v0.1.3/sfrmaker-v0.1.3.zip",
+    "disclaimerURL": "https://code.usgs.gov/water/linesink-maker/raw/master/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/water/linesink-maker.git",
     "vcs": "git",
 
     "laborHours": 0,
@@ -33,7 +33,7 @@
     ],
 
     "languages": [
-      "python",
+      "python"
     ],
 
     "contact": {
@@ -42,7 +42,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2021-01-19"
+      "metadataLastUpdated": "2021-01-26"
     }
   }
 ]
