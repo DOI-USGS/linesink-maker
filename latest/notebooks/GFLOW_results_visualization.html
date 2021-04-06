@@ -4,15 +4,17 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation &mdash; linesink-maker 0.1.2.post8.dev0+g4c7b201 documentation</title>
+  <title>Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation &mdash; linesink-maker 0.1.2.post9.dev0+g6f369d3 documentation</title>
   
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
 
   
@@ -36,8 +38,6 @@
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.1.2.post8.dev0+g4c7b201
+                0.1.2.post9.dev0+g6f369d3
               </div>
             
           
@@ -94,7 +94,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <p><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../philosophy.html">Philosophy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
@@ -112,7 +112,7 @@
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Usage</span></p>
+<p><span class="caption-text">Usage</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Input requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
@@ -121,13 +121,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../api/index.html"> Code Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../config-file-defaults.html"> Configuration defaults</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../release-history.html"> Release History</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Developer</span></p>
+<p><span class="caption-text">Developer</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to linesink-maker</a></li>
 </ul>
@@ -469,7 +469,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Examples-of-using-the-lsmaker.utils-module-to-export-and-visualize-results-from-a-GFLOW-simulation">
+<section id="Examples-of-using-the-lsmaker.utils-module-to-export-and-visualize-results-from-a-GFLOW-simulation">
 <h1>Examples of using the <code class="docutils literal notranslate"><span class="pre">lsmaker.utils</span></code> module to export and visualize results from a GFLOW simulation<a class="headerlink" href="#Examples-of-using-the-lsmaker.utils-module-to-export-and-visualize-results-from-a-GFLOW-simulation" title="Permalink to this headline">¶</a></h1>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -511,7 +511,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="section" id="make-a-shapefile-of-the-streamflow-results">
+<section id="make-a-shapefile-of-the-streamflow-results">
 <h2>make a shapefile of the streamflow results<a class="headerlink" href="#make-a-shapefile-of-the-streamflow-results" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
@@ -531,8 +531,8 @@ div.rendered_html tbody tr:hover {
 writing temp/streamflow.shp... Done
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="read-in-and-plot-the-streamflow">
+</section>
+<section id="read-in-and-plot-the-streamflow">
 <h2>read in and plot the streamflow<a class="headerlink" href="#read-in-and-plot-the-streamflow" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -734,8 +734,8 @@ reading ../lsmaker/tests/data/testnearfield.shp...
 <img alt="../_images/notebooks_GFLOW_results_visualization_7_1.png" src="../_images/notebooks_GFLOW_results_visualization_7_1.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Make-a-raster-comparing-simulated-heads-to-a-DEM">
+</section>
+<section id="Make-a-raster-comparing-simulated-heads-to-a-DEM">
 <h2>Make a raster comparing simulated heads to a DEM<a class="headerlink" href="#Make-a-raster-comparing-simulated-heads-to-a-DEM" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>this can also be examined in a GIS with other data (wetland coverages, dem, etc.)</p></li>
@@ -802,8 +802,8 @@ wrote temp/flooding.tif
   dtw = demarr[:h, :w] * dem_mult - hdsarr[:h, :w]
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Plot-the-gridded-heads-from-GFLOW">
+</section>
+<section id="Plot-the-gridded-heads-from-GFLOW">
 <h2>Plot the gridded heads from GFLOW<a class="headerlink" href="#Plot-the-gridded-heads-from-GFLOW" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>GFLOW limits the resolution to 200 pixels on a side</p></li>
@@ -829,8 +829,8 @@ wrote temp/flooding.tif
 <img alt="../_images/notebooks_GFLOW_results_visualization_11_0.png" src="../_images/notebooks_GFLOW_results_visualization_11_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Plot-raster-of-simulated-flooded-heads">
+</section>
+<section id="Plot-raster-of-simulated-flooded-heads">
 <h2>Plot raster of simulated flooded heads<a class="headerlink" href="#Plot-raster-of-simulated-flooded-heads" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
@@ -851,8 +851,8 @@ wrote temp/flooding.tif
 <img alt="../_images/notebooks_GFLOW_results_visualization_13_0.png" src="../_images/notebooks_GFLOW_results_visualization_13_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Plot-raster-of-simulated-depth-to-groundwater">
+</section>
+<section id="Plot-raster-of-simulated-depth-to-groundwater">
 <h2>Plot raster of simulated depth to groundwater<a class="headerlink" href="#Plot-raster-of-simulated-depth-to-groundwater" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -882,8 +882,8 @@ wrote temp/flooding.tif
 </pre></div>
 </div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -900,7 +900,7 @@ wrote temp/flooding.tif
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jan 28, 2021.
+        Last updated on Apr 06, 2021.
       </span>
 
     </p>

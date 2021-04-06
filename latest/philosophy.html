@@ -4,15 +4,17 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Philosophy &mdash; linesink-maker 0.1.2.post8.dev0+g4c7b201 documentation</title>
+  <title>Philosophy &mdash; linesink-maker 0.1.2.post9.dev0+g6f369d3 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
 
   
@@ -36,8 +38,6 @@
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                0.1.2.post8.dev0+g4c7b201
+                0.1.2.post9.dev0+g6f369d3
               </div>
             
           
@@ -94,7 +94,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <p><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Philosophy</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#motivation">Motivation</a></li>
@@ -105,7 +105,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Usage</span></p>
+<p><span class="caption-text">Usage</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Input requirements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
@@ -114,13 +114,13 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Reference</span></p>
+<p><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html"> Code Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config-file-defaults.html"> Configuration defaults</a></li>
 <li class="toctree-l1"><a class="reference internal" href="release-history.html"> Release History</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Developer</span></p>
+<p><span class="caption-text">Developer</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to linesink-maker</a></li>
 </ul>
@@ -214,9 +214,9 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="philosophy">
+<section id="philosophy">
 <h1>Philosophy<a class="headerlink" href="#philosophy" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="motivation">
+<section id="motivation">
 <h2>Motivation<a class="headerlink" href="#motivation" title="Permalink to this headline">¶</a></h2>
 <p>As the availability of datasets required for groundwater modeling has increased, so too has the need for
 improved methods for rapidly assessing stresses to aquatic systems such as cumulative pumping
@@ -226,8 +226,8 @@ most common approach to constructing analytic element models involves manually d
 hydrologic features (e.g. streams, rivers, lakes), using existing hydrographic and topographic layers as
 guides. Although typically less cumbersome than building finite difference grids, this process can still be
 prohibitively labor-intensive for many water resources decisions.</p>
-</div>
-<div class="section" id="what-linesink-maker-does">
+</section>
+<section id="what-linesink-maker-does">
 <h2>What linesink-maker does<a class="headerlink" href="#what-linesink-maker-does" title="Permalink to this headline">¶</a></h2>
 <p>Linesink-maker leverages existing information in the National Hydrography Dataset (NHDPlus) to automate construction of line-sink elements representing streams, rivers, and lakes.</p>
 <ul class="simple">
@@ -236,12 +236,12 @@ prohibitively labor-intensive for many water resources decisions.</p>
 <li><p>The program produces a linesink file for import into the GFLOW graphical user interface.</p></li>
 <li><p>For a demonstration of how linesink-maker works, see the Nicolet example, which constructs a 3,000+ equation stream network in a matter of minutes.</p></li>
 </ul>
-</div>
-<div class="section" id="what-linesink-maker-doesn-t-do">
+</section>
+<section id="what-linesink-maker-doesn-t-do">
 <h2>What linesink-maker doesn’t do<a class="headerlink" href="#what-linesink-maker-doesn-t-do" title="Permalink to this headline">¶</a></h2>
 <p>Linesink-maker does not construct a complete, working GFLOW model. It is still on the modeler to specify reasonable recharge rates and hydraulic conductivity values, including any heterogeniety that needs to be represented. More importantly, the modeler must also compare the model output to observed values of stream (base) flow and hydraulic head, and estimated reasonable values for hydraulic conductivity and recharge. GFLOW makes this easy to do with its PEST integration.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -258,7 +258,7 @@ prohibitively labor-intensive for many water resources decisions.</p>
   <div role="contentinfo">
     <p>
       <span class="lastupdated">
-        Last updated on Jan 28, 2021.
+        Last updated on Apr 06, 2021.
       </span>
 
     </p>

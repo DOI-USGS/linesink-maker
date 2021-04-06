@@ -2,6 +2,10 @@
 Release History
 ===============
 
+Version 0.1.3 (2021-01-29)
+--------------------------
+USGS software release associated with `Groundwater` publication
+
 Version 0.1.2 (2021-01-06)
 --------------------------
 * fix bug in writing of lss.xml output where ComputationalUnits and BasemapUnits were lower case
