@@ -7,23 +7,23 @@ Rapid creation of linesink elements for stream network simulation in the groundw
 ![Tests](https://github.com/usgs/linesink-maker/workflows/Tests/badge.svg)
 [![codecov](https://codecov.io/gh/usgs/linesink-maker/branch/develop/graph/badge.svg)](https://codecov.io/gh/usgs/linesink-maker)
 [![PyPI version](https://badge.fury.io/py/linesink-maker.svg)](https://badge.fury.io/py/linesink-maker)
-
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 
 Getting Started
 ----------------------------------------------- 
-See the [linesink-maker documentation](https://usgs.github.io/linesink-maker/index.html)
+See the [linesink-maker documentation](https://doi-usgs.github.io/linesink-maker/index.html)
 
 
 Installation
 -----------------------------------------------
-See the [Installation Instructions](https://usgs.github.io/linesink-maker/latest/installation.html)
+See the [Installation Instructions](https://doi-usgs.github.io/linesink-maker/latest/installation.html)
 
 How to cite
 --------------
 ###### Citation for Linesink-maker
 
-Leaf, A.T., Fienen, M.N. and Reeves, H.W. (2021), SFRmaker and Linesink‐maker: Rapid construction of streamflow routing networks from hydrography data. Groundwater. Accepted Author Manuscript. [https://doi.org/10.1111/gwat.13095](https://doi.org/10.1111/gwat.13095)
+Leaf, A.T., Fienen, M.N. and Reeves, H.W. (2021), SFRmaker and Linesink-Maker: Rapid Construction of Streamflow Routing Networks from Hydrography Data. Groundwater, 59: 761-771. https://doi.org/10.1111/gwat.13095
 
 ###### Software/Code citation for Linesink-maker (IP-122356):
 Leaf, A.T., 2021, Linesink-maker version 0.1.3: U.S. Geological Survey Software Release, 29 Jan. 2021, [https://doi.org/10.5066/P99QSDDX](https://doi.org/10.5066/P99QSDDX)
