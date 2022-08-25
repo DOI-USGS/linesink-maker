@@ -2,6 +2,12 @@
 Release History
 ===============
 
+Version 0.1.4 (2022-08-25)
+--------------------------
+* fix issue with lsmaker.py that was resulting in ``ValueError: Linestrings must have at least 2 coordinate tuples`` (related to changes to pandas)
+* add geopandas as dependency. Could eventually be used for all shapefile reading and writing where feasible, and easy handling of coorindate references and transformations.
+* other minor fixes and clean-up
+
 Version 0.1.3 (2021-01-29)
 --------------------------
 USGS software release associated with `Groundwater` publication
