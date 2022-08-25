@@ -16,9 +16,10 @@ dependencies:
 - pandas
 - gdal
 - fiona
-- rasterio>=1.0
+- rasterio
 - shapely
-- pyproj>=2.0
+- pyproj
+- geopandas
 - pip
 - pip:
-  - gis-utils>=0.2.5
+  - gis-utils
