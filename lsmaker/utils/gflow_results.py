@@ -3,8 +3,8 @@ from pathlib import Path
 import shutil
 import numpy as np
 import pandas as pd
+import geopandas as gpd
 from shapely.geometry import LineString
-import gisutils
 
 
 def get_ls_skiprows_nrows(xtr):
@@ -140,7 +140,8 @@ def plot_flooding(grdfile, dem, epsg,
             # rasters might be of slightly different shape after clipping
             # (depending on original offset(s)?)
             # slice both to minimum dimmensions
-            demarr, hdsarr = demcpobj.read(1), hds.read(1)
+            demarr = demcpobj.read(1, masked=True)
+            hdsarr = hds.read(1, masked=True)
             h = np.min((demcpobj.height, hds.height))
             w = np.min((demcpobj.width, hds.width))
             dtw = demarr[:h, :w] * dem_mult - hdsarr[:h, :w]
@@ -197,8 +198,8 @@ def write_streamflow_shapefile(xtr, outshp=None, solver_x0=0, solver_y0=0,
     df[['x1', 'x2']] = df[['x1', 'x2']] * coords_mult + solver_x0
     df[['y1', 'y2']] = df[['y1', 'y2']] * coords_mult + solver_y0
     df['geometry'] = [LineString([(r.x1, r.y1), (r.x2, r.y2)]) for i, r in df.iterrows()]
-    gisutils.df2shp(df, outshp, crs=crs, **kwargs)
-
+    gdf = gpd.GeoDataFrame(df, crs=crs)
+    gdf.to_file(outshp, **kwargs)
 
 class SurferGrid:
     def __init__(self, grdfile=None, data=None):
