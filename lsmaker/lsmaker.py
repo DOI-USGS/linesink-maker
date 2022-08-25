@@ -1064,7 +1064,7 @@ class LinesinkData:
             if len(toget) > 0:
                 isolated_wb = self.wb.loc[self.wb.COMID.isin(toget)].copy()
                 wb_points_df2 = self._get_wb_elevations(isolated_wb)
-                wb_points_df = wb_points_df.append(wb_points_df2)
+                wb_points_df = pd.concat([wb_points_df, wb_points_df2])
                 gisutils.df2shp(wb_points_df, self.wb_centroids_w_elevations, crs=self.crs)
 
         # open error reporting file
@@ -1205,7 +1205,7 @@ class LinesinkData:
 
         print('merging flowline and waterbody datasets...')
         df['waterbody'] = np.array([False] * len(df), dtype=bool)
-        df = df.append(wbs)
+        df = pd.concat([df, wbs])
         df.COMID = df.index
         '''
         if self.clip_farfield:
