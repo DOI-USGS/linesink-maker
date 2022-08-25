@@ -1527,26 +1527,24 @@ class LinesinkData:
             # do this for both routed and unrouted (farfield) lakes, so that the outlet line won't cross the lake
             # (only tributaries are tested for crossing in step below)
             lake_coords = uniquelist(df.loc[wb_comid, 'ls_coords'])
-            try:
-                if len(df.loc[wb_comid, 'dncomid']) > 0 and int(dncomids[0]) != 0:
-                    outlet_coords = df.loc[df.loc[wb_comid, 'dncomid'][0], 'ls_coords'][0]
-                    closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
-                    lake_coords[closest_ind] = outlet_coords
-                    next_ind = closest_ind + 1 if closest_ind < (len(lake_coords) - 1) else 0
-                # for lakes without outlets, make the last coordinate the outlet so that it can be moved below
-                else:
-                    outlet_coords = lake_coords[-1]
-                    next_ind = 0
-            except:
-                j=2
+
+            if len(df.loc[wb_comid, 'dncomid']) > 0 and int(dncomids[0]) != 0:
+                outlet_coords = df.loc[df.loc[wb_comid, 'dncomid'][0], 'ls_coords'][0]
+                closest_ind = closest_vertex_ind(outlet_coords, lake_coords)
+                lake_coords[closest_ind] = outlet_coords
+                next_ind = closest_ind + 1 if closest_ind < (len(lake_coords) - 1) else 0
+            # for lakes without outlets, make the last coordinate the outlet so that it can be moved below
+            else:
+                outlet_coords = lake_coords[-1]
+                next_ind = 0
 
             inlet_coords = move_point_along_line(lake_coords[next_ind], outlet_coords, 1)
 
             new_coords = [inlet_coords] + lake_coords[next_ind:] + lake_coords[:next_ind]
-            df.loc[wb_comid, 'ls_coords'] = [new_coords]
+            df.at[wb_comid, 'ls_coords'] = new_coords
 
             # make sure inlets/outlets don't cross lines representing lake
-            wb_geom = LineString(df.loc[wb_comid, 'ls_coords'])
+            wb_geom = LineString(new_coords)
             x = [c for c in upcomids if int(c) != 0 and LineString(df.loc[c, 'ls_coords']).crosses(wb_geom)]
             if len(x) > 0:
                 for c in x:
