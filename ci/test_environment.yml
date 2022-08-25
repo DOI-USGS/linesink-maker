@@ -17,8 +17,9 @@ dependencies:
 - fiona
 - rasterio
 - shapely
-- pyproj>=2.0
+- pyproj
 - descartes
+- geopandas
 - codecov
 - coverage
 - flake8
@@ -31,4 +32,3 @@ dependencies:
 - pip
 - pip:
   - gis-utils
-  - doctr
