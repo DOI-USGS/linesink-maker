@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 import pytest
+import subprocess
 
 
 @pytest.fixture(scope='module')
@@ -76,3 +77,12 @@ def test_medford_yaml(lsmaker_instance_from_xml):
     config_file = 'examples/medford/Medford_lines.yml'
     ls = lsmaker.LinesinkData(config_file)
     ls == lsmaker_instance_from_xml
+    
+    
+def test_nicolet_example(project_root_path):
+    """Test that the xml and yaml config files yield equivalent results.
+    """
+    os.chdir('examples/nicolet')
+    results = subprocess.run(['python', 'make_linesinks.py', 'Nicolet_lines.xml'], shell=True)
+    j=2
+    os.chdir(project_root_path)
