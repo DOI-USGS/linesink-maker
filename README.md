@@ -4,20 +4,20 @@ Rapid creation of linesink elements for stream network simulation in the groundw
  
 ### Version 0.1
 
-![Tests](https://github.com/usgs/linesink-maker/workflows/Tests/badge.svg)
-[![codecov](https://codecov.io/gh/usgs/linesink-maker/branch/develop/graph/badge.svg)](https://codecov.io/gh/usgs/linesink-maker)
+![Tests](https://github.com/aleaf/linesink-maker/workflows/Tests/badge.svg)
+[![codecov](https://codecov.io/gh/aleaf/linesink-maker/branch/develop/graph/badge.svg)](https://codecov.io/gh/aleaf/linesink-maker)
 [![PyPI version](https://badge.fury.io/py/linesink-maker.svg)](https://badge.fury.io/py/linesink-maker)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 
 Getting Started
 ----------------------------------------------- 
-See the [linesink-maker documentation](https://doi-usgs.github.io/linesink-maker/index.html)
+See the [linesink-maker documentation](https://aleaf.github.io/linesink-maker/index.html)
 
 
 Installation
 -----------------------------------------------
-See the [Installation Instructions](https://doi-usgs.github.io/linesink-maker/latest/installation.html)
+See the [Installation Instructions](https://aleaf.github.io/linesink-maker/latest/installation.html)
 
 How to cite
 --------------
