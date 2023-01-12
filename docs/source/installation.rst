@@ -8,13 +8,18 @@ Linesink-maker requires GFLOW 2.2 or higher, which has the capability of importi
 
 Installing python dependencies with Conda
 -----------------------------------------
-``Linesink-maker`` depends on a number of python packages, many of which have external C library dependencies. The easiest way to install most of these is with `conda`_. A few packages are not available via conda, and must be installed with `pip`_. If you are on the USGS internal network, see the `Considerations for USGS Users`_ section below first.
+``Linesink-maker`` depends on a number of python packages, many of which have external C library dependencies. The easiest way to install most of these is with a package installer like `Conda`_. A few packages are not available via conda, and must be installed with `pip`_. If you are on the USGS internal network, see the `Considerations for USGS Users`_ section below first.
 
-Download and install the 64-bit `Anaconda python distribution`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Download and install a python distribution and Conda-like package installer 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+There are many ways to do this:
 
-  * Anaconda comes with a larger selection of popular data science and scientific packages, making it ideal for those who use python frequently for scientific computing.
-  * Miniconda is a minimal installer with a much smaller footprint, making it ideal for those who only want to use ``Linesink-maker``.
+    * The `Anaconda python distribution`_ comes with a large selection of popular data science and scientific packages pre-installed.
+
+    * `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ is a minimal installer with a much smaller footprint, making it ideal for creating python environments dedicated to specific tasks (a recommended practice).
+
+    * `Mambaforge <https://github.com/conda-forge/miniforge#mambaforge>`_ is like Miniconda, but pre-configured to use the `Mamba`_ installer, and only the `conda-forge <https://conda-forge.org/docs/user/introduction.html>`_ channel for getting packages (more below). If the above two options don't work (for example, the Conda installer fails or gets stuck on the "solve" step), this may be your best option.
+
   * **Make sure to install Anaconda or Miniconda to your username** (not at the system level). More often than not, installing at the system level (for all users) seems to result in issues with library dependencies (for example, import of ``fiona`` or ``rasterio`` failing because gdal isn't found). It is also good practice to periodically do a `clean uninstall`_ of Anaconda, which at the system level requires admin. privileges.
 
     * In the installer, at the “Destination Select” step, select “Install for me only.” It should say something about how the software will be installed to your home folder.
@@ -39,7 +44,18 @@ If you are on the USGS internal network, see the `Considerations for USGS Users`
 
 While Conda can of course be used to create a Conda environment, the Mamba package solver is generally faster and more robust, especially for larger, more complex environments like the included ``requirements.yml``. Mamba is a reimplementation of the conda package manager in C++.
 
-To get started, open an Anaconda Command Prompt on Windows or a terminal window on OSX and point it to the location of ``requirements.yml`` or ``gis.yml`` and enter:
+Before using Mamba, you will need to `install it first <https://mamba.readthedocs.io/en/latest/installation.html>`_.
+
+Python packages are available from conda via channels. Conda comes preconfigured to install packages from the default channel, which is maintained by Anaconda, Inc. In general, you may have better luck exclusively using the `conda-forge <https://conda-forge.org/docs/user/introduction.html>`_ channel instead, which is community-based and intended to provide a single location to get any package, with a minimum of hassle. In general, it is bad practice to mix package channels within a single environment. You can read more `here <https://conda-forge.org/docs/user/introduction.html>`__, but to set conda-forge as the default:
+
+.. code-block:: bash
+
+    conda config --add channels conda-forge
+
+.. note::
+    If you are having trouble installing Mamba (for example, the conda package solver fails when you try to install it, or takes an excessively long time), you may have better luck uninstalling `Anaconda completely <clean uninstall>`_ and installing `Mambaforge <https://github.com/conda-forge/miniforge#mambaforge>`_ instead, as directed in the Mamba install instructions. Mambaforge solves both of the above problems by providing a minimal python distribution and conda-style package installer that is preconfigured to use both `conda-forge <https://conda-forge.org/docs/user/introduction.html>`_ and `Mamba`_.
+
+Once you have a python distribution and mamba installed, to create the conda environment, open a new Anaconda Command Prompt on Windows or a new terminal window on OSX and point it to the location of ``requirements.yml`` or ``gis.yml`` and enter:
 
 .. code-block:: bash
 
@@ -54,14 +70,14 @@ Building the environment will probably take a while. If the build fails because 
 
         .. code-block:: bash
 
-            conda env update -f requirements.yml
+            mamba env update -f requirements.yml
 
     b) 	or remove and reinstall it:
 
         .. code-block:: bash
 
             conda env remove -n lsmaker
-            conda env create -f requirements.yml
+            mamba env create -f requirements.yml
 
 Keeping the Conda environment up to date
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -146,16 +162,30 @@ Your local copy of the Linesink-maker repository can then be subsequently update
 The advantage of installing the source code in-place is that any changes you make are automatically incorporated into your python environment, without any additional install commands. When debugging in an interactive development environment (IDE) such as Pycharm or VS Code, error tracebacks and inspection features go to the actual source code, not the version installed in the ``site-packages`` folder. Additionally, since this install is done through pip, ``pip uninstall``
 will work to remove the package, and the current version of the package (including the latest commit information) will be visible with ``conda list``.
 
+Installing the IPython kernel to use Linesink-maker in Jupyter Notebooks
+------------------------------------------------------------------------------------------------
+This step may not be needed if you already have an existing Python environment with the packages required by Linesink-maker *and* Jupyter Notebook installed. However, if you'd like to use Linesink-maker in a Jupyter Notebook with the included ``lsmaker`` environment (specified in ``requirements.yml``), you'll most likely need to install the IPython kernel in that environment. You can do this at the command line or terminal window (with ``lsmaker`` activated):
+
+.. code-block:: bash
+
+    python -m ipykernel install --user --name lsmaker --display-name "lsmaker"
+
+
+The first instance of ``lsmaker`` in this command is the environment to install the kernel to, and the second instance (in quotes) is the name that will appear in the ``Kernel`` menu within Jupyter Notebook. To use the kernel, simply select it from the ``Kernel > Change kernel`` menu within  Jupyter Notebook. 
+
+
 Best practices
 ------------------------
 
-* Install the \*conda distribution of your choice to your user account, NOT at the system level. Installing to your user means you have rights to delete and reinstall Anaconda as-needed, as well as to edit any configuration files for ``pip``, ``conda``, etc. Installing at the system level also just seems to lead to more confusing problems with dependencies, at least in the USGS.
+* Install the \*conda distribution of your choice to your user account, NOT at the system level. Installing to your user means you have rights to delete and reinstall Anaconda as-needed, as well as to edit any configuration files for pip, Conda, etc. Installing at the system level also just seems to lead to more confusing problems with dependencies, at least in the USGS.
 * Periodically (maybe a few times a year?) fully remove your \*conda distribution and reinstall it. If you just can't get things to work (packages won't import or produce DLL errors on import, adding or upgrading a package takes a very long time or results in excessive upgrades or downgrades of other packages, etc.), fully removing and reinstalling \*conda just may resolve your issues.
 * Don't use your base environment; create and delete environments as needed. Conda is generally pretty good about managing packages between environments without wasting a lot of disk space.
 * Use an environment file (as above) to create a conda environment, instead of installing packages ad-hoc.
-* Use ``mamba`` instead of ``conda``; it just works better for environments with a lot of packages.
-* After setting up the above conda environment, scan the screen output to make sure that everything installed correctly, especially the packages installed through ``pip``.
+* Use Mamba instead of Conda; it just works better for environments with a lot of packages.
+* After setting up the above conda environment, scan the screen output to make sure that everything installed correctly, especially the packages installed through pip.
+* Avoid mixing package channels within a Conda environment. Strictly sticking to conda-forge may yield the best results.
 * Use `conda-pack`_, rather than an overly-detailed environment file, to guarantee reproducibility.
+
 
 _`Considerations for USGS Users`
 --------------------------------
