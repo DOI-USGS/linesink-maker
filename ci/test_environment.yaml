@@ -24,7 +24,7 @@ dependencies:
 - coverage
 - flake8
 - pytest
-- sphinx
+- sphinx<7
 - numpydoc
 - nbsphinx  # for rendering notebooks in sphinx-generated docs
 - sphinx-copybutton
