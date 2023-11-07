@@ -5,6 +5,7 @@ import numpy as np
 import os
 from pathlib import Path
 import pandas as pd
+import geopandas as gpd
 import shutil
 import requests
 import json
@@ -1008,12 +1009,9 @@ class LinesinkData:
 
         print('\nmaking donut polygon of farfield (with routed area removed)...')
         ffdonut = self.ff.difference(self.ra)
-        with fiona.open(self.routed_area) as src:
-            with fiona.open(self.farfield_mp, 'w', **src.meta) as output:
-                print(('writing {}'.format(self.farfield_mp)))
-                f = next(iter(src))
-                f['geometry'] = mapping(ffdonut)
-                output.write(f)
+        gdf = gpd.GeoDataFrame({'id': [0], 'geometry': ffdonut}, crs=self.crs)
+        gdf.to_file(self.farfield_mp, index=False)
+        print(('wrote {}'.format(self.farfield_mp)))
 
         if self.routed_area is not None and self.routed_area != self.nearfield:
             print('\nmaking donut polygon of routed area (with nearfield area removed)...')
@@ -1021,12 +1019,9 @@ class LinesinkData:
                 raise ValueError('Nearfield area must be within routed area!')
 
             donut = self.ra.difference(self.nf)
-            with fiona.open(self.nearfield) as src:
-                with fiona.open(self.routed_mp, 'w', **src.meta) as output:
-                    print(('writing {}'.format(self.routed_mp)))
-                    f = next(iter(src))
-                    f['geometry'] = mapping(donut)
-                    output.write(f)
+            gdf = gpd.GeoDataFrame({'id': [0], 'geometry': donut}, crs=self.crs)
+            gdf.to_file(self.routed_mp, index=False)
+            print(('wrote {}'.format(self.routed_mp)))
 
         # drop waterbodies that aren't lakes bigger than min size
         min_size = np.min([self.min_nearfield_wb_size, self.min_waterbody_size, self.min_farfield_wb_size])
