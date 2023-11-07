@@ -48,10 +48,10 @@ def test_medford_from_lss_xml(lsmaker_instance_with_linesinks):
     compare_df_columns = set(ls2.df.columns).intersection(ls.df.columns)
     # the geometries and coordinates won't be exactly the same
     # explicitly compare the coordinates separately
-    compare_df_columns = compare_df_columns.difference({'geometry',
+    compare_df_columns = list(compare_df_columns.difference({'geometry',
                                                         'ls_coords',
                                                         'width'
-                                                        })
+                                                        }))
     df1 = ls.df[compare_df_columns]
     df2 = ls2.df[compare_df_columns]
     pd.testing.assert_frame_equal(df1, df2, check_dtype=False)
