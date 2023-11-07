@@ -25,7 +25,7 @@ jobs:
           # tests with ubuntu-latest, python latest
           # are executed by build_docs.yaml
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: 3.12
 
     steps:
     - name: Checkout source

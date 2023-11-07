@@ -26,11 +26,6 @@ jobs:
         environment-file: ci/test_environment.yaml
         cache-environment: true
         cache-downloads: true
-        create-args: >-
-          python=${{ matrix.python-version }}
-        init-shell: >-
-          bash
-          powershell
 
     - name: Conda info
       shell: bash -l {0}
