@@ -1068,16 +1068,30 @@ class LinesinkData:
 
         print('\nAssembling input...')
         # read linework shapefile into pandas dataframe
-        df = gisutils.shp2df(self.flowlines_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
+        df = gisutils.shp2df(self.flowlines_clipped, index='COMID').drop_duplicates('COMID')
+        df.index = df.index.astype(float).astype(int).astype(self.int_dtype)
         df.drop([c for c in df.columns if c.lower() not in [cc.lower() for cc in self.flowlines_cols]],
                 axis=1, inplace=True)
         # might want to consider enforcing integer index here if strings cause problems
         #clipto = df.index.tolist()
-        elevs = gisutils.shp2df(self.elevslope, index='COMID', index_dtype=self.int_dtype)  #, clipto=clipto)
-        elevs = elevs.loc[elevs.COMID.isin(df.index)]
-        pfvaa = gisutils.shp2df(self.PlusFlowVAA, index='COMID', index_dtype=self.int_dtype)  #, clipto=clipto)
-        pfvaa = pfvaa.loc[pfvaa.ComID.isin(df.index)]
-        wbs = gisutils.shp2df(self.waterbodies_clipped, index='COMID', index_dtype=self.int_dtype).drop_duplicates('COMID')
+        elevs = gisutils.shp2df(self.elevslope, index='COMID')
+        # cast index to str or int (int_dtype), from float, int 
+        # or string representation of float or int
+        elevs.index = elevs.index.astype(float).astype(int).astype(self.int_dtype)
+        if not any(elevs.index.isin(df.index)):
+            raise ValueError(f"No attributes COMIDs in {self.elevslope} match any flowlines!\n"
+                             "Check that datatypes in the two files are consistent, "
+                             "and that the files are for the same area.")
+        elevs = elevs.loc[elevs.index.isin(df.index)]
+        pfvaa = gisutils.shp2df(self.PlusFlowVAA, index='COMID')  #, clipto=clipto)
+        pfvaa.index = pfvaa.index.astype(float).astype(int).astype(self.int_dtype)
+        if not any(pfvaa.index.isin(df.index)):
+            raise ValueError(f"No attributes COMIDs in {self.PlusFlowVAA} match any flowlines!\n"
+                             "Check that datatypes in the two files are consistent, "
+                             "and that the files are for the same area.")
+        pfvaa = pfvaa.loc[pfvaa.index.isin(df.index)]
+        wbs = gisutils.shp2df(self.waterbodies_clipped, index='COMID').drop_duplicates('COMID')
+        wbs.index = wbs.index.astype(float).astype(int).astype(self.int_dtype)
         wbs.drop([c for c in wbs.columns if c.lower() not in [cc.lower() for cc in self.wb_cols]],
                  axis=1, inplace=True)
         self._enforce_dtypes(wbs)
