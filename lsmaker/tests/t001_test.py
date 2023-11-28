@@ -117,6 +117,6 @@ def test2(test_data_path, test_output_path, case, min_waterbody_size, expected_n
 def test_epqs():
     elev = get_elevation_from_epqs(-91.5, 46.8, units='Feet')
     elev = float(elev)
-    if np.abs(602-elev) > 1:
-        warnings.warn('Bad elevation value of {}'.format(elev))
+    assert np.allclose(elev, 602, atol=1)
     elevs = get_elevations_from_epqs([Point(-91.5, 46.8)] * 2, units='Feet')
+    np.allclose(elevs, 602, atol=1)
