@@ -127,12 +127,10 @@ def get_elevation_from_epqs(lon, lat, units='feet'):
     >>> get_elevation_from_epqs(-91, 45)
     1139.778277
     """
-    url = 'http://nationalmap.gov/epqs/pqs.php?'
-    url += 'x={}&y={}&units={}&output=json'.format(lon, lat, units)
+    url = f'https://epqs.nationalmap.gov/v1/json?x={lon}&y={lat}&wkid=4326&units={units}&includeDate=false'
     try:
-        #epqsdata = urlopen(url).readline()
         response = requests.get(url)
-        elev = json.loads(response.text)['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation']
+        elev = json.loads(response.text)['value']
         print(lat, lon, elev, units)
     except:
         e = sys.exc_info()
