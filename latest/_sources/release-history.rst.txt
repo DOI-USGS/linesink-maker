@@ -2,6 +2,11 @@
 Release History
 ===============
 
+Version 0.1.6 (2023-11-27)
+--------------------------
+* fix issue with seepage lake elevations: National Map EPQS URL changed, which was resulting in zero elevations.
+* fix issue that occurred when NHDPlus COMIDs were read in as floats
+
 Version 0.1.5 (2023-11-07)
 --------------------------
 * fix issue with preprocessing routine in lsmaker.py, where `AttributeError: 'dict' object has no attribute 'type'` was occuring on writing farfield and routed area shapefiles.
