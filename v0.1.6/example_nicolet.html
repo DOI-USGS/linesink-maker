@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nicolet National Forest Unit (Northern part) &mdash; linesink-maker 0.1.6 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation" href="notebooks/GFLOW_results_visualization.html" />
+    <link rel="prev" title="Medford National Forest Unit" href="example_medford.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            linesink-maker
+          </a>
+              <div class="version">
+                0.1.6
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="philosophy.html">Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="example_medford.html">Medford National Forest Unit Example</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Nicolet National Forest Unit Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file-in-xml-format-nicolet-lines-xml">Configuration file in XML format (<code class="docutils literal notranslate"><span class="pre">Nicolet_lines.xml</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-linesinks-py"><code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/GFLOW_results_visualization.html">Exporting and Visualizing GFLOW output</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Input requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesink-maker">Running Linesink-maker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#diagnosing-errors">Diagnosing errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html"> Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-file-defaults.html"> Configuration defaults</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release-history.html"> Release History</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to linesink-maker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">linesink-maker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Nicolet National Forest Unit (Northern part)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example_nicolet.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="nicolet-national-forest-unit-northern-part">
+<h1>Nicolet National Forest Unit (Northern part)<a class="headerlink" href="#nicolet-national-forest-unit-northern-part" title="Permalink to this heading">¶</a></h1>
+<p>This page shows another example of using Linesink-maker to construct a <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> model, for <a class="reference external" href="https://wgnhs.wisc.edu/pubs/tr0042/">the northern part of the Nicolet National Forest Unit in Northern Wisconsin</a>. The files for this example can be found in the <a class="reference external" href="https://github.com/aleaf/linesink-maker/tree/develop/examples/nicolet">examples/nicolet subfolder</a> of the Linesink-maker repository. To run the example, simply run the included <code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code> script at the command line with <code class="docutils literal notranslate"><span class="pre">Nicolet_lines.xml</span></code> configuration file as an argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">make_linesinks</span><span class="o">.</span><span class="n">py</span> <span class="n">Nicolet_lines</span><span class="o">.</span><span class="n">xml</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="example_medford.html#medford-national-forest-unit"><span class="std std-ref">Medford example</span></a> for a more detailed description of the input options, and an example of the more human-readable YAML configuration file format.</p>
+<section id="configuration-file-in-xml-format-nicolet-lines-xml">
+<h2>Configuration file in XML format (<code class="docutils literal notranslate"><span class="pre">Nicolet_lines.xml</span></code>)<a class="headerlink" href="#configuration-file-in-xml-format-nicolet-lines-xml" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">&lt;linesinkInput&gt;</span>
+<span class="linenos"> 2</span><span class="cm">&lt;!--</span>
+<span class="linenos"> 3</span><span class="cm">Notes on linesinkMaker input:</span>
+<span class="linenos"> 4</span><span class="cm">    All shps should be in (same) model coordinate units (e.g. ft.)</span>
+<span class="linenos"> 5</span><span class="cm">    If model domain contains a major divide, need to merge relevant NHD datasets</span>
+<span class="linenos"> 6</span><span class="cm">        (e.g. 04 and 07) prior to running this script</span>
+<span class="linenos"> 7</span><span class="cm">    Put in paths to input/output files as-is (i.e. no double \)</span>
+<span class="linenos"> 8</span><span class="cm">--&gt;</span>
+<span class="linenos"> 9</span><span class="nt">&lt;GlobalSettings&gt;</span>
+<span class="linenos">10</span><span class="w">    </span><span class="cm">&lt;!-- working_dir:</span>
+<span class="linenos">11</span><span class="cm">    full path to working folder where intermediate and output will be generated. --&gt;</span>
+<span class="linenos">12</span><span class="w">    </span><span class="nt">&lt;working_dir&gt;&lt;/working_dir&gt;</span>
+<span class="linenos">13</span><span class="w">    </span><span class="cm">&lt;!-- zmult:</span>
+<span class="linenos">14</span><span class="cm">    elevation units multiplier (from NHDPlus cm to model units) --&gt;</span>
+<span class="linenos">15</span><span class="w">    </span><span class="nt">&lt;zmult&gt;</span>0.03280839895013123<span class="nt">&lt;/zmult&gt;</span>
+<span class="linenos">16</span><span class="w">    </span><span class="cm">&lt;!-- resistance:</span>
+<span class="linenos">17</span><span class="cm">    global resistance value to apply to all resistance LinesinkData (c in GFLOW documentation) --&gt;</span>
+<span class="linenos">18</span><span class="w">    </span><span class="nt">&lt;resistance&gt;</span>0.3<span class="nt">&lt;/resistance&gt;</span>
+<span class="linenos">19</span><span class="w">    </span><span class="cm">&lt;!-- H:</span>
+<span class="linenos">20</span><span class="cm">    aquifer thickness in model units --&gt;</span>
+<span class="linenos">21</span><span class="w">    </span><span class="nt">&lt;H&gt;</span>100<span class="nt">&lt;/H&gt;</span>
+<span class="linenos">22</span><span class="w">    </span><span class="cm">&lt;!-- k:</span>
+<span class="linenos">23</span><span class="cm">    Hydraulic conductivity in model units --&gt;</span>
+<span class="linenos">24</span><span class="w">    </span><span class="nt">&lt;k&gt;</span>10<span class="nt">&lt;/k&gt;</span>
+<span class="linenos">25</span><span class="w">    </span><span class="cm">&lt;!-- ScenResistance:</span>
+<span class="linenos">26</span><span class="cm">    name for global resistance parameter to assign to LinesinkData--&gt;</span>
+<span class="linenos">27</span><span class="w">    </span><span class="nt">&lt;ScenResistance&gt;</span>Rlinesink<span class="nt">&lt;/ScenResistance&gt;</span>
+<span class="linenos">28</span><span class="w">    </span><span class="cm">&lt;!-- ComputationalUnits: (&#39;Feet&#39; or &#39;Meters&#39;)</span>
+<span class="linenos">29</span><span class="cm">    model units--&gt;</span>
+<span class="linenos">30</span><span class="w">    </span><span class="nt">&lt;ComputationalUnits&gt;</span>Feet<span class="nt">&lt;/ComputationalUnits&gt;</span>
+<span class="linenos">31</span><span class="w">    </span><span class="cm">&lt;!-- BasemapUnits: (&#39;Feet&#39; or &#39;Meters&#39;)</span>
+<span class="linenos">32</span><span class="cm">    Units of the model basemaps--&gt;</span>
+<span class="linenos">33</span><span class="w">    </span><span class="nt">&lt;BasemapUnits&gt;</span>Meters<span class="nt">&lt;/BasemapUnits&gt;</span>
+<span class="linenos">34</span><span class="nt">&lt;/GlobalSettings&gt;</span>
+<span class="linenos">35</span>
+<span class="linenos">36</span><span class="nt">&lt;modelDomain&gt;</span>
+<span class="linenos">37</span><span class="w">    </span><span class="cm">&lt;!-- farfield:</span>
+<span class="linenos">38</span><span class="cm">    polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area</span>
+<span class="linenos">39</span><span class="cm">    LinesinkData within this area will be zero resistance (specified head) --&gt;</span>
+<span class="linenos">40</span><span class="w">    </span><span class="nt">&lt;farfield&gt;</span>shps/Nicolet_north_FF.shp<span class="nt">&lt;/farfield&gt;</span>
+<span class="linenos">41</span><span class="w">    </span><span class="cm">&lt;!-- nearfield:</span>
+<span class="linenos">42</span><span class="cm">    polygon of the model nearfield area, where LinesinkData will be given resistance and routed --&gt;</span>
+<span class="linenos">43</span><span class="w">    </span><span class="nt">&lt;nearfield&gt;</span>shps/Nicolet_north_NF.shp<span class="nt">&lt;/nearfield&gt;</span>
+<span class="linenos">44</span><span class="w">    </span><span class="cm">&lt;!-- split_by_HUC:</span>
+<span class="linenos">45</span><span class="cm">    option to split out LinesinkData by HUC, writing one lss file per HUC --&gt;</span>
+<span class="linenos">46</span><span class="w">    </span><span class="nt">&lt;split_by_HUC&gt;</span>False<span class="nt">&lt;/split_by_HUC&gt;</span>
+<span class="linenos">47</span><span class="w">    </span><span class="nt">&lt;HUC_shp&gt;</span>None<span class="nt">&lt;/HUC_shp&gt;</span>
+<span class="linenos">48</span><span class="w">    </span><span class="nt">&lt;HUC_name_field&gt;</span>None<span class="nt">&lt;/HUC_name_field&gt;</span>
+<span class="linenos">49</span><span class="nt">&lt;/modelDomain&gt;</span>
+<span class="linenos">50</span><span class="cm">&lt;!-- NHDfiles:</span>
+<span class="linenos">51</span><span class="cm">input .shp and .dbf files from NHDPlus. To include multiple files</span>
+<span class="linenos">52</span><span class="cm">(e.g. multiple flowlines files spanning multiple drainage areas)</span>
+<span class="linenos">53</span><span class="cm">simply add additional entries with same XML keyword.</span>
+<span class="linenos">54</span><span class="cm">LinesinkMakr will open all of the files and combine them.--&gt;</span>
+<span class="linenos">55</span><span class="nt">&lt;NHDfiles&gt;</span>
+<span class="linenos">56</span><span class="w">    </span><span class="nt">&lt;flowlines&gt;</span>shps/Nicolet_flowlines.shp<span class="nt">&lt;/flowlines&gt;</span>
+<span class="linenos">57</span><span class="w">    </span><span class="nt">&lt;elevslope&gt;</span>shps/NHDPlus04/NHDPlusAttributes/elevslope.dbf<span class="nt">&lt;/elevslope&gt;</span>
+<span class="linenos">58</span><span class="w">    </span><span class="nt">&lt;elevslope&gt;</span>shps/NHDPlus07/NHDPlusAttributes/elevslope.dbf<span class="nt">&lt;/elevslope&gt;</span>
+<span class="linenos">59</span><span class="w">    </span><span class="nt">&lt;PlusFlowVAA&gt;</span>shps/NHDPlus04/NHDPlusAttributes/PlusFlowlineVAA.dbf<span class="nt">&lt;/PlusFlowVAA&gt;</span>
+<span class="linenos">60</span><span class="w">    </span><span class="nt">&lt;PlusFlowVAA&gt;</span>shps/NHDPlus07/NHDPlusAttributes/PlusFlowlineVAA.dbf<span class="nt">&lt;/PlusFlowVAA&gt;</span>
+<span class="linenos">61</span><span class="w">    </span><span class="nt">&lt;waterbodies&gt;</span>shps/NHDwaterbodies.shp<span class="nt">&lt;/waterbodies&gt;</span>
+<span class="linenos">62</span><span class="nt">&lt;/NHDfiles&gt;</span>
+<span class="linenos">63</span>
+<span class="linenos">64</span><span class="nt">&lt;Simplification&gt;</span>
+<span class="linenos">65</span><span class="w">    </span><span class="cm">&lt;!-- nearfield_tolerance:</span>
+<span class="linenos">66</span><span class="cm">    maximum distance a simplified line can deviate from the original linework --&gt;</span>
+<span class="linenos">67</span><span class="w">    </span><span class="nt">&lt;nearfield_tolerance&gt;</span>200<span class="nt">&lt;/nearfield_tolerance&gt;</span>
+<span class="linenos">68</span><span class="w">    </span><span class="cm">&lt;!-- farfield_tolerance:</span>
+<span class="linenos">69</span><span class="cm">    maximum distance a simplified line can deviate from the original linework --&gt;</span>
+<span class="linenos">70</span><span class="w">    </span><span class="nt">&lt;farfield_tolerance&gt;</span>500<span class="nt">&lt;/farfield_tolerance&gt;</span>
+<span class="linenos">71</span><span class="w">    </span><span class="cm">&lt;!-- min_farfield_order:</span>
+<span class="linenos">72</span><span class="cm">    minimum stream order to retain in farfield --&gt;</span>
+<span class="linenos">73</span><span class="w">    </span><span class="nt">&lt;min_farfield_order&gt;</span>2<span class="nt">&lt;/min_farfield_order&gt;</span>
+<span class="linenos">74</span><span class="w">    </span><span class="cm">&lt;!-- min_waterbody_size:</span>
+<span class="linenos">75</span><span class="cm">    minimum sized waterbodies to retain (km2) --&gt;</span>
+<span class="linenos">76</span><span class="w">    </span><span class="nt">&lt;min_waterbody_size&gt;</span>1.0<span class="nt">&lt;/min_waterbody_size&gt;</span>
+<span class="linenos">77</span><span class="w">    </span><span class="cm">&lt;!-- drop_crossing:</span>
+<span class="linenos">78</span><span class="cm">    Line simplification can lead to some lines crossing.</span>
+<span class="linenos">79</span><span class="cm">    In instances of crossing, remove the line representing this smaller of the two streams</span>
+<span class="linenos">80</span><span class="cm">    (as indicated by a lower arbolate sum value)--&gt;</span>
+<span class="linenos">81</span><span class="w">    </span><span class="nt">&lt;drop_crossing&gt;</span>True<span class="nt">&lt;/drop_crossing&gt;</span>
+<span class="linenos">82</span><span class="nt">&lt;/Simplification&gt;</span>
+<span class="linenos">83</span>
+<span class="linenos">84</span><span class="nt">&lt;outputs&gt;</span>
+<span class="linenos">85</span><span class="w">    </span><span class="nt">&lt;outfile_basename&gt;</span>Nicolet<span class="nt">&lt;/outfile_basename&gt;</span>
+<span class="linenos">86</span><span class="w">    </span><span class="nt">&lt;error_reporting&gt;</span>linesinkMaker_errors.txt<span class="nt">&lt;/error_reporting&gt;</span>
+<span class="linenos">87</span><span class="nt">&lt;/outputs&gt;</span>
+<span class="linenos">88</span><span class="nt">&lt;/linesinkInput&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="make-linesinks-py">
+<h2><code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code><a class="headerlink" href="#make-linesinks-py" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="linenos"> 2</span><span class="kn">import</span> <span class="nn">lsmaker</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="k">try</span><span class="p">:</span>
+<span class="linenos"> 5</span>    <span class="n">input_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos"> 6</span><span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+<span class="linenos"> 7</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">usage is: python make_linesinks.py &lt;configuration file&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos"> 8</span>    <span class="n">quit</span><span class="p">()</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="n">ls</span><span class="o">.</span><span class="n">preprocess</span><span class="p">(</span><span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="n">ls</span><span class="o">.</span><span class="n">make_linesinks</span><span class="p">(</span><span class="n">shp</span><span class="o">=</span><span class="s1">&#39;preprocessed/lines.shp&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example_medford.html" class="btn btn-neutral float-left" title="Medford National Forest Unit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="notebooks/GFLOW_results_visualization.html" class="btn btn-neutral float-right" title="Examples of using the lsmaker.utils module to export and visualize results from a GFLOW simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+      <span class="lastupdated">Last updated on Nov 28, 2023.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
