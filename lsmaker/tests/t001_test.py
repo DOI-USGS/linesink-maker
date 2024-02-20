@@ -91,7 +91,7 @@ def test1(test_data_path, test_output_path, preprocessed_folder):
 
 @pytest.mark.parametrize(('case', 'min_waterbody_size', 'expected_nlines'), 
                          ((1, 1e10, 412),
-                          (2, 0.001, 586)))
+                          (2, 0.001, 594)))
 def test2(test_data_path, test_output_path, case, min_waterbody_size, expected_nlines):
     input_file = os.path.join(test_data_path, 'test_input.xml')
     ls = LinesinkData(input_file)

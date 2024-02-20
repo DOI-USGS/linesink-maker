@@ -16,7 +16,7 @@ Rapid creation of linesink elements for stream network simulation in the groundw
 `Go to the GitHub repository <https://github.com/aleaf/linesink-maker>`_
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Getting Started
    
    Philosophy <philosophy>

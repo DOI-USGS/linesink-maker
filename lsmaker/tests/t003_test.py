@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import pyproj
+from shapely.geometry import LineString
 import pytest
 import subprocess
 
@@ -25,6 +26,11 @@ def lsmaker_instance_with_linesinks(lsmaker_instance_from_xml):
 def test_medford(lsmaker_instance_with_linesinks):
     ls = lsmaker_instance_with_linesinks
     assert isinstance(ls, lsmaker.LinesinkData)
+    
+    # check tolerances that were applied to each linesink
+    assert all(ls.df.loc[~ls.df['routed'] & ls.df['nearfield'], 'tol'] == ls.nearfield_tolerance)
+    assert all(ls.df.loc[ls.df['routed'] & ~ls.df['nearfield'], 'tol'] == ls.routed_area_tolerance)
+    assert all(ls.df.loc[ls.df['farfield'], 'tol'] == ls.farfield_tolerance)
 
 
 @pytest.mark.parametrize('config_file', ('examples/medford/Medford_lines.yml',
@@ -86,3 +92,55 @@ def test_nicolet_example(project_root_path):
     results = subprocess.run(['python', 'make_linesinks.py', 'Nicolet_lines.xml'], shell=True)
     j=2
     os.chdir(project_root_path)
+    
+
+@pytest.mark.parametrize('routed_area_entry,multiple_nearfields_list,separate_nearfield_entry',
+                         [(True, False, True),
+                          (True, False, False),
+                          pytest.param(False, False, False, marks=pytest.mark.xfail(
+                              reason='multiple nearfields require an enclosed routed area')),
+                          (True, True, True),
+                          pytest.param(False, True, False, marks=pytest.mark.xfail(
+                              reason='multiple nearfields specified as a lit require a separate nearfield entry')),                          
+                          ])
+def test_multiple_nearfields_dict(test_data_path, routed_area_entry, multiple_nearfields_list,
+                                  separate_nearfield_entry):
+    config_file = test_data_path / 'test_input.yaml'
+    cfg = lsmaker.LinesinkData.load_configuration(config_file)
+    
+    # multiple nearfields require an enclosed routed area
+    # (test should fail if routed_area_entry=True)
+    if not routed_area_entry:
+        del cfg['ModelDomain']['routed_area']
+    
+    # option to supply nearfields in a list instead of a dictionary
+    # in this case, a separate_nearfield_entry is required
+    # to specify a global simplification tolerance for all nearfields in the list 
+    if multiple_nearfields_list:
+        cfg['ModelDomain']['nearfield'] = list(cfg['ModelDomain']['nearfield'].keys())
+        
+    # multiple nearfields specified with a dictionary
+    # should work with our without a separate "nearfield_tolerance" entry
+    # in the former case, the keys in the dictionary will override 
+    # the "nearfield_tolerance"
+    if separate_nearfield_entry:
+        cfg['Simplification']['nearfield_tolerance'] = 1000
+
+    ls = lsmaker.LinesinkData(cfg)
+    ls.make_linesinks()
+    # check that the linesink geometries are simplified
+    # from the original geometries as expected
+    assert all(ls.df['geometry'].simplify(ls.df['tol'].values) == ls.df['ls_geom'])
+    # the actual coordinate written to the GFLOW LSS XML file
+    # should match the simplified linesink geometries
+    # except for drainage lakes that may have been further edited
+    # in conversion from polygon to linesink around the perimeter
+    loc = ~ls.df['waterbody'].values
+    assert all([LineString(coords).within(g.buffer(100)) 
+                for coords, g in zip(ls.df.loc[loc, 'ls_coords'], 
+                                     ls.df.loc[loc, 'ls_geom'])])
+    
+    # the 1000 m tolerance specified in nearfield_tolerance
+    # should not have been assigned in the dictionary case
+    if not multiple_nearfields_list:
+        assert not any(ls.df['tol'].unique() == 1000)
