@@ -13,7 +13,13 @@ import yaml
 from functools import partial
 import fiona
 from fiona.crs import to_string, from_string
-from shapely.geometry import Polygon, LineString, Point, shape, mapping
+from shapely.geometry import (
+    Polygon, 
+    LineString, 
+    Point, 
+    shape, 
+    mapping, 
+    MultiPolygon)
 from shapely.ops import unary_union, transform
 import pyproj
 import math
@@ -420,13 +426,17 @@ class LinesinkData:
         self.confluences = pd.DataFrame()
 
         # read in the configuration file
-        if infile is not None and infile.endswith('.xml'):
-            self.read_lsmaker_xml(infile)
-        if infile is not None:
-            for extension in 'yml', 'yaml':
-                if infile.endswith(extension):
-                    self.read_lsmaker_yaml(infile)
-
+        if isinstance(infile, str) or isinstance(infile, Path):
+            infile = Path(infile)
+            if infile.name.endswith('.xml'):
+                self.read_lsmaker_xml(infile)
+            else:
+                for extension in 'yml', 'yaml':
+                    if infile.name.endswith(extension):
+                        self.set_configuration_from_yaml(infile)
+        elif isinstance(infile, dict):
+            self.set_configuration(infile)
+            
         # or create instance from a GFLOW LSS XML file
         elif GFLOW_lss_xml is not None:
             self.from_lss_xml = True
@@ -687,19 +697,55 @@ class LinesinkData:
         self.outsegs = pd.DataFrame()
         self.confluences = pd.DataFrame()
 
-    def read_lsmaker_yaml(self, infile):
+    @classmethod
+    def load_configuration(self, infile):
+        """Load Linesink-maker YAML configuration into a dictionary.
 
+        Parameters
+        ----------
+        infile : str or pathlike
+            Linesink-maker configuration file in YAML format.
+
+        Returns
+        -------
+        cfg : dict
+            Configuration dictionary
+        """
         # read in the user-specified configuration
         with open(infile) as src:
             cfg = yaml.load(src, Loader=yaml.Loader)
+        
+        cfg['filename'] = os.path.split(os.path.abspath(infile))[0]
+        return cfg
+    
+    def set_configuration_from_yaml(self, infile):
+        """Set the Linesink-maker configuration from a YAML file.
+
+        Parameters
+        ----------
+        infile : str or pathlike
+            Linesink-maker configuration file in YAML format.
+        """
+        cfg = self.load_configuration(infile)
+        self.set_configuration(cfg)
+        
+    def set_configuration(self, cfg):
+        """Set the Linesink-maker configuration from a configuration dictionary.
+
+        Parameters
+        ----------
+        cfg : dict
+            Configuration dictionary, as produced by the 
+            LinesinkData.set_configuration_from_yaml method.
+        """        
         # read in the default configuration
         defaults_file = os.path.join(os.path.split(__file__)[0], 
                                      'default_settings.yml')
         with open(defaults_file) as src:
             defaults = yaml.load(src, Loader=yaml.Loader)
-
-        self._lsmaker_config_file_path = os.path.split(os.path.abspath(infile))[0]
-
+        
+        self._lsmaker_config_file_path = Path(cfg['filename'])
+        
         # configuration dictionary
         self.cfg = cfg
 
@@ -711,9 +757,18 @@ class LinesinkData:
                 # try to detect files and make their paths absolute
                 entry = self.cfg.get(blockname, {}).get(key, default)
                 if isinstance(entry, str):
-                    file_abspath = os.path.join(self._lsmaker_config_file_path, entry)
-                    if os.path.exists(file_abspath) or key in filepaths_to_make_abs:
-                        entry = file_abspath
+                    file_abspath = self._lsmaker_config_file_path / entry
+                    if file_abspath.exists() or key in filepaths_to_make_abs:
+                        entry = str(file_abspath)
+                elif isinstance(entry, list):
+                    new_entry = []
+                    for item in entry:
+                        if isinstance(item, str):
+                            file_abspath = self._lsmaker_config_file_path / item
+                            if file_abspath.exists() or item in filepaths_to_make_abs:
+                                item = str(file_abspath)
+                        new_entry.append(item)
+                    entry = new_entry
                 self.__dict__[key] = entry
                 
         # setup the working directory (default to current directory)
@@ -721,19 +776,27 @@ class LinesinkData:
         
         self.lmbda = np.sqrt(self.k * self.H * self.resistance)
         self.zmult = 0.03280839895013123 if self.ComputationalUnits.lower() == 'feet' else 0.01
-            
-        # get the projection file and crs from either the nearfield or routed area
+        
+        # get the projection file and crs from either the nearfield(s) or routed area
         if self.prj is None:
             for filename in self.nearfield, self.routed_area:
+                # extra logic to handle multiple nearfields
+                fnames = []
                 if filename is not None:
-                    name, ext = os.path.splitext(filename)
-                    prjfile = name + '.prj'
-                    if os.path.exists(prjfile):
+                    if isinstance(filename, dict):
+                        for fname, tol in filename.items():
+                            fnames.append(self._lsmaker_config_file_path / fname)
+                    elif not isinstance(filename, str):
+                        for fname in filename:
+                            fnames.append(fname)
+                    else:
+                        fnames.append(filename)
+                for fname in fnames:
+                    fname = Path(fname)
+                    prjfile = fname.with_suffix('.pfj')
+                    if prjfile.exists():
                         self.prj = prjfile
                         self.crs = gisutils.get_shapefile_crs(prjfile)
-                        #with fiona.open(filename) as src:
-                        #    self.crs = src.crs
-                        #    self.crs_str = to_string(self.crs)
         else:
             #self.crs_str = gisutils.get_proj_str(self.prj)
             self.crs = gisutils.get_shapefile_crs(self.prj)
@@ -815,25 +878,26 @@ class LinesinkData:
         wb_elevations = get_elevations_from_epqs(wb_points_ll, units=self.ComputationalUnits)
 
         # add in elevations from waterbodies in stream network
-
         return pd.DataFrame({'COMID': wb_df.COMID.values,
                                      self.elevs_field: wb_elevations,
                                      'geometry': wb_points})
 
     def load_poly(self, shapefile, dest_crs=None):
-        """Load a shapefile and return the first polygon from its records,
+        """Load a polygon shapefile and return a multipolygon
+        of multiple features, or single polygon of one feature,
         projected in the destination coordinate system."""
         if dest_crs is None:
             dest_crs = self.crs
         else:
             dest_crs = gisutils.get_authority_crs(dest_crs)
         print('reading {}...'.format(shapefile))
-        with fiona.open(shapefile) as src:
-            geom = shape(next(iter(src))['geometry'])
-        shp_crs = gisutils.get_shapefile_crs(shapefile)
-        if shp_crs != dest_crs:
-            geom = gisutils.project(geom, shp_crs, dest_crs)[0]
-        return geom
+        gdf = gpd.read_file(shapefile)
+        if gdf.crs != dest_crs:
+            gdf.to_crs(dest_crs, inplace=True)
+        if len(gdf) > 1:
+            return MultiPolygon(gdf.geometry.tolist())    
+        return gdf.geometry.values[0]
+
 
     def tf2flag(self, intxt):
         # converts text written in XML file to True or False flag
@@ -909,9 +973,10 @@ class LinesinkData:
             Saves the preprocessed dataset to a shapefile specified by <preprocessed_lines> in the XML input file
 
         """
-
         if self.routed_area is None:
             self.routed_area = self.nearfield
+            if not isinstance(self.nearfield, str) or isinstance(self.nearfield, Path):
+                raise ValueError("Multiple nearfields option requires specification of an enclosing routed area.")
             self.routed_area_tolerance = self.nearfield_tolerance
         if self.nearfield is None and self.routed_area is None:
             raise InputFileMissing('Need to supply shapefile of routed area or nearfield.')
@@ -923,7 +988,7 @@ class LinesinkData:
             modelareafile = fiona.open(self.routed_area)
             nfarea = shape(modelareafile[0]['geometry'])
             modelarea_farfield = nfarea.buffer(self.farfield_buffer)
-            self.farfield = self.nearfield[:-4] + '_ff.shp'
+            self.farfield = self.routed_area[:-4] + '_ff.shp'
             output = fiona.open(self.farfield, 'w',
                                 crs=modelareafile.crs,
                                 schema=modelareafile.schema,
@@ -946,10 +1011,48 @@ class LinesinkData:
         print('clipping and reprojecting input datasets...')
 
         # (zero buffers can clean up self-intersections in hand drawn polygons)
-        self.nf = self.load_poly(self.nearfield).buffer(0)
+        if isinstance(self.nearfield, dict):
+            gdfs = []
+            for fname, tol in self.nearfield.items():
+                gdf = gpd.read_file(self._lsmaker_config_file_path / fname)
+                gdf = gpd.GeoDataFrame(gdf['geometry']).to_crs(self.crs)
+                gdf['geometry'] = gdf['geometry'].buffer(0)
+                gdf['filename'] = fname
+                gdf['tol'] = tol
+                if not gdf['geometry'].is_valid.all():
+                    raise ValueError(f"Invalid nearfield polygon(s): {fname}")
+                gdfs.append(gdf)
+            self.nf = pd.concat(gdfs)
+
+        elif not isinstance(self.nearfield, str) or isinstance(self.nearfield, Path):
+            gdfs = []
+            for fname in self.nearfield:
+                gdf = gpd.read_file(self._lsmaker_config_file_path / fname)
+                gdf = gpd.GeoDataFrame(gdf['geometry']).to_crs(self.crs)
+                gdf['geometry'] = gdf['geometry'].buffer(0)
+                gdf['filename'] = fname
+                if not gdf['geometry'].is_valid.all():
+                    raise ValueError(f"Invalid nearfield polygon(s): {fname}")
+                gdfs.append(gdf)
+            self.nf = pd.concat(gdfs)
+            if self.nearfield_tolerance is None:
+                raise ValueError(
+                    "Specification of multiple nearfields in a "
+                    "list requires a separate 'nearfield_tolerance' entry. ")
+            self.nf['tol'] = self.nearfield_tolerance
+        else:
+            self.nf = gpd.read_file(self.nearfield)
+            self.nf['geometry'] = self.nf['geometry'].buffer(0)
+            self.nf.to_crs(self.crs, inplace=True)
+            if not self.nf.geometry.is_valid.all():
+                raise ValueError(f"Invalid nearfield polygon(s): {self.nearfield}")
+            if self.nearfield_tolerance is None:
+                raise ValueError(
+                    "No 'nearfield_tolerance' entry")
+            self.nf['tol'] = self.nearfield_tolerance
         self.ra = self.load_poly(self.routed_area).buffer(0)
         self.ff = self.load_poly(self.farfield).buffer(0)
-        for p in [self.nf, self.ra, self.ff]:
+        for p in [self.ra, self.ff]:
             assert p.is_valid, 'Invalid polygon'
 
         for attr, shapefiles in list({'fl': self.flowlines,
@@ -1006,20 +1109,27 @@ class LinesinkData:
         gisutils.df2shp(self.wb, self.waterbodies_clipped, crs=self.crs)
 
         print('\nmaking donut polygon of farfield (with routed area removed)...')
-        ffdonut = self.ff.difference(self.ra)
-        gdf = gpd.GeoDataFrame({'id': [0], 'geometry': ffdonut}, crs=self.crs)
+        ff_donut_poly = self.ff.difference(self.ra)
+        gdf = gpd.GeoDataFrame({'id': [0], 'geometry': ff_donut_poly}, crs=self.crs)
         gdf.to_file(self.farfield_mp, index=False)
         print(('wrote {}'.format(self.farfield_mp)))
 
         if self.routed_area is not None and self.routed_area != self.nearfield:
             print('\nmaking donut polygon of routed area (with nearfield area removed)...')
-            if not self.nf.within(self.ra):
+            if not self.nf.within(self.ra).all():
                 raise ValueError('Nearfield area must be within routed area!')
-
-            donut = self.ra.difference(self.nf)
-            gdf = gpd.GeoDataFrame({'id': [0], 'geometry': donut}, crs=self.crs)
-            gdf.to_file(self.routed_mp, index=False)
+            # first convert nearfield area(s) to a single MultiPolygon
+            # (because we only want one 'routed area' Polygon 
+            #  with the nearfield hole(s) cut out)
+            nearfield_mp = MultiPolygon(self.nf.geometry.tolist())
+            donut = gpd.GeoDataFrame({
+                'geometry': [self.ra.difference(nearfield_mp)]},
+                crs=self.crs)
+            donut.to_file(self.routed_mp, index=False)
+            routed_area_poly = donut['geometry'].values[0]
             print(('wrote {}'.format(self.routed_mp)))
+        else:
+            routed_area_poly = self.nf.geometry[0]
 
         # drop waterbodies that aren't lakes bigger than min size
         min_size = np.min([self.min_nearfield_wb_size, self.min_waterbody_size, self.min_farfield_wb_size])
@@ -1099,32 +1209,43 @@ class LinesinkData:
         df = df.drop(mls, axis=0)
         mps = [i for i in wbs.index if 'Multi' in wbs.loc[i, 'geometry'].type]
         wbs = wbs.drop(mps, axis=0)
+        wbs = gpd.GeoDataFrame(wbs, crs=self.crs)
 
         # join NHD tables to lines
         df = df.join(elevs[self.elevslope_cols], how='inner', lsuffix='1')
         df = df.join(pfvaa[self.pfvaa_cols], how='inner', lsuffix='1')
         self._enforce_dtypes(df)
+        df = gpd.GeoDataFrame(df, crs=self.crs)
 
-        # read in nearfield and farfield boundaries
-        nf = gisutils.shp2df(self.nearfield)
-        nfg = nf.iloc[0]['geometry']  # polygon representing nearfield
-        if self.routed_area is not None and self.routed_area != self.nearfield:
-            ra = gisutils.shp2df(self.routed_mp)
-            rag = ra.iloc[0]['geometry']
-        else:
-            rag = nfg
-            nfg = Polygon() # no nearfield specified
-        ff = gisutils.shp2df(self.farfield_mp)
-        ffg = ff.iloc[0]['geometry']  # shapely geometry object for farfield (polygon with interior ring for nearfield)
-
+        # routed_area_poly is the routed area, excluding any hole(s)
+        # for one of more nearfield areas
         print('\nidentifying farfield and nearfield LinesinkData...')
-        df['farfield'] = [line.intersects(ffg) and not line.intersects(rag) for line in df.geometry]
-        wbs['farfield'] = [poly.intersects(ffg) and not poly.intersects(rag) for poly in wbs.geometry]
-        df['routed'] = [line.intersects(rag) for line in df.geometry]
-        wbs['routed'] = [poly.intersects(rag) for poly in wbs.geometry]
-        df['nearfield'] = [line.intersects(nfg) for line in df.geometry]
-        wbs['nearfield'] = [poly.intersects(nfg) for poly in wbs.geometry]
-
+        df['farfield'] = [line.intersects(ff_donut_poly) and not line.intersects(routed_area_poly) for line in df.geometry]
+        wbs['farfield'] = [poly.intersects(ff_donut_poly) and not poly.intersects(routed_area_poly) for poly in wbs.geometry]
+        df['routed'] = [line.intersects(routed_area_poly) for line in df.geometry]
+        wbs['routed'] = [poly.intersects(routed_area_poly) for poly in wbs.geometry]
+        #df['nearfield'] = [line.intersects(routed_area_poly) for line in df.geometry]
+        df = df.sjoin(self.nf[['tol', 'geometry']], how='left', predicate='intersects')
+        # non NaN entries in the 'index_right' column indicate intersection
+        # with those nearfield polygons (denoted by their index numbers)
+        df['nearfield'] = ~df['index_right'].isna()
+        #wbs['nearfield'] = [poly.intersects(routed_area_poly) for poly in wbs.geometry]
+        wbs = wbs.sjoin(self.nf[['tol', 'geometry']], how='left', predicate='intersects')
+        # non NaN entries in the 'index_right' column indicate intersection
+        # with those nearfield polygons (denoted by their index numbers)
+        wbs['nearfield'] = ~wbs['index_right'].isna()
+        # drop any duplicates caused by lines intersecting more than one nearfield
+        df = df.loc[~df.index.duplicated(keep='last')].copy()
+        wbs = wbs.loc[~wbs.index.duplicated(keep='last')].copy()
+        # assign farfield and routed area tolerances
+        df.loc[df['farfield'], 'tol'] = self.farfield_tolerance
+        df.loc[df['routed'], 'tol'] = self.routed_area_tolerance
+        wbs.loc[wbs['farfield'], 'tol'] = self.farfield_tolerance
+        wbs.loc[wbs['routed'], 'tol'] = self.routed_area_tolerance
+        assert not df['tol'].isna().any(),\
+            "Something went wrong; some lines don't have a simplification tolerance"
+        assert not wbs['tol'].isna().any(),\
+            "Something went wrong; some lines don't have a simplification tolerance"
         if self.asum_thresh_ra > 0.:
             print('\nremoving streams in routed area with arbolate sums < {:.2f}'.format(self.asum_thresh_ra))
             # retain all streams in the farfield or in the routed area with arbolate sum > threshold
@@ -1260,7 +1381,7 @@ class LinesinkData:
         print('simplifying NHD linework geometries...')
         # simplify line and waterbody geometries
         #(see http://toblerity.org/shapely/manual.html)
-        df = self.df[['farfield', 'routed', 'nearfield', 'geometry']].copy()
+        df = self.df[['farfield', 'routed', 'nearfield', 'tol', 'geometry']].copy()
 
         ls_geom = np.array([LineString()] * len(df), dtype=object)
         tols = {'nf': nearfield_tolerance,
@@ -1552,18 +1673,23 @@ class LinesinkData:
 
             # make sure inlets/outlets don't cross lines representing lake
             wb_geom = LineString(new_coords)
-            x = [c for c in upcomids if int(c) != 0 and LineString(df.loc[c, 'ls_coords']).crosses(wb_geom)]
-            if len(x) > 0:
-                for c in x:
-                    ls_coords = list(df.loc[c, 'ls_coords'])  # want to copy, to avoid modifying df
+            crosses = [c for c in upcomids if int(c) != 0 and LineString(df.loc[c, 'ls_coords']).crosses(wb_geom)]
+            if len(crosses) > 0:
+                for comid_crosses in crosses:
+                    if comid_crosses == '13103297':
+                        j=2
+                    ls_coords = list(df.loc[comid_crosses, 'ls_coords'])  # want to copy, to avoid modifying df
                     # find the first intersection point with the lake
                     # (for some reason, two very similar coordinates will be occasionally be returned by intersection)
                     intersection = LineString(ls_coords).intersection(wb_geom)
-                    if intersection.type == 'MultiPoint':
-                        intersection_point = np.array([intersection.geoms[0].xy[0][0],
-                                                       intersection.geoms[0].xy[1][0]])
-                    else:
-                        intersection_point = np.array([intersection.xy[0][0], intersection.xy[1][0]])
+                    try:
+                        if intersection.type == 'MultiPoint':
+                            intersection_point = np.array([intersection.geoms[0].xy[0][0],
+                                                        intersection.geoms[0].xy[1][0]])
+                        else:
+                            intersection_point = np.array([intersection.xy[0][0], intersection.xy[1][0]])
+                    except:
+                        j=2
                     # sequentially drop last vertex from line until it no longer crosses the lake
                     crossing = True
                     while crossing:
@@ -1572,15 +1698,16 @@ class LinesinkData:
                             break
                         # need to test for intersection separately,
                         # in case len(ls_coords) == 1 (can't make a LineString)
-                        elif LineString(ls_coords).crosses(wb_geom):
+                        elif not LineString(ls_coords).crosses(wb_geom):
                             break
                     # append new end vertex on line that is close to, but not coincident with lake
                     diff = np.array(ls_coords[-1]) - intersection_point
                     # make a new endpoint that is between the intersection and next to last
                     new_endvert = tuple(intersection_point + np.sign(diff) * np.sqrt(self.nearfield_tolerance))
                     ls_coords.append(new_endvert)
-                    df.at[c, 'ls_coords'] = ls_coords
-                    #df.set_value(c, 'ls_coords', ls_coords)
+                    # Use df.at here to avoid error about setting a list
+                    # with a different length than existing list
+                    df.at[comid_crosses, 'ls_coords'] = ls_coords
             # drop the lines representing the lake from the lines dataframe
             df.drop(lines.index, axis=0, inplace=True)
         return df
@@ -1599,10 +1726,13 @@ class LinesinkData:
         dncomid, upcomids = [], []
         for l in lines:
             # set up/down comids that are not in the model domain to zero
-            dncomid.append([d if d in lines else 0 for d in
-                            list(df[df['Hydroseq'] == df.loc[l, 'DnHydroseq']].index)])
-            upcomids.append([u if u in lines else 0 for u in
-                             list(df[df['DnHydroseq'] == df.loc[l, 'Hydroseq']].index)])
+            try:
+                dncomid.append([d if d in lines else 0 for d in
+                                list(df[df['Hydroseq'] == df.loc[l, 'DnHydroseq']].index)])
+                upcomids.append([u if u in lines else 0 for u in
+                                list(df[df['DnHydroseq'] == df.loc[l, 'Hydroseq']].index)])
+            except:
+                j=2
 
         df.loc[lines, 'upcomids'] = np.array(upcomids, dtype=object)
         df.loc[lines, 'dncomid'] = np.array(dncomid, dtype=object)
@@ -1621,10 +1751,11 @@ class LinesinkData:
 
         if reuse_preprocessed_lines:
             try:
-                self.df = gisutils.shp2df(shp, index='COMID',
-                                    index_dtype=self.int_dtype,
-                                    true_values=['True'],
-                                    false_values=['False'])
+                self.df = gpd.read_file(shp, dtypes={'COMID': self.int_dtype})#index='COMID',
+                                    #index_dtype=self.int_dtype,
+                                    #true_values=['True'],
+                                    #false_values=['False'])
+                self.df.index = self.df['COMID']
                 self._enforce_dtypes(self.df)
             except:
                 self.preprocess(save=True)
@@ -1635,14 +1766,14 @@ class LinesinkData:
         self.df.index = self.df.index.astype(self.int_dtype)
         self.df['COMID'] = self.df.COMID.astype(self.int_dtype)
 
-        df = self.df
-
         # simplify the lines in the df (dataframe) attribute
-        self.lines_df = self.simplify_lines()
-
-        # add linesink geometries back in to dataframe
-        #df['ls_geom'] = self.lines_df['ls_geom']
-        df['ls_coords'] = self.lines_df['ls_coords']
+        df = self.df.copy()
+        df['ls_geom'] = df['geometry'].simplify(df['tol'].values)
+        # add column of lists, containing linesink coordinates
+        df['ls_coords'] = [list(g.coords) for g in df['ls_geom']]
+        # there shouldn't be an empty coordinates
+        assert np.all(np.array([len(c) for c in df.ls_coords]) > 0) 
+        self.lines_df = df
 
         self.wblist = set(df.loc[df.waterbody].index.values.astype(self.int_dtype)).difference({0})
 
@@ -2003,10 +2134,17 @@ class LinesinkData:
         # recreate shapely geometries from coordinates column; drop all other coords/geometries
         if use_ls_coords and 'ls_coords' in df.columns:
             df['geometry'] = [LineString(g) for g in df.ls_coords]
-            df = df.drop(['ls_coords'], axis=1)
+            df.drop(['ls_coords'], axis=1, inplace=True)
 
-        gisutils.df2shp(df, outfile, crs=self.crs)
-
+        # drop original linesink geometry column
+        # (geopandas doesn't allow multiple geometry cols)
+        # note: additional refactoring or code inspection
+        # might allow this column to be used directly 
+        # to eliminate above operation 
+        # of rebuilding geometry column from the linesink coordinates
+        df.drop('ls_geom', axis=1, errors='ignore', inplace=True)
+        df.to_file(outfile, index=False)
+        print(f"wrote {outfile}")
 
 class linesinks(LinesinkData):
     def __init__(self, *args, **kwargs):
