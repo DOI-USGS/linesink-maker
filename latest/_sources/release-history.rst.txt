@@ -2,6 +2,11 @@
 Release History
 ===============
 
+Version 0.2 (2024-02-20)
+--------------------------
+* add option to :ref:`specify multiple nearfield areas <Specifying one or more nearfields>`
+* fix an issue where lines crossing lakes were getting over-simplified in the process of correcting the crosses.
+
 Version 0.1.6 (2023-11-27)
 --------------------------
 * fix issue with seepage lake elevations: National Map EPQS URL changed, which was resulting in zero elevations.

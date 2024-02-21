@@ -1,14 +1,16 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.1.6.post0.dev0+gfab4228 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
-      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.1.6.post1.dev0+g373416a documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -40,7 +42,7 @@
             linesink-maker
           </a>
               <div class="version">
-                0.1.6.post0.dev0+gfab4228
+                0.1.6.post1.dev0+g373416a
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -56,7 +58,12 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Medford National Forest Unit Example</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#configuration-file-in-yaml-format-medford-lines-yml">Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file-in-yaml-format-medford-lines-yml">Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-globalsettings-block">The GlobalSettings block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-modeldomain-block">The ModelDomain block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-simplification-block">The <code class="docutils literal notranslate"><span class="pre">Simplification</span></code> block</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#python-script-to-build-the-model-make-linesinks-py">Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#alternative-xml-format-for-configuration-file-medford-lines-xml">Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)</a></li>
 </ul>
@@ -184,10 +191,53 @@
 <span class="linenos">66</span><span class="w">  </span><span class="nt">error_reporting</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">linesinkMaker_errors.txt</span>
 </pre></div>
 </div>
+<section id="the-globalsettings-block">
+<h3>The GlobalSettings block<a class="headerlink" href="#the-globalsettings-block" title="Permalink to this heading">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">GlobalSettings:</span></code> block in the configuration file contains settings that apply to the whole model. The <code class="docutils literal notranslate"><span class="pre">resistance:</span></code> , <code class="docutils literal notranslate"><span class="pre">global_streambed_thickness:</span></code>, <code class="docutils literal notranslate"><span class="pre">H:</span></code> (representative aquifer thickness), and <code class="docutils literal notranslate"><span class="pre">k:</span></code> (representative aquifer hydraulic conductivity) are all used to compute the characteristic leakage length (<span class="math notranslate nohighlight">\(\lambda\)</span>) needed for estimating an appropriate width parameter for lakes (Haitjema, 2005), and are given in the model length units (<code class="docutils literal notranslate"><span class="pre">ComputationalUnits:</span></code>). <code class="docutils literal notranslate"><span class="pre">working_dir:</span></code> specifies the location where output from Linesink-maker will be written; <code class="docutils literal notranslate"><span class="pre">prj:</span></code> is a file path to a projection file containing a <a class="reference external" href="http://docs.opengeospatial.org/is/18-010r7/18-010r7.html">well-known text (WKT)</a> representation of the projected CRS for the model.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">ModelDomain:</span></code> block allows specification of different areas of model refinement. With the nearfield: key, the user can specify a polygon shapefile defining the primary area of focus for the model. With the optional routed_area: key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Finally, the outer extent of the model can be defined using a polygon shapefile with the <code class="docutils literal notranslate"><span class="pre">farfield:</span></code> key, or alternatively, as a buffer distance around the nearfield polygon with the <code class="docutils literal notranslate"><span class="pre">farfield_buffer:</span></code> key. The area between the nearfield polygon (or optionally, the routed area polygon) and the farfield extent is then populated with zero-resistance linesinks that form a perimeter boundary condition (see Haitjema, 1995).</p>
+</section>
+<section id="the-modeldomain-block">
+<h3>The ModelDomain block<a class="headerlink" href="#the-modeldomain-block" title="Permalink to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">ModelDomain:</span></code> block allows specification of different areas of model refinement.</p>
+<section id="specifying-one-or-more-nearfields">
+<h4>Specifying one or more nearfields<a class="headerlink" href="#specifying-one-or-more-nearfields" title="Permalink to this heading">¶</a></h4>
+<p>With the <code class="docutils literal notranslate"><span class="pre">nearfield:</span></code> key, the user can specify one or more polygon shapefiles defining the primary area of focus for the model. A single polygon shapefile containing one or more nearfield area polygons can be specified as shown above:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">nearfield</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
+</pre></div>
+</div>
+<p>Alternatively, multiple polygon shapefiles can be specified in a list:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">nearfield</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file1.shp</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file2.shp</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>In both cases, Linesinks within the specified area(s) will be simplified to a global distance tolerance specified under the <code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> item (see below).</p>
+<p>Alternatively, different simplification tolerances can be assigned to each nearfield shapefile as follows:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">nearfield</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">file1.shp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w">  </span><span class="c1"># tolerance, in model coordinate reference system units</span>
+<span class="w">  </span><span class="nt">file2.shp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Specification of multiple nearfield areas requires specification of an enclosing <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> (see below).</p>
+</div>
+</section>
+<section id="specifying-an-intermediate-routed-area">
+<h4>Specifying an intermediate “routed area”<a class="headerlink" href="#specifying-an-intermediate-routed-area" title="Permalink to this heading">¶</a></h4>
+<p>With the optional <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.</p>
+</section>
+<section id="specifying-a-farfield">
+<h4>Specifying a farfield<a class="headerlink" href="#specifying-a-farfield" title="Permalink to this heading">¶</a></h4>
+<p>Finally, the outer extent of the model can be defined using a polygon shapefile with the <code class="docutils literal notranslate"><span class="pre">farfield:</span></code> key, or alternatively, as a buffer distance around the nearfield polygon with the <code class="docutils literal notranslate"><span class="pre">farfield_buffer:</span></code> key. The area between the nearfield polygon (or optionally, the routed area polygon) and the farfield extent is then populated with zero-resistance linesinks that form a perimeter boundary condition (see Haitjema, 1995).</p>
+</section>
+</section>
+<section id="the-simplification-block">
+<h3>The <code class="docutils literal notranslate"><span class="pre">Simplification</span></code> block<a class="headerlink" href="#the-simplification-block" title="Permalink to this heading">¶</a></h3>
 <p>Source hydrography input are defined in the <code class="docutils literal notranslate"><span class="pre">NHDFiles:</span></code> block as shown. Currently, Linesink-maker only works with NHDPlus data. The <code class="docutils literal notranslate"><span class="pre">Simplification:</span></code> block controls how the hydrography input are discretized, and which features are retained. For example, a <code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> value of 100 meters means that the simplification of the original flowlines will be limited by the constraint that the simplified lines do not deviate from the original lines by more than this distance. With the <code class="docutils literal notranslate"><span class="pre">min_farfield_order:</span></code> key, lower-order streams can be excluded from the farfield linesinks (a value of 2 means that first-order streams are excluded). The <code class="docutils literal notranslate"><span class="pre">min_waterbody_size:</span></code>, <code class="docutils literal notranslate"><span class="pre">min_nearfield_wb_size:</span></code> and <code class="docutils literal notranslate"><span class="pre">min_farfield_wb_size:</span></code> keys control the minimimum size for the waterbodies that are included in the routed, nearfield and farfield areas of the model (in square km). Finally, with the <code class="docutils literal notranslate"><span class="pre">drop_intermittent:</span></code> key, streams classified as “intermittent” in NHDPlus can be excluded from the routed part of the model outside of the model nearfield. By default, all streams are included in the nearfield.</p>
 <p>The above configuration file can be used in the following script to generate a linesink string (LSS) XML file of the stream network that can be imported into <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> (version 2.2 or later).</p>
+</section>
 </section>
 <section id="python-script-to-build-the-model-make-linesinks-py">
 <h2>Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):<a class="headerlink" href="#python-script-to-build-the-model-make-linesinks-py" title="Permalink to this heading">¶</a></h2>
@@ -331,7 +381,7 @@
 
   <div role="contentinfo">
     <p>
-      <span class="lastupdated">Last updated on Nov 28, 2023.
+      <span class="lastupdated">Last updated on Feb 21, 2024.
       </span></p>
   </div>
 
