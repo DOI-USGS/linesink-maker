@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Nicolet National Forest Unit (Northern part)" href="example_nicolet.html" />
+    <link rel="prev" title="Examples" href="examples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            linesink-maker
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="philosophy.html">Philosophy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Medford National Forest Unit Example</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-file-in-yaml-format-medford-lines-yml">Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#the-globalsettings-block">The GlobalSettings block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-modeldomain-block">The ModelDomain block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-simplification-block">The Simplification block</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#python-script-to-build-the-model-make-linesinks-py">Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#alternative-xml-format-for-configuration-file-medford-lines-xml">Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="example_nicolet.html">Nicolet National Forest Unit Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/GFLOW_results_visualization.html">Exporting and Visualizing GFLOW output</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Input requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#creating-the-yaml-input-file-for-linesink-maker">Creating the YAML Input file for Linesink-maker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#running-linesink-maker">Running Linesink-maker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#diagnosing-errors">Diagnosing errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#importing-the-linesink-string-file-into-gflow">Importing the linesink string file into GFLOW</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html#viewing-the-linesinkdata-in-a-gis">Viewing the LinesinkData in a GIS</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html"> Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config-file-defaults.html"> Configuration defaults</a></li>
+<li class="toctree-l1"><a class="reference internal" href="release-history.html"> Release History</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing to linesink-maker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">linesink-maker</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="examples.html">Examples</a></li>
+      <li class="breadcrumb-item active">Medford National Forest Unit</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example_medford.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="medford-national-forest-unit">
+<h1>Medford National Forest Unit<a class="headerlink" href="#medford-national-forest-unit" title="Permalink to this heading">¶</a></h1>
+<p>In this example, a <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> model of a National Forest Unit in Northern Wisconsin is constructed, similar to the one documented in <a class="reference external" href="https://wgnhs.wisc.edu/pubs/tr0041/">this study</a>. The files for this example can be found in the <a class="reference external" href="https://github.com/aleaf/linesink-maker/tree/develop/examples/medford">examples/medford subfolder</a> of the Linesink-maker repository.</p>
+<section id="configuration-file-in-yaml-format-medford-lines-yml">
+<h2>Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)<a class="headerlink" href="#configuration-file-in-yaml-format-medford-lines-yml" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">GlobalSettings</span><span class="p">:</span>
+<span class="linenos"> 2</span><span class="w">  </span><span class="c1"># file path where intermediate and output will be generated.</span>
+<span class="linenos"> 3</span><span class="w">  </span><span class="nt">working_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;.&#39;</span>
+<span class="linenos"> 4</span><span class="w">  </span><span class="c1"># ESRI projection file specifying the</span>
+<span class="linenos"> 5</span><span class="w">  </span><span class="c1"># projected coordinate reference system (CRS) for the model</span>
+<span class="linenos"> 6</span><span class="w">  </span><span class="nt">prj</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.prj</span>
+<span class="linenos"> 7</span><span class="w">  </span><span class="c1"># global resistance value to apply to all resistance LinesinkData</span>
+<span class="linenos"> 8</span><span class="w">  </span><span class="c1"># (c parameter in the GFLOW documentation)</span>
+<span class="linenos"> 9</span><span class="w">  </span><span class="nt">resistance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.3</span>
+<span class="linenos">10</span><span class="w">  </span><span class="c1"># global streambed thickness value to apply to all resistance LinesinkData</span>
+<span class="linenos">11</span><span class="w">  </span><span class="c1"># (delta parameter in the GFLOW documentation)</span>
+<span class="linenos">12</span><span class="w">  </span><span class="nt">global_streambed_thickness</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="linenos">13</span><span class="w">  </span><span class="c1"># aquifer thickness in model units</span>
+<span class="linenos">14</span><span class="w">  </span><span class="c1"># (used for calculating lambda parameter in determining resistance;</span>
+<span class="linenos">15</span><span class="w">  </span><span class="c1"># see GFLOW documentation on &quot;Dealing with Resistance to Flow into Surface Waters&quot;</span>
+<span class="linenos">16</span><span class="w">  </span><span class="c1"># https://www.haitjema.com/documents/Dealingwithresistancetoflowintosurfacewaters.pdf)</span>
+<span class="linenos">17</span><span class="w">  </span><span class="nt">H</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="linenos">18</span><span class="w">  </span><span class="c1"># representative hydraulic conductivity for computing lambda</span>
+<span class="linenos">19</span><span class="w">  </span><span class="nt">k</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+<span class="linenos">20</span><span class="w">  </span><span class="c1"># default (PEST) parameter name for linesink resistance</span>
+<span class="linenos">21</span><span class="w">  </span><span class="nt">ScenResistance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Rlinesink</span>
+<span class="linenos">22</span><span class="w">  </span><span class="c1"># model length units (feet or meters)</span>
+<span class="linenos">23</span><span class="w">  </span><span class="nt">ComputationalUnits</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">feet</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span><span class="nt">ModelDomain</span><span class="p">:</span>
+<span class="linenos">26</span><span class="w">  </span><span class="c1"># polygon shapefile indicating the desired model extent</span>
+<span class="linenos">27</span><span class="w">  </span><span class="c1"># LinesinkData within this area but outside of the near or mid-fields</span>
+<span class="linenos">28</span><span class="w">  </span><span class="c1"># will be zero resistance (specified head)</span>
+<span class="linenos">29</span><span class="w">  </span><span class="nt">farfield</span><span class="p">:</span>
+<span class="linenos">30</span><span class="w">  </span><span class="c1"># A distance (in GIS or Basemap units; typically meters) that defines </span>
+<span class="linenos">31</span><span class="w">  </span><span class="c1"># the extent of model farfield area as a buffer distance around the nearfield polygon</span>
+<span class="linenos">32</span><span class="w">  </span><span class="c1"># (can be specified in lieu of a polygon shapefile under the farfield: key)</span>
+<span class="linenos">33</span><span class="w">  </span><span class="nt">farfield_buffer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15000</span>
+<span class="linenos">34</span><span class="w">  </span><span class="c1"># polygon of the model nearfield area, where LinesinkData will be given</span>
+<span class="linenos">35</span><span class="w">  </span><span class="c1"># resistance and routed</span>
+<span class="linenos">36</span><span class="w">  </span><span class="nt">routed_area</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_nf.shp</span>
+<span class="linenos">37</span><span class="w">  </span><span class="c1"># polygon of area of focus within routed area (optional)</span>
+<span class="linenos">38</span><span class="w">  </span><span class="nt">nearfield</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
+<span class="linenos">39</span>
+<span class="linenos">40</span><span class="nt">NHDFiles</span><span class="p">:</span>
+<span class="linenos">41</span><span class="w">  </span><span class="nt">flowlines</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_flowlines.shp</span>
+<span class="linenos">42</span><span class="w">  </span><span class="nt">elevslope</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/elevslope.dbf</span>
+<span class="linenos">43</span><span class="w">  </span><span class="nt">PlusFlowVAA</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/PlusFlowlineVAA.dbf</span>
+<span class="linenos">44</span><span class="w">  </span><span class="nt">waterbodies</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_waterbodies.shp</span>
+<span class="linenos">45</span>
+<span class="linenos">46</span><span class="nt">Simplification</span><span class="p">:</span>
+<span class="linenos">47</span><span class="w">  </span><span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
+<span class="linenos">48</span><span class="w">  </span><span class="nt">nearfield_tolerance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="linenos">49</span><span class="w">  </span><span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
+<span class="linenos">50</span><span class="w">  </span><span class="nt">routed_area_tolerance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+<span class="linenos">51</span><span class="w">  </span><span class="c1"># maximum distance a simplified line can deviate from the original linework</span>
+<span class="linenos">52</span><span class="w">  </span><span class="nt">farfield_tolerance</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">500</span>
+<span class="linenos">53</span><span class="w">  </span><span class="c1"># minimum stream order to retain in farfield --&gt;</span>
+<span class="linenos">54</span><span class="w">  </span><span class="nt">min_farfield_order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="linenos">55</span><span class="w">  </span><span class="c1"># minimum sized waterbodies to retain in routed area (km2)</span>
+<span class="linenos">56</span><span class="w">  </span><span class="nt">min_waterbody_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="linenos">57</span><span class="w">  </span><span class="c1"># minimum size of waterbodies to retain in nearfield (km2)</span>
+<span class="linenos">58</span><span class="w">  </span><span class="nt">min_nearfield_wb_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span>
+<span class="linenos">59</span><span class="w">  </span><span class="c1"># minimum size of waterbodies to retain in farfield (km2)</span>
+<span class="linenos">60</span><span class="w">  </span><span class="nt">min_farfield_wb_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="linenos">61</span><span class="w">  </span><span class="c1"># Drop ephemeral streams from routed area outside of nearfield</span>
+<span class="linenos">62</span><span class="w">  </span><span class="nt">drop_intermittent</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+<span class="linenos">63</span>
+<span class="linenos">64</span><span class="nt">Outputs</span><span class="p">:</span>
+<span class="linenos">65</span><span class="w">  </span><span class="nt">outfile_basename</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Medford</span>
+<span class="linenos">66</span><span class="w">  </span><span class="nt">error_reporting</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">linesinkMaker_errors.txt</span>
+</pre></div>
+</div>
+<section id="the-globalsettings-block">
+<h3>The GlobalSettings block<a class="headerlink" href="#the-globalsettings-block" title="Permalink to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">GlobalSettings:</span></code> block in the configuration file contains settings that apply to the whole model. The <code class="docutils literal notranslate"><span class="pre">resistance:</span></code> , <code class="docutils literal notranslate"><span class="pre">global_streambed_thickness:</span></code>, <code class="docutils literal notranslate"><span class="pre">H:</span></code> (representative aquifer thickness), and <code class="docutils literal notranslate"><span class="pre">k:</span></code> (representative aquifer hydraulic conductivity) are all used to compute the characteristic leakage length (<span class="math notranslate nohighlight">\(\lambda\)</span>) needed for estimating an appropriate width parameter for lakes (Haitjema, 2005), and are given in the model length units (<code class="docutils literal notranslate"><span class="pre">ComputationalUnits:</span></code>). <code class="docutils literal notranslate"><span class="pre">working_dir:</span></code> specifies the location where output from Linesink-maker will be written; <code class="docutils literal notranslate"><span class="pre">prj:</span></code> is a file path to a projection file containing a <a class="reference external" href="http://docs.opengeospatial.org/is/18-010r7/18-010r7.html">well-known text (WKT)</a> representation of the projected CRS for the model.</p>
+</section>
+<section id="the-modeldomain-block">
+<h3>The ModelDomain block<a class="headerlink" href="#the-modeldomain-block" title="Permalink to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">ModelDomain:</span></code> block allows specification of different areas of model refinement.</p>
+<section id="specifying-one-or-more-nearfields">
+<h4>Specifying one or more nearfields<a class="headerlink" href="#specifying-one-or-more-nearfields" title="Permalink to this heading">¶</a></h4>
+<p>With the <code class="docutils literal notranslate"><span class="pre">nearfield:</span></code> key, the user can specify one or more polygon shapefiles defining the primary area of focus for the model. A single polygon shapefile containing one or more nearfield area polygons can be specified as shown above:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">nearfield</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
+</pre></div>
+</div>
+<p>Alternatively, multiple polygon shapefiles can be specified in a list:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">nearfield</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file1.shp</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">file2.shp</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>In both cases, Linesinks within the specified area(s) will be simplified to a global distance tolerance specified under the <code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> item (see below).</p>
+<p>Alternatively, different simplification tolerances can be assigned to each nearfield shapefile as follows:</p>
+<div class="highlight-YAML notranslate"><div class="highlight"><pre><span></span><span class="nt">nearfield</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">file1.shp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span><span class="w">  </span><span class="c1"># tolerance, in model coordinate reference system units</span>
+<span class="w">  </span><span class="nt">file2.shp</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Specification of multiple nearfield areas requires specification of an enclosing <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> (see below).</p>
+</div>
+</section>
+<section id="specifying-an-intermediate-routed-area">
+<h4>Specifying an intermediate “routed area”<a class="headerlink" href="#specifying-an-intermediate-routed-area" title="Permalink to this heading">¶</a></h4>
+<p>With the optional <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between the refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.</p>
+</section>
+<section id="specifying-a-farfield">
+<h4>Specifying a farfield<a class="headerlink" href="#specifying-a-farfield" title="Permalink to this heading">¶</a></h4>
+<p>Finally, the outer extent of the model can be defined using a polygon shapefile with the <code class="docutils literal notranslate"><span class="pre">farfield:</span></code> key, or alternatively, as a buffer distance around the nearfield polygon with the <code class="docutils literal notranslate"><span class="pre">farfield_buffer:</span></code> key. The area between the nearfield polygon (or optionally, the routed area polygon) and the farfield extent is then populated with zero-resistance linesinks that form a perimeter boundary condition (see Haitjema, 1995).</p>
+</section>
+</section>
+<section id="the-simplification-block">
+<h3>The Simplification block<a class="headerlink" href="#the-simplification-block" title="Permalink to this heading">¶</a></h3>
+<p>Source hydrography input are defined in the <code class="docutils literal notranslate"><span class="pre">NHDFiles:</span></code> block as shown. Currently, Linesink-maker only works with NHDPlus data. The <code class="docutils literal notranslate"><span class="pre">Simplification:</span></code> block controls how the hydrography input are discretized, and which features are retained. For example, a <code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> value of 100 meters means that the simplification of the original flowlines will be limited by the constraint that the simplified lines do not deviate from the original lines by more than this distance. With the <code class="docutils literal notranslate"><span class="pre">min_farfield_order:</span></code> key, lower-order streams can be excluded from the farfield linesinks (a value of 2 means that first-order streams are excluded). The <code class="docutils literal notranslate"><span class="pre">min_waterbody_size:</span></code>, <code class="docutils literal notranslate"><span class="pre">min_nearfield_wb_size:</span></code> and <code class="docutils literal notranslate"><span class="pre">min_farfield_wb_size:</span></code> keys control the minimimum size for the waterbodies that are included in the routed, nearfield and farfield areas of the model (in square km). Finally, with the <code class="docutils literal notranslate"><span class="pre">drop_intermittent:</span></code> key, streams classified as “intermittent” in NHDPlus can be excluded from the routed part of the model outside of the model nearfield. By default, all streams are included in the nearfield.</p>
+<p>The above configuration file can be used in the following script to generate a linesink string (LSS) XML file of the stream network that can be imported into <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> (version 2.2 or later).</p>
+</section>
+</section>
+<section id="python-script-to-build-the-model-make-linesinks-py">
+<h2>Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):<a class="headerlink" href="#python-script-to-build-the-model-make-linesinks-py" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span> <span class="nn">lsmaker</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.yml&#39;</span>
+<span class="linenos">4</span><span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+<span class="linenos">5</span><span class="n">ls</span><span class="o">.</span><span class="n">make_linesinks</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">input_file</span></code> path given in the above script assumes that the script is being executed in the same folder as <cite>Medford_lines.yml</cite>.</p>
+</div>
+<p>A shapefile representation of the linesinks is also produced, along with additional shapefiles of the source hydrography merged and clipped to the model area. The resulting linesinks are shown in Figure 1.</p>
+<figure class="align-left" id="id2">
+<a class="reference internal image-reference" href="_images/medford_results.png"><img alt="alternate text" src="_images/medford_results.png" style="width: 674.0500000000001px; height: 349.05px;" /></a>
+<figcaption>
+<p><span class="caption-text">Figure 1: Linesinks produced by Linesink-maker for the Medford Unit of the Chequamegon-Nicolet National Forest. A distance tolerance between the simplified linesinks and original hydrography controls the level of detail in the stream network. Linesinks within the forest unit were created at the highlest level of detail (100 meter distance tolerance). A buffer of routed resistance linesinks disretized at a 300 meter tolerance surrounds the forest unit, to allow for accurate simulation of hydraulic divides between competing sinks and stream (base) flows into the forest unit. Coarsely discretized (500 meter tolerance) zero-resistance linesinks create a perimeter boundary condition for the solution. B illustrates the conversion of flowlines (red) into a drainage lake represented by routed resistance linesinks around its perimeter. Linesink-maker makes small adjustments to the end elevations of drainage lake tributaries to ensure proper routing in the GFLOW GUI.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="alternative-xml-format-for-configuration-file-medford-lines-xml">
+<h2>Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)<a class="headerlink" href="#alternative-xml-format-for-configuration-file-medford-lines-xml" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="nt">&lt;linesinkInput&gt;</span>
+<span class="linenos">  2</span><span class="cm">&lt;!--</span>
+<span class="linenos">  3</span><span class="cm">Notes on linesinkMaker input:</span>
+<span class="linenos">  4</span><span class="cm">    Put in paths to input/output files as-is (i.e. no double \)</span>
+<span class="linenos">  5</span><span class="cm">--&gt;</span>
+<span class="linenos">  6</span><span class="nt">&lt;GlobalSettings&gt;</span>
+<span class="linenos">  7</span><span class="w">    </span><span class="cm">&lt;!-- working_dir:</span>
+<span class="linenos">  8</span><span class="cm">    file path where intermediate and output will be generated. --&gt;</span>
+<span class="linenos">  9</span><span class="w">    </span><span class="nt">&lt;working_dir&gt;&lt;/working_dir&gt;</span>
+<span class="linenos"> 10</span><span class="w">    </span><span class="cm">&lt;!-- prj:</span>
+<span class="linenos"> 11</span><span class="cm">    ESRI projection file specifying the</span>
+<span class="linenos"> 12</span><span class="cm">    projected coordinate reference system (CRS) for the model --&gt;</span>
+<span class="linenos"> 13</span><span class="w">    </span><span class="nt">&lt;prj&gt;</span>shps/Medford_nf.prj<span class="nt">&lt;/prj&gt;</span>
+<span class="linenos"> 14</span><span class="w">    </span><span class="cm">&lt;!-- preprocess:</span>
+<span class="linenos"> 15</span><span class="cm">    Whether or not preprocessing is needed (requires arcpy) --&gt;</span>
+<span class="linenos"> 16</span><span class="w">    </span><span class="nt">&lt;preprocess&gt;</span>False<span class="nt">&lt;/preprocess&gt;</span>
+<span class="linenos"> 17</span><span class="w">    </span><span class="cm">&lt;!-- zmult:</span>
+<span class="linenos"> 18</span><span class="cm">    elevation units multiplier (from NHDPlus cm to model units) --&gt;</span>
+<span class="linenos"> 19</span><span class="w">    </span><span class="nt">&lt;zmult&gt;</span>0.03280839895013123<span class="nt">&lt;/zmult&gt;</span>
+<span class="linenos"> 20</span><span class="w">    </span><span class="cm">&lt;!-- resistance:</span>
+<span class="linenos"> 21</span><span class="cm">    global resistance value to apply to all resistance LinesinkData (c in GFLOW documentation) --&gt;</span>
+<span class="linenos"> 22</span><span class="w">    </span><span class="nt">&lt;resistance&gt;</span>0.3<span class="nt">&lt;/resistance&gt;</span>
+<span class="linenos"> 23</span><span class="w">    </span><span class="cm">&lt;!-- H:</span>
+<span class="linenos"> 24</span><span class="cm">    aquifer thickness in model units --&gt;</span>
+<span class="linenos"> 25</span><span class="w">    </span><span class="nt">&lt;H&gt;</span>100<span class="nt">&lt;/H&gt;</span>
+<span class="linenos"> 26</span><span class="w">    </span><span class="cm">&lt;!-- k:</span>
+<span class="linenos"> 27</span><span class="cm">    Hydraulic conductivity in model units --&gt;</span>
+<span class="linenos"> 28</span><span class="w">    </span><span class="nt">&lt;k&gt;</span>10<span class="nt">&lt;/k&gt;</span>
+<span class="linenos"> 29</span><span class="w">    </span><span class="cm">&lt;!-- ScenResistance:</span>
+<span class="linenos"> 30</span><span class="cm">    name for global resistance parameter to assign to LinesinkData--&gt;</span>
+<span class="linenos"> 31</span><span class="w">    </span><span class="cm">&lt;!-- global_streambed_thickness:</span>
+<span class="linenos"> 32</span><span class="cm">    Streambed thickness depth value to assign to all LinesinkData--&gt;</span>
+<span class="linenos"> 33</span><span class="w">    </span><span class="nt">&lt;global_streambed_thickness&gt;</span>3<span class="nt">&lt;/global_streambed_thickness&gt;</span>
+<span class="linenos"> 34</span><span class="w">    </span><span class="nt">&lt;ScenResistance&gt;</span>Rlinesink<span class="nt">&lt;/ScenResistance&gt;</span>
+<span class="linenos"> 35</span><span class="w">    </span><span class="cm">&lt;!-- ComputationalUnits: (&#39;Feet&#39; or &#39;Meters&#39;)</span>
+<span class="linenos"> 36</span><span class="cm">    model units--&gt;</span>
+<span class="linenos"> 37</span><span class="w">    </span><span class="nt">&lt;ComputationalUnits&gt;</span>Feet<span class="nt">&lt;/ComputationalUnits&gt;</span>
+<span class="linenos"> 38</span>
+<span class="linenos"> 39</span><span class="nt">&lt;/GlobalSettings&gt;</span>
+<span class="linenos"> 40</span>
+<span class="linenos"> 41</span><span class="nt">&lt;modelDomain&gt;</span>
+<span class="linenos"> 42</span><span class="w">    </span><span class="cm">&lt;!-- farfield:</span>
+<span class="linenos"> 43</span><span class="cm">    polygon shapefile (a ring, with nearfield making up the side) of the desired model farfield area</span>
+<span class="linenos"> 44</span><span class="cm">    LinesinkData within this area will be zero resistance (specified head) --&gt;</span>
+<span class="linenos"> 45</span><span class="w">    </span><span class="nt">&lt;farfield&gt;&lt;/farfield&gt;</span>
+<span class="linenos"> 46</span><span class="w">    </span><span class="cm">&lt;!-- farfield_buffer: numeric, default is 10,0000</span>
+<span class="linenos"> 47</span><span class="cm">    A distance (in GIS units) that defines the extent of model farfield area as a </span>
+<span class="linenos"> 48</span><span class="cm">    buffer distance around the nearfield polygon</span>
+<span class="linenos"> 49</span><span class="cm">    (can be specified in lieu of a polygon shapefile under &lt;farfield&gt;)</span>
+<span class="linenos"> 50</span><span class="cm">     --&gt;</span>
+<span class="linenos"> 51</span><span class="w">    </span><span class="nt">&lt;farfield_buffer&gt;</span>15000<span class="nt">&lt;/farfield_buffer&gt;</span>
+<span class="linenos"> 52</span><span class="w">    </span><span class="cm">&lt;!-- routed_area:</span>
+<span class="linenos"> 53</span><span class="cm">    polygon of the model nearfield area, where LinesinkData will be given resistance and routed --&gt;</span>
+<span class="linenos"> 54</span><span class="w">    </span><span class="nt">&lt;routed_area&gt;</span>shps/Medford_nf.shp<span class="nt">&lt;/routed_area&gt;</span>
+<span class="linenos"> 55</span><span class="w">    </span><span class="cm">&lt;!-- nearfield:</span>
+<span class="linenos"> 56</span><span class="cm">    polygon of area of focus within routed area (optional) --&gt;</span>
+<span class="linenos"> 57</span><span class="w">    </span><span class="nt">&lt;nearfield&gt;</span>shps/Medford_unit.shp<span class="nt">&lt;/nearfield&gt;</span>
+<span class="linenos"> 58</span><span class="nt">&lt;/modelDomain&gt;</span>
+<span class="linenos"> 59</span><span class="cm">&lt;!-- NHDfiles:</span>
+<span class="linenos"> 60</span><span class="cm">input .shp and .dbf files from NHDPlus. To include multiple files</span>
+<span class="linenos"> 61</span><span class="cm">(e.g. multiple flowlines files spanning multiple drainage areas)</span>
+<span class="linenos"> 62</span><span class="cm">simply add additional entries with same XML keyword.</span>
+<span class="linenos"> 63</span><span class="cm">LinesinkMakr will open all of the files and combine them.--&gt;</span>
+<span class="linenos"> 64</span><span class="nt">&lt;NHDfiles&gt;</span>
+<span class="linenos"> 65</span><span class="w">    </span><span class="nt">&lt;flowlines&gt;</span>shps/Medford_flowlines.shp<span class="nt">&lt;/flowlines&gt;</span>
+<span class="linenos"> 66</span><span class="w">    </span><span class="nt">&lt;elevslope&gt;</span>shps/elevslope.dbf<span class="nt">&lt;/elevslope&gt;</span>
+<span class="linenos"> 67</span><span class="w">    </span><span class="nt">&lt;PlusFlowVAA&gt;</span>shps/PlusFlowlineVAA.dbf<span class="nt">&lt;/PlusFlowVAA&gt;</span>
+<span class="linenos"> 68</span><span class="w">    </span><span class="nt">&lt;waterbodies&gt;</span>shps/Medford_waterbodies.shp<span class="nt">&lt;/waterbodies&gt;</span>
+<span class="linenos"> 69</span><span class="nt">&lt;/NHDfiles&gt;</span>
+<span class="linenos"> 70</span>
+<span class="linenos"> 71</span><span class="nt">&lt;Simplification&gt;</span>
+<span class="linenos"> 72</span><span class="w">    </span><span class="cm">&lt;!-- nearfield_tolerance:</span>
+<span class="linenos"> 73</span><span class="cm">    maximum distance a simplified line can deviate from the original linework --&gt;</span>
+<span class="linenos"> 74</span><span class="w">    </span><span class="nt">&lt;nearfield_tolerance&gt;</span>100<span class="nt">&lt;/nearfield_tolerance&gt;</span>
+<span class="linenos"> 75</span><span class="w">    </span><span class="cm">&lt;!-- routed_area_tolerance:</span>
+<span class="linenos"> 76</span><span class="cm">    maximum distance a simplified line can deviate from the original linework --&gt;</span>
+<span class="linenos"> 77</span><span class="w">    </span><span class="nt">&lt;routed_area_tolerance&gt;</span>300<span class="nt">&lt;/routed_area_tolerance&gt;</span>
+<span class="linenos"> 78</span><span class="w">    </span><span class="cm">&lt;!-- farfield_tolerance:</span>
+<span class="linenos"> 79</span><span class="cm">    maximum distance a simplified line can deviate from the original linework --&gt;</span>
+<span class="linenos"> 80</span><span class="w">    </span><span class="nt">&lt;farfield_tolerance&gt;</span>500<span class="nt">&lt;/farfield_tolerance&gt;</span>
+<span class="linenos"> 81</span><span class="w">    </span><span class="cm">&lt;!-- min_farfield_order:</span>
+<span class="linenos"> 82</span><span class="cm">    minimum stream order to retain in farfield --&gt;</span>
+<span class="linenos"> 83</span><span class="w">    </span><span class="nt">&lt;min_farfield_order&gt;</span>2<span class="nt">&lt;/min_farfield_order&gt;</span>
+<span class="linenos"> 84</span><span class="w">    </span><span class="cm">&lt;!-- min_waterbody_size:</span>
+<span class="linenos"> 85</span><span class="cm">    minimum sized waterbodies to retain in routed area (km2) --&gt;</span>
+<span class="linenos"> 86</span><span class="w">    </span><span class="nt">&lt;min_waterbody_size&gt;</span>1<span class="nt">&lt;/min_waterbody_size&gt;</span>
+<span class="linenos"> 87</span><span class="w">    </span><span class="cm">&lt;!-- min_nearfield_waterbody_size:</span>
+<span class="linenos"> 88</span><span class="cm">    minimum size of waterbodies to retain in nearfield (km2) --&gt;</span>
+<span class="linenos"> 89</span><span class="w">    </span><span class="nt">&lt;min_nearfield_waterbody_size&gt;</span>.01<span class="nt">&lt;/min_nearfield_waterbody_size&gt;</span>
+<span class="linenos"> 90</span><span class="w">    </span><span class="cm">&lt;!-- min_farfield_waterbody_size:</span>
+<span class="linenos"> 91</span><span class="cm">    minimum size of waterbodies to retain in farfield (km2) --&gt;</span>
+<span class="linenos"> 92</span><span class="w">    </span><span class="nt">&lt;min_farfield_waterbody_size&gt;</span>1<span class="nt">&lt;/min_farfield_waterbody_size&gt;</span>
+<span class="linenos"> 93</span><span class="w">    </span><span class="cm">&lt;!-- drop_intermittent:</span>
+<span class="linenos"> 94</span><span class="cm">    Drop ephemeral streams from routed area outside of nearfield --&gt;</span>
+<span class="linenos"> 95</span><span class="w">    </span><span class="nt">&lt;drop_intermittent&gt;</span>True<span class="nt">&lt;/drop_intermittent&gt;</span>
+<span class="linenos"> 96</span><span class="nt">&lt;/Simplification&gt;</span>
+<span class="linenos"> 97</span>
+<span class="linenos"> 98</span><span class="nt">&lt;outputs&gt;</span>
+<span class="linenos"> 99</span><span class="w">    </span><span class="nt">&lt;outfile_basename&gt;</span>Medford<span class="nt">&lt;/outfile_basename&gt;</span>
+<span class="linenos">100</span><span class="w">    </span><span class="nt">&lt;error_reporting&gt;</span>linesinkMaker_errors.txt<span class="nt">&lt;/error_reporting&gt;</span>
+<span class="linenos">101</span><span class="nt">&lt;/outputs&gt;</span>
+<span class="linenos">102</span><span class="nt">&lt;/linesinkInput&gt;</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example_nicolet.html" class="btn btn-neutral float-right" title="Nicolet National Forest Unit (Northern part)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+      <span class="lastupdated">Last updated on Feb 21, 2024.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
