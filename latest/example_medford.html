@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.1.6.post1.dev0+g373416a documentation</title>
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.2.0.post0.dev0+gf95e937 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
@@ -42,7 +42,7 @@
             linesink-maker
           </a>
               <div class="version">
-                0.1.6.post1.dev0+g373416a
+                0.2.0.post0.dev0+gf95e937
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -61,7 +61,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#configuration-file-in-yaml-format-medford-lines-yml">Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#the-globalsettings-block">The GlobalSettings block</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#the-modeldomain-block">The ModelDomain block</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#the-simplification-block">The <code class="docutils literal notranslate"><span class="pre">Simplification</span></code> block</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-simplification-block">The Simplification block</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#python-script-to-build-the-model-make-linesinks-py">Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):</a></li>
@@ -226,7 +226,7 @@
 </section>
 <section id="specifying-an-intermediate-routed-area">
 <h4>Specifying an intermediate “routed area”<a class="headerlink" href="#specifying-an-intermediate-routed-area" title="Permalink to this heading">¶</a></h4>
-<p>With the optional <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.</p>
+<p>With the optional <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between the refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.</p>
 </section>
 <section id="specifying-a-farfield">
 <h4>Specifying a farfield<a class="headerlink" href="#specifying-a-farfield" title="Permalink to this heading">¶</a></h4>
@@ -234,7 +234,7 @@
 </section>
 </section>
 <section id="the-simplification-block">
-<h3>The <code class="docutils literal notranslate"><span class="pre">Simplification</span></code> block<a class="headerlink" href="#the-simplification-block" title="Permalink to this heading">¶</a></h3>
+<h3>The Simplification block<a class="headerlink" href="#the-simplification-block" title="Permalink to this heading">¶</a></h3>
 <p>Source hydrography input are defined in the <code class="docutils literal notranslate"><span class="pre">NHDFiles:</span></code> block as shown. Currently, Linesink-maker only works with NHDPlus data. The <code class="docutils literal notranslate"><span class="pre">Simplification:</span></code> block controls how the hydrography input are discretized, and which features are retained. For example, a <code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> value of 100 meters means that the simplification of the original flowlines will be limited by the constraint that the simplified lines do not deviate from the original lines by more than this distance. With the <code class="docutils literal notranslate"><span class="pre">min_farfield_order:</span></code> key, lower-order streams can be excluded from the farfield linesinks (a value of 2 means that first-order streams are excluded). The <code class="docutils literal notranslate"><span class="pre">min_waterbody_size:</span></code>, <code class="docutils literal notranslate"><span class="pre">min_nearfield_wb_size:</span></code> and <code class="docutils literal notranslate"><span class="pre">min_farfield_wb_size:</span></code> keys control the minimimum size for the waterbodies that are included in the routed, nearfield and farfield areas of the model (in square km). Finally, with the <code class="docutils literal notranslate"><span class="pre">drop_intermittent:</span></code> key, streams classified as “intermittent” in NHDPlus can be excluded from the routed part of the model outside of the model nearfield. By default, all streams are included in the nearfield.</p>
 <p>The above configuration file can be used in the following script to generate a linesink string (LSS) XML file of the stream network that can be imported into <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> (version 2.2 or later).</p>
 </section>
