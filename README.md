@@ -2,7 +2,7 @@ linesink-maker
 ===
 Rapid creation of linesink elements for stream network simulation in the groundwater flow modeling program GFLOW (<http://www.haitjema.com/>). Nearfield (highest resultion), mid-field and farfield (least resolution, zero resistance) areas of a desired stream network can be defined by polygon shapefiles. The LinesinkData are then created from NHDPlus hydrography. The number of resulting linesink equations (level of detail) in the various areas of the stream network can be controlled by a distance tolerance parameter specified by geographic area (defined by one of the polygons). Results are written to a linesink string (LSS) XML file that can be imported into the GFLOW GUI (version 2.2 or higher).
  
-### Version 0.1
+### Version 0.2
 
 ![Tests](https://github.com/doi-usgs/linesink-maker/workflows/Tests/badge.svg)
 [![codecov](https://codecov.io/gh/doi-usgs/linesink-maker/branch/develop/graph/badge.svg)](https://codecov.io/gh/doi-usgs/linesink-maker)

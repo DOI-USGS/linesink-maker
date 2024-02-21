@@ -50,13 +50,13 @@ Alternatively, different simplification tolerances can be assigned to each nearf
 
 Specifying an intermediate "routed area"
 ##############################################
-With the optional ``routed_area:`` key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.
+With the optional ``routed_area:`` key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between the refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.
 
 Specifying a farfield
 ##############################################
 Finally, the outer extent of the model can be defined using a polygon shapefile with the ``farfield:`` key, or alternatively, as a buffer distance around the nearfield polygon with the ``farfield_buffer:`` key. The area between the nearfield polygon (or optionally, the routed area polygon) and the farfield extent is then populated with zero-resistance linesinks that form a perimeter boundary condition (see Haitjema, 1995). 
 
-The ``Simplification`` block
+The Simplification block
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Source hydrography input are defined in the ``NHDFiles:`` block as shown. Currently, Linesink-maker only works with NHDPlus data. The ``Simplification:`` block controls how the hydrography input are discretized, and which features are retained. For example, a ``nearfield_tolerance:`` value of 100 meters means that the simplification of the original flowlines will be limited by the constraint that the simplified lines do not deviate from the original lines by more than this distance. With the ``min_farfield_order:`` key, lower-order streams can be excluded from the farfield linesinks (a value of 2 means that first-order streams are excluded). The ``min_waterbody_size:``, ``min_nearfield_wb_size:`` and ``min_farfield_wb_size:`` keys control the minimimum size for the waterbodies that are included in the routed, nearfield and farfield areas of the model (in square km). Finally, with the ``drop_intermittent:`` key, streams classified as “intermittent” in NHDPlus can be excluded from the routed part of the model outside of the model nearfield. By default, all streams are included in the nearfield.
 
