@@ -1,25 +1,25 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lsmaker.lsmaker &mdash; linesink-maker 0.2.0.post0.dev0+gf95e937 documentation</title>
+  <title>lsmaker.lsmaker &mdash; linesink-maker 0.2.0.post4.dev0+g946993f documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
-        <script src="../../_static/clipboard.min.js"></script>
-        <script src="../../_static/copybutton.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../../_static/jquery.js"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+      <script src="../../_static/doctools.js"></script>
+      <script src="../../_static/sphinx_highlight.js"></script>
+      <script src="../../_static/clipboard.min.js"></script>
+      <script src="../../_static/copybutton.js"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -36,9 +36,6 @@
           <a href="../../index.html" class="icon icon-home">
             linesink-maker
           </a>
-              <div class="version">
-                0.2.0.post0.dev0+gf95e937
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -98,42 +95,42 @@
            <div itemprop="articleBody">
              
   <h1>Source code for lsmaker.lsmaker</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">yaml</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">import</span> <span class="nn">fiona</span>
-<span class="kn">from</span> <span class="nn">fiona.crs</span> <span class="kn">import</span> <span class="n">to_string</span><span class="p">,</span> <span class="n">from_string</span>
-<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="p">(</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">xml.etree.ElementTree</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ET</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fiona</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fiona.crs</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_string</span><span class="p">,</span> <span class="n">from_string</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Polygon</span><span class="p">,</span> 
     <span class="n">LineString</span><span class="p">,</span> 
     <span class="n">Point</span><span class="p">,</span> 
     <span class="n">shape</span><span class="p">,</span> 
     <span class="n">mapping</span><span class="p">,</span> 
     <span class="n">MultiPolygon</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">unary_union</span><span class="p">,</span> <span class="n">transform</span>
-<span class="kn">import</span> <span class="nn">pyproj</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">gisutils</span>
-<span class="kn">import</span> <span class="nn">lsmaker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">unary_union</span><span class="p">,</span> <span class="n">transform</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyproj</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gisutils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">lsmaker</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="k">pass</span>
-<span class="kn">from</span> <span class="nn">lsmaker.diagnostics</span> <span class="kn">import</span> <span class="n">Diagnostics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lsmaker.diagnostics</span><span class="w"> </span><span class="kn">import</span> <span class="n">Diagnostics</span>
 
 
 <span class="c1"># ## Functions #############################</span>
-<div class="viewcode-block" id="add_projection"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.add_projection">[docs]</a><span class="k">def</span> <span class="nf">add_projection</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+<div class="viewcode-block" id="add_projection"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.add_projection">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">add_projection</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add vertex to line at point,</span>
 <span class="sd">    if the closest point on the line isn&#39;t an end.</span>
 
@@ -161,7 +158,7 @@
             <span class="k">return</span> <span class="n">LineString</span><span class="p">(</span><span class="n">coords</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">[(</span><span class="n">mp</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mp</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span> <span class="o">+</span> <span class="n">coords</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span></div>
 
 
-<div class="viewcode-block" id="add_vertices_at_testpoints"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.add_vertices_at_testpoints">[docs]</a><span class="k">def</span> <span class="nf">add_vertices_at_testpoints</span><span class="p">(</span><span class="n">lssdf</span><span class="p">,</span> <span class="n">tpgeoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+<div class="viewcode-block" id="add_vertices_at_testpoints"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.add_vertices_at_testpoints">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">add_vertices_at_testpoints</span><span class="p">(</span><span class="n">lssdf</span><span class="p">,</span> <span class="n">tpgeoms</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add vertices to LinesinkData at locations of testpoints</span>
 <span class="sd">    (so that modeled flow observations are correct)</span>
 
@@ -209,7 +206,7 @@
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="get_elevations_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevations_from_epqs">[docs]</a><span class="k">def</span> <span class="nf">get_elevations_from_epqs</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;feet&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_elevations_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevations_from_epqs">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_elevations_from_epqs</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;feet&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;From list of shapely points in lat, lon, returns list of elevation values</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -220,7 +217,7 @@
     <span class="k">return</span> <span class="n">elevations</span></div>
 
 
-<div class="viewcode-block" id="get_elevation_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevation_from_epqs">[docs]</a><span class="k">def</span> <span class="nf">get_elevation_from_epqs</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;feet&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_elevation_from_epqs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.get_elevation_from_epqs">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_elevation_from_epqs</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;feet&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an elevation value at a point location.</span>
 
 <span class="sd">    Notes</span>
@@ -253,7 +250,7 @@
     <span class="k">return</span> <span class="n">elev</span></div>
 
 
-<span class="k">def</span> <span class="nf">_get_random_point_in_polygon</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_random_point_in_polygon</span><span class="p">(</span><span class="n">poly</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a point within a polygon (for lakes where the centroid is not in the lake)&quot;&quot;&quot;</span>
     <span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span> <span class="o">=</span> <span class="n">poly</span><span class="o">.</span><span class="n">bounds</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -274,7 +271,7 @@
 <span class="c1">#    return [transform(project, g) for g in geoms]</span>
 
 
-<div class="viewcode-block" id="w_parameter"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.w_parameter">[docs]</a><span class="k">def</span> <span class="nf">w_parameter</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">):</span>
+<div class="viewcode-block" id="w_parameter"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.w_parameter">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">w_parameter</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute w parameter for estimating an effective conductance term</span>
 <span class="sd">    (i.e., when simulating Lakes using Linesinks instead of GFLOW&#39;s lake package)</span>
 
@@ -291,7 +288,7 @@
     <span class="k">return</span> <span class="n">w</span></div>
 
 
-<div class="viewcode-block" id="width_from_arboate"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.width_from_arboate">[docs]</a><span class="k">def</span> <span class="nf">width_from_arboate</span><span class="p">(</span><span class="n">arbolate</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">):</span>
+<div class="viewcode-block" id="width_from_arboate"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.width_from_arboate">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">width_from_arboate</span><span class="p">(</span><span class="n">arbolate</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate stream width in feet from arbolate sum in meters, using relationship</span>
 <span class="sd">    described by Feinstein et al (2010), Appendix 2, p 266.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -300,7 +297,7 @@
     <span class="k">return</span> <span class="n">w</span></div>
 
 
-<div class="viewcode-block" id="lake_width"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.lake_width">[docs]</a><span class="k">def</span> <span class="nf">lake_width</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">total_line_length</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">):</span>
+<div class="viewcode-block" id="lake_width"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.lake_width">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">lake_width</span><span class="p">(</span><span class="n">area</span><span class="p">,</span> <span class="n">total_line_length</span><span class="p">,</span> <span class="n">lmbda</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate conductance width from lake area and length of flowlines running through it</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">total_line_length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -315,7 +312,7 @@
     <span class="k">return</span> <span class="n">w</span>  <span class="c1"># feet</span></div>
 
 
-<div class="viewcode-block" id="name"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.name">[docs]</a><span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="name"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.name">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Abbreviations for naming LinesinkData from names in NHDPlus</span>
 <span class="sd">    GFLOW requires linesink names to be 32 characters or less</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -342,13 +339,13 @@
     <span class="k">return</span> <span class="n">name</span><span class="p">[:</span><span class="mi">32</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="uniquelist"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.uniquelist">[docs]</a><span class="k">def</span> <span class="nf">uniquelist</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+<div class="viewcode-block" id="uniquelist"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.uniquelist">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">uniquelist</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
     <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">seen_add</span> <span class="o">=</span> <span class="n">seen</span><span class="o">.</span><span class="n">add</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seq</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">seen</span> <span class="ow">or</span> <span class="n">seen_add</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span></div>
 
 
-<div class="viewcode-block" id="closest_vertex_ind"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.closest_vertex_ind">[docs]</a><span class="k">def</span> <span class="nf">closest_vertex_ind</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">shape_coords</span><span class="p">):</span>
+<div class="viewcode-block" id="closest_vertex_ind"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.closest_vertex_ind">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">closest_vertex_ind</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">shape_coords</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns index of closest vertices in shapely geometry object</span>
 <span class="sd">    Ugly but works</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -360,12 +357,12 @@
     <span class="k">return</span> <span class="n">closest_ind</span></div>
 
 
-<div class="viewcode-block" id="move_point_along_line"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.move_point_along_line">[docs]</a><span class="k">def</span> <span class="nf">move_point_along_line</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">dist</span><span class="p">):</span>
+<div class="viewcode-block" id="move_point_along_line"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.move_point_along_line">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">move_point_along_line</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">dist</span><span class="p">):</span>
     <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">dist</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="LinesinkData"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData">[docs]</a><span class="k">class</span> <span class="nc">LinesinkData</span><span class="p">:</span>
+<div class="viewcode-block" id="LinesinkData"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LinesinkData</span><span class="p">:</span>
     <span class="n">maxlines</span> <span class="o">=</span> <span class="mi">4000</span>
 
     <span class="n">int_dtype</span> <span class="o">=</span> <span class="nb">str</span>  <span class="c1"># np.int64</span>
@@ -401,7 +398,7 @@
               <span class="s1">&#39;Intermittent&#39;</span><span class="p">:</span> <span class="mi">46003</span><span class="p">,</span>
               <span class="s1">&#39;Uncategorized&#39;</span><span class="p">:</span> <span class="mi">46000</span><span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">GFLOW_lss_xml</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">GFLOW_lss_xml</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="c1"># attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># absolute path to config file</span>
@@ -561,7 +558,7 @@
             <span class="n">efp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Linesink-maker version </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lsmaker</span><span class="o">.</span><span class="n">__version__</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dg</span> <span class="o">=</span> <span class="n">Diagnostics</span><span class="p">(</span><span class="n">lsm_object</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Test for equality to another linesink object.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -634,7 +631,7 @@
             <span class="c1">#        pass</span>
             <span class="c1">#    continue</span>
         
-<div class="viewcode-block" id="LinesinkData.read_lsmaker_xml"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.read_lsmaker_xml">[docs]</a>    <span class="k">def</span> <span class="nf">read_lsmaker_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.read_lsmaker_xml"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.read_lsmaker_xml">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_lsmaker_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
 
         <span class="c1">#try:</span>
         <span class="n">inpardat</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
@@ -786,10 +783,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span> <span class="o">=</span> <span class="s1">&#39;DEM&#39;</span>  <span class="c1"># field in wb_centroids_w_elevations containing elevations</span>
 
         <span class="c1"># outputs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span>
-                                             <span class="n">inpars</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//outfile_basename&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span>
-                                            <span class="n">inpars</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//error_reporting&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span>
+                                     <span class="n">inpars</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//outfile_basename&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span><span class="p">,</span>
+                                    <span class="n">inpars</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;.//error_reporting&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
         <span class="c1"># attributes</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span> <span class="c1"># working dataframe for translating NHDPlus data to linesink strings</span>
@@ -798,7 +795,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">confluences</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="LinesinkData.load_configuration"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.load_configuration">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">load_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load Linesink-maker YAML configuration into a dictionary.</span>
 
 <span class="sd">        Parameters</span>
@@ -818,7 +815,7 @@
         <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">infile</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">cfg</span></div>
     
-<div class="viewcode-block" id="LinesinkData.set_configuration_from_yaml"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_configuration_from_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">set_configuration_from_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.set_configuration_from_yaml"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_configuration_from_yaml">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_configuration_from_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the Linesink-maker configuration from a YAML file.</span>
 
 <span class="sd">        Parameters</span>
@@ -829,7 +826,7 @@
         <span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_configuration</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_configuration</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span></div>
         
-<div class="viewcode-block" id="LinesinkData.set_configuration"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">set_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.set_configuration"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_configuration">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the Linesink-maker configuration from a configuration dictionary.</span>
 
 <span class="sd">        Parameters</span>
@@ -866,7 +863,7 @@
                         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                             <span class="n">file_abspath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lsmaker_config_file_path</span> <span class="o">/</span> <span class="n">item</span>
                             <span class="k">if</span> <span class="n">file_abspath</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">filepaths_to_make_abs</span><span class="p">:</span>
-                                <span class="n">item</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_abspath</span><span class="p">)</span>
+                                <span class="n">item</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">file_abspath</span><span class="p">))</span>
                         <span class="n">new_entry</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
                     <span class="n">entry</span> <span class="o">=</span> <span class="n">new_entry</span>
                 <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">entry</span>
@@ -920,7 +917,7 @@
                                          <span class="p">:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_points.shp&#39;</span>  <span class="c1"># elevations extracted during preprocessing routine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span> <span class="o">=</span> <span class="s1">&#39;DEM&#39;</span>  <span class="c1"># field in wb_centroids_w_elevations containing elevations</span></div>
         
-    <span class="k">def</span> <span class="nf">_parse_xml_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">findall_result</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">relative_filepath</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_xml_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">findall_result</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">relative_filepath</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1"># handle either strings or lxml Elements</span>
         <span class="n">txt</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">findall_result</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">findall_result</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
@@ -931,7 +928,7 @@
                 <span class="n">txt</span> <span class="o">=</span> <span class="n">file_abspath</span>
         <span class="k">return</span> <span class="n">dtype</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span> <span class="k">if</span> <span class="n">txt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_get_xml_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">XMLentry</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_xml_entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">XMLentry</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
                        <span class="n">relative_filepath</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                        <span class="n">raise_error</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -957,7 +954,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Nothing specified for </span><span class="si">{}</span><span class="s1"> in input XML file!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">XMLentry</span><span class="p">))</span>
             
-    <span class="k">def</span> <span class="nf">_enforce_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_enforce_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure that dataframe column dtypes are correct.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -968,7 +965,7 @@
                 <span class="n">j</span><span class="o">=</span><span class="mi">2</span>
                 <span class="k">continue</span>
 
-    <span class="k">def</span> <span class="nf">_get_wb_elevations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wb_df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_wb_elevations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wb_df</span><span class="p">):</span>
         <span class="c1"># (the centroids of some lakes might not be in the lake itself)</span>
         <span class="n">wb_points</span> <span class="o">=</span> <span class="p">[</span><span class="n">wb</span><span class="o">.</span><span class="n">centroid</span> <span class="k">if</span> <span class="n">wb</span><span class="o">.</span><span class="n">centroid</span><span class="o">.</span><span class="n">within</span><span class="p">(</span><span class="n">wb</span><span class="p">)</span>
                      <span class="k">else</span> <span class="n">_get_random_point_in_polygon</span><span class="p">(</span><span class="n">wb</span><span class="p">)</span>
@@ -982,7 +979,7 @@
                                      <span class="bp">self</span><span class="o">.</span><span class="n">elevs_field</span><span class="p">:</span> <span class="n">wb_elevations</span><span class="p">,</span>
                                      <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">wb_points</span><span class="p">})</span>
 
-<div class="viewcode-block" id="LinesinkData.load_poly"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.load_poly">[docs]</a>    <span class="k">def</span> <span class="nf">load_poly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shapefile</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.load_poly"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.load_poly">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_poly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shapefile</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load a polygon shapefile and return a multipolygon</span>
 <span class="sd">        of multiple features, or single polygon of one feature,</span>
 <span class="sd">        projected in the destination coordinate system.&quot;&quot;&quot;</span>
@@ -999,7 +996,7 @@
         <span class="k">return</span> <span class="n">gdf</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="LinesinkData.tf2flag"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.tf2flag">[docs]</a>    <span class="k">def</span> <span class="nf">tf2flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intxt</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.tf2flag"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.tf2flag">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">tf2flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">intxt</span><span class="p">):</span>
         <span class="c1"># converts text written in XML file to True or False flag</span>
         <span class="k">if</span> <span class="n">intxt</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -1008,19 +1005,27 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="LinesinkData.set_crs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_crs">[docs]</a>    <span class="k">def</span> <span class="nf">set_crs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prjfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.set_crs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.set_crs">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">set_crs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prjfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the projected coordinate reference system, and the BasemapUnits.</span>
 <span class="sd">        If no arguments are supplied, default to existing BasemapUnits.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        epsg: int</span>
-<span class="sd">            EPSG code identifying Coordinate Reference System (CRS)</span>
-<span class="sd">            for features in df.geometry</span>
-<span class="sd">            (optional)</span>
-<span class="sd">        proj_str: str</span>
-<span class="sd">            proj_str string identifying CRS for features in df.geometry</span>
-<span class="sd">            (optional)</span>
+<span class="sd">        crs : obj</span>
+<span class="sd">            A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">            passed to :meth:`pyproj.crs.CRS.from_user_input`</span>
+<span class="sd">            Can be any of:</span>
+
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
 <span class="sd">        prjfile: str</span>
 <span class="sd">            File path to projection (.prj) file identifying CRS</span>
 <span class="sd">            for features in df.geometry</span>
@@ -1030,13 +1035,11 @@
 <span class="sd">        -------</span>
 <span class="sd">        sets the LinesinkData.pyproj_crs attribute.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">(</span><span class="n">epsg</span><span class="p">,</span> <span class="n">proj_str</span><span class="p">,</span> <span class="n">prjfile</span><span class="p">))</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="p">(</span><span class="n">crs</span><span class="p">,</span> <span class="n">prjfile</span><span class="p">))</span>
         <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">args</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">epsg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_epsg</span><span class="p">(</span><span class="n">epsg</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">proj_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">proj_str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pyproj_crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">prjfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">prjfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
                     <span class="n">wkt</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -1058,7 +1061,7 @@
                 <span class="n">translate_units</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;metre&#39;</span><span class="p">:</span> <span class="s1">&#39;meters&#39;</span><span class="p">}</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">BasemapUnits</span> <span class="o">=</span> <span class="n">translate_units</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span></div>
             
-<div class="viewcode-block" id="LinesinkData.preprocess"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.preprocess">[docs]</a>    <span class="k">def</span> <span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.preprocess"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.preprocess">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This method associates attribute information in the NHDPlus PlusFlowVAA and Elevslope tables, and</span>
 <span class="sd">        the model domain configuration (nearfield, farfield, and any other polygon areas) with the NHDPlus</span>
@@ -1447,7 +1450,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.simplify_lines"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.simplify_lines">[docs]</a>    <span class="k">def</span> <span class="nf">simplify_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nearfield_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">routed_area_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">farfield_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="LinesinkData.simplify_lines"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.simplify_lines">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">simplify_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nearfield_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">routed_area_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">farfield_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">nearfield_refinement</span><span class="o">=</span><span class="p">{}):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reduces the number of vertices in the GIS linework representing streams and lakes,</span>
 <span class="sd">        to within specified tolerances. The tolerance values represent the maximum distance</span>
@@ -1516,7 +1519,7 @@
 
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.prototype"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.prototype">[docs]</a>    <span class="k">def</span> <span class="nf">prototype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nftol</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span> <span class="n">fftol</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.prototype"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.prototype">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prototype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nftol</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">],</span> <span class="n">fftol</span><span class="o">=</span><span class="mi">500</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to compare multiple simplification distance tolerance values for the model nearfield.</span>
 
 <span class="sd">        Parameters:</span>
@@ -1546,16 +1549,16 @@
 
             <span class="c1"># make a shapefile of the simplified lines with nearfield_tol=tol</span>
             <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;ls_coords&#39;</span><span class="p">,</span> <span class="s1">&#39;geometry&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">outshp</span> <span class="o">=</span> <span class="s1">&#39;prototypes/&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">+</span> <span class="s1">&#39;_dis_tol_</span><span class="si">{}</span><span class="s1">.shp&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tol</span><span class="p">)</span>
+            <span class="n">outshp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;prototypes/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s1">_dis_tol_</span><span class="si">{</span><span class="n">tol</span><span class="si">}</span><span class="s1">.shp&#39;</span>
             <span class="n">gisutils</span><span class="o">.</span><span class="n">df2shp</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">outshp</span><span class="p">,</span> <span class="n">geo_column</span><span class="o">=</span><span class="s1">&#39;ls_geom&#39;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">nftol</span><span class="p">,</span> <span class="n">nlines</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Distance tolerance&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Number of lines&#39;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span> <span class="o">+</span> <span class="s1">&#39;tol_vs_nlines.pdf&#39;</span><span class="p">)</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="si">}</span><span class="s2">_tol_vs_nlines.pdf&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LinesinkData.adjust_zero_gradient"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.adjust_zero_gradient">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_zero_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.adjust_zero_gradient"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.adjust_zero_gradient">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">adjust_zero_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">increment</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
 
         <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dg</span>
         <span class="n">dg</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
@@ -1618,12 +1621,12 @@
                         <span class="s2">&quot;See </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.drop_crossing_lines"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.drop_crossing_lines">[docs]</a>    <span class="k">def</span> <span class="nf">drop_crossing_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.drop_crossing_lines"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.drop_crossing_lines">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">drop_crossing_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 
         <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dg</span>
         <span class="n">crosses</span> <span class="o">=</span> <span class="n">dg</span><span class="o">.</span><span class="n">check4crossing_lines</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LinesinkData.drop_duplicates"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.drop_duplicates">[docs]</a>    <span class="k">def</span> <span class="nf">drop_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.drop_duplicates"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.drop_duplicates">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">drop_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="c1"># loops or braids in NHD linework can result in duplicate lines after simplification</span>
         <span class="c1"># create column of line coordinates converted to strings</span>
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ls_coords_str&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">coords</span><span class="p">))</span> <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">ls_coords</span><span class="p">]</span>
@@ -1661,7 +1664,7 @@
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;ls_coords_str&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.setup_linesink_lakes"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.setup_linesink_lakes">[docs]</a>    <span class="k">def</span> <span class="nf">setup_linesink_lakes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.setup_linesink_lakes"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.setup_linesink_lakes">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">setup_linesink_lakes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 
         <span class="c1"># read in elevations for NHD waterbodies (from preprocessing routine; needed for isolated lakes)</span>
         <span class="n">wb_elevs</span> <span class="o">=</span> <span class="n">gisutils</span><span class="o">.</span><span class="n">shp2df</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wb_centroids_w_elevations</span><span class="p">,</span>
@@ -1812,7 +1815,7 @@
             <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">lines</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.list_updown_comids"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.list_updown_comids">[docs]</a>    <span class="k">def</span> <span class="nf">list_updown_comids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.list_updown_comids"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.list_updown_comids">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">list_updown_comids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 
         <span class="n">farfield</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">COMID</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">farfield</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="c1"># record up and downstream comids for lines</span>
@@ -1840,7 +1843,7 @@
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;dncomid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">d</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">dncomid</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.make_linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.make_linesinks">[docs]</a>    <span class="k">def</span> <span class="nf">make_linesinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_preprocessed_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="LinesinkData.make_linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.make_linesinks">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">make_linesinks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reuse_preprocessed_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                        <span class="n">shp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_reporting</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">efp</span><span class="p">:</span>
@@ -1904,7 +1907,7 @@
         <span class="c1"># find all routed comids with only 1 line; merge with neighboring comids</span>
         <span class="c1"># (GFLOW requires two lines for routed streams)</span>
 
-        <span class="k">def</span> <span class="nf">bisect</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">bisect</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
             <span class="c1"># add vertex to middle of single line segment</span>
             <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
             <span class="n">mid</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
@@ -1997,7 +2000,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">split_by_HUC</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_lss_by_huc</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write_lss</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.lss.xml&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write_lss</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="si">}</span><span class="s1">.lss.xml&#39;</span><span class="p">)</span>
 
         <span class="c1"># run diagnostics on lines and report errors</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_diagnostics</span><span class="p">()</span>
@@ -2010,7 +2013,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">write_shapefile</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done!&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LinesinkData.map_confluences"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.map_confluences">[docs]</a>    <span class="k">def</span> <span class="nf">map_confluences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.map_confluences"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.map_confluences">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">map_confluences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">upsegs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">upcomids</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">maxsegs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">uu</span><span class="p">)</span> <span class="k">for</span> <span class="n">uu</span> <span class="ow">in</span> <span class="n">u</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
@@ -2040,14 +2043,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;dStage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;maxElev&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;minElev&#39;</span><span class="p">]</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done, see confluences attribute.&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LinesinkData.run_diagnostics"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.run_diagnostics">[docs]</a>    <span class="k">def</span> <span class="nf">run_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.run_diagnostics"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.run_diagnostics">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">run_diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the diagnostic suite on the LinesinkData instance.&quot;&quot;&quot;</span>
         <span class="n">dg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dg</span>
         <span class="n">dg</span><span class="o">.</span><span class="n">check_vertices</span><span class="p">()</span>
         <span class="n">dg</span><span class="o">.</span><span class="n">check4crossing_lines</span><span class="p">()</span>
         <span class="n">dg</span><span class="o">.</span><span class="n">check4zero_gradient</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LinesinkData.map_outsegs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.map_outsegs">[docs]</a>    <span class="k">def</span> <span class="nf">map_outsegs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.map_outsegs"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.map_outsegs">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">map_outsegs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        from Mat2, returns dataframe of all downstream segments (will not work with circular routing!)</span>
 <span class="sd">        &#39;&#39;&#39;</span>
@@ -2067,7 +2070,7 @@
                 <span class="k">break</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">outsegs</span> <span class="o">=</span> <span class="n">outsegsmap</span></div>
 
-<div class="viewcode-block" id="LinesinkData.read_lss"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.read_lss">[docs]</a>    <span class="k">def</span> <span class="nf">read_lss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lss_xml</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.read_lss"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.read_lss">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">read_lss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lss_xml</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;read a linesink string (lss) XML file exported by GFLOW&quot;&quot;&quot;</span>
         <span class="n">xml</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">lss_xml</span><span class="p">)</span>
         <span class="n">root</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
@@ -2103,19 +2106,19 @@
                       <span class="s1">&#39;AutoSWIZC&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;DefaultResistance&#39;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">field</span><span class="p">)],</span>
-                                 <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">)</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">field</span><span class="p">)],</span> 
+                            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">int_dtype</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
                     <span class="n">d</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
-                <span class="k">except</span><span class="p">:</span>
-                    <span class="n">d</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tf2flag</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">text</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">field</span><span class="p">)])</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">iter</span><span class="p">(</span><span class="n">field</span><span class="p">)],</span>
                                 <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
 
         <span class="c1"># read in the vertices</span>
-        <span class="k">def</span> <span class="nf">tolss</span><span class="p">(</span><span class="n">ls</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">tolss</span><span class="p">(</span><span class="n">ls</span><span class="p">):</span>
             <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ls</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Vertices&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;Vertex&#39;</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
             <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">v</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ls</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;Vertices&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;Vertex&#39;</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">LineString</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">))</span>
@@ -2146,7 +2149,7 @@
         <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ls_coords&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="LinesinkData.write_lss_by_huc"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.write_lss_by_huc">[docs]</a>    <span class="k">def</span> <span class="nf">write_lss_by_huc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.write_lss_by_huc"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.write_lss_by_huc">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_lss_by_huc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Grouping segments by hydrologic unit...&#39;</span><span class="p">)</span>
         <span class="c1"># intersect lines with HUCs; then group dataframe by HUCs</span>
@@ -2161,10 +2164,10 @@
         <span class="n">HUCs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">HUC</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">HUC</span> <span class="ow">in</span> <span class="n">HUCs</span><span class="p">:</span>
             <span class="n">dfh</span> <span class="o">=</span> <span class="n">dfg</span><span class="o">.</span><span class="n">get_group</span><span class="p">(</span><span class="n">HUC</span><span class="p">)</span>
-            <span class="n">outfile</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">.lss.xml&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="p">,</span> <span class="n">HUC</span><span class="p">)</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">HUC</span><span class="si">}</span><span class="s1">.lss.xml&#39;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_lss</span><span class="p">(</span><span class="n">dfh</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LinesinkData.write_lss"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.write_lss">[docs]</a>    <span class="k">def</span> <span class="nf">write_lss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.write_lss"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.write_lss">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_lss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">outfile</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;write GFLOW linesink XML (lss) file from dataframe df</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -2223,9 +2226,9 @@
         <span class="n">ofp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;&lt;/LinesinkStringFile&gt;&#39;</span><span class="p">)</span>
         <span class="n">ofp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LinesinkData.write_shapefile"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.write_shapefile">[docs]</a>    <span class="k">def</span> <span class="nf">write_shapefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_ls_coords</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="LinesinkData.write_shapefile"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.LinesinkData.write_shapefile">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">write_shapefile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_ls_coords</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">outfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.shp&#39;</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outfile_basename</span><span class="p">)</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.shp&#39;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">routid</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;dncomid&#39;</span><span class="p">,</span> <span class="s1">&#39;upcomids&#39;</span><span class="p">}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
@@ -2246,26 +2249,26 @@
         <span class="n">df</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;wrote </span><span class="si">{</span><span class="n">outfile</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
 
-<div class="viewcode-block" id="linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.linesinks">[docs]</a><span class="k">class</span> <span class="nc">linesinks</span><span class="p">(</span><span class="n">LinesinkData</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="linesinks"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.linesinks">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">linesinks</span><span class="p">(</span><span class="n">LinesinkData</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The &#39;linesinks&#39; class was renamed to LinesinkData to better follow pep 8.&quot;</span><span class="p">,</span>
                       <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="n">LinesinkData</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="InputFileMissing"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.InputFileMissing">[docs]</a><span class="k">class</span> <span class="nc">InputFileMissing</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
+<div class="viewcode-block" id="InputFileMissing"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.InputFileMissing">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">InputFileMissing</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">infile</span> <span class="o">=</span> <span class="n">infile</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Could not open or parse input file </span><span class="si">{0}</span><span class="s1">.</span><span class="se">\n</span><span class="s1">Check for errors in XML formatting.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">infile</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="EmptyDataFrame"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.EmptyDataFrame">[docs]</a><span class="k">class</span> <span class="nc">EmptyDataFrame</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="EmptyDataFrame"><a class="viewcode-back" href="../../api/index.html#lsmaker.lsmaker.EmptyDataFrame">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">EmptyDataFrame</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">Empty DataFrame!&#39;</span><span class="p">)</span></div>
 </pre></div>
 
@@ -2277,7 +2280,7 @@
 
   <div role="contentinfo">
     <p>
-      <span class="lastupdated">Last updated on Feb 21, 2024.
+      <span class="lastupdated">Last updated on Jun 13, 2025.
       </span></p>
   </div>
 

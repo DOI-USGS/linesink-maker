@@ -1,28 +1,28 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Medford National Forest Unit &mdash; linesink-maker 0.2.0.post0.dev0+gf95e937 documentation</title>
+  <title>Medford National Forest Unit &mdash; linesink-maker 0.2.0.post4.dev0+g946993f documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="_static/jquery.js"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+      <script src="_static/doctools.js"></script>
+      <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/clipboard.min.js"></script>
+      <script src="_static/copybutton.js"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -41,9 +41,6 @@
           <a href="index.html" class="icon icon-home">
             linesink-maker
           </a>
-              <div class="version">
-                0.2.0.post0.dev0+gf95e937
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -119,10 +116,10 @@
            <div itemprop="articleBody">
              
   <section id="medford-national-forest-unit">
-<h1>Medford National Forest Unit<a class="headerlink" href="#medford-national-forest-unit" title="Permalink to this heading">¶</a></h1>
+<h1>Medford National Forest Unit<a class="headerlink" href="#medford-national-forest-unit" title="Permalink to this heading"></a></h1>
 <p>In this example, a <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> model of a National Forest Unit in Northern Wisconsin is constructed, similar to the one documented in <a class="reference external" href="https://wgnhs.wisc.edu/pubs/tr0041/">this study</a>. The files for this example can be found in the <a class="reference external" href="https://github.com/aleaf/linesink-maker/tree/develop/examples/medford">examples/medford subfolder</a> of the Linesink-maker repository.</p>
 <section id="configuration-file-in-yaml-format-medford-lines-yml">
-<h2>Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)<a class="headerlink" href="#configuration-file-in-yaml-format-medford-lines-yml" title="Permalink to this heading">¶</a></h2>
+<h2>Configuration file in yaml format (<code class="docutils literal notranslate"><span class="pre">Medford_lines.yml</span></code>)<a class="headerlink" href="#configuration-file-in-yaml-format-medford-lines-yml" title="Permalink to this heading"></a></h2>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">GlobalSettings</span><span class="p">:</span>
 <span class="linenos"> 2</span><span class="w">  </span><span class="c1"># file path where intermediate and output will be generated.</span>
 <span class="linenos"> 3</span><span class="w">  </span><span class="nt">working_dir</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;.&#39;</span>
@@ -192,14 +189,14 @@
 </pre></div>
 </div>
 <section id="the-globalsettings-block">
-<h3>The GlobalSettings block<a class="headerlink" href="#the-globalsettings-block" title="Permalink to this heading">¶</a></h3>
+<h3>The GlobalSettings block<a class="headerlink" href="#the-globalsettings-block" title="Permalink to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">GlobalSettings:</span></code> block in the configuration file contains settings that apply to the whole model. The <code class="docutils literal notranslate"><span class="pre">resistance:</span></code> , <code class="docutils literal notranslate"><span class="pre">global_streambed_thickness:</span></code>, <code class="docutils literal notranslate"><span class="pre">H:</span></code> (representative aquifer thickness), and <code class="docutils literal notranslate"><span class="pre">k:</span></code> (representative aquifer hydraulic conductivity) are all used to compute the characteristic leakage length (<span class="math notranslate nohighlight">\(\lambda\)</span>) needed for estimating an appropriate width parameter for lakes (Haitjema, 2005), and are given in the model length units (<code class="docutils literal notranslate"><span class="pre">ComputationalUnits:</span></code>). <code class="docutils literal notranslate"><span class="pre">working_dir:</span></code> specifies the location where output from Linesink-maker will be written; <code class="docutils literal notranslate"><span class="pre">prj:</span></code> is a file path to a projection file containing a <a class="reference external" href="http://docs.opengeospatial.org/is/18-010r7/18-010r7.html">well-known text (WKT)</a> representation of the projected CRS for the model.</p>
 </section>
 <section id="the-modeldomain-block">
-<h3>The ModelDomain block<a class="headerlink" href="#the-modeldomain-block" title="Permalink to this heading">¶</a></h3>
+<h3>The ModelDomain block<a class="headerlink" href="#the-modeldomain-block" title="Permalink to this heading"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">ModelDomain:</span></code> block allows specification of different areas of model refinement.</p>
 <section id="specifying-one-or-more-nearfields">
-<h4>Specifying one or more nearfields<a class="headerlink" href="#specifying-one-or-more-nearfields" title="Permalink to this heading">¶</a></h4>
+<h4>Specifying one or more nearfields<a class="headerlink" href="#specifying-one-or-more-nearfields" title="Permalink to this heading"></a></h4>
 <p>With the <code class="docutils literal notranslate"><span class="pre">nearfield:</span></code> key, the user can specify one or more polygon shapefiles defining the primary area of focus for the model. A single polygon shapefile containing one or more nearfield area polygons can be specified as shown above:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nt">nearfield</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shps/Medford_unit.shp</span>
 </pre></div>
@@ -225,23 +222,23 @@
 </div>
 </section>
 <section id="specifying-an-intermediate-routed-area">
-<h4>Specifying an intermediate “routed area”<a class="headerlink" href="#specifying-an-intermediate-routed-area" title="Permalink to this heading">¶</a></h4>
+<h4>Specifying an intermediate “routed area”<a class="headerlink" href="#specifying-an-intermediate-routed-area" title="Permalink to this heading"></a></h4>
 <p>With the optional <code class="docutils literal notranslate"><span class="pre">routed_area:</span></code> key, another polygon can be supplied to define the extent of the model stream network of routed, resistance linesinks (see Haitjema, 1995). Typically, the routed area is specified at an intermediate level of detail between the refined nearfield and coarse farfield. The routed area must be a single polygon that encloses all specified nearfield areas.</p>
 </section>
 <section id="specifying-a-farfield">
-<h4>Specifying a farfield<a class="headerlink" href="#specifying-a-farfield" title="Permalink to this heading">¶</a></h4>
+<h4>Specifying a farfield<a class="headerlink" href="#specifying-a-farfield" title="Permalink to this heading"></a></h4>
 <p>Finally, the outer extent of the model can be defined using a polygon shapefile with the <code class="docutils literal notranslate"><span class="pre">farfield:</span></code> key, or alternatively, as a buffer distance around the nearfield polygon with the <code class="docutils literal notranslate"><span class="pre">farfield_buffer:</span></code> key. The area between the nearfield polygon (or optionally, the routed area polygon) and the farfield extent is then populated with zero-resistance linesinks that form a perimeter boundary condition (see Haitjema, 1995).</p>
 </section>
 </section>
 <section id="the-simplification-block">
-<h3>The Simplification block<a class="headerlink" href="#the-simplification-block" title="Permalink to this heading">¶</a></h3>
+<h3>The Simplification block<a class="headerlink" href="#the-simplification-block" title="Permalink to this heading"></a></h3>
 <p>Source hydrography input are defined in the <code class="docutils literal notranslate"><span class="pre">NHDFiles:</span></code> block as shown. Currently, Linesink-maker only works with NHDPlus data. The <code class="docutils literal notranslate"><span class="pre">Simplification:</span></code> block controls how the hydrography input are discretized, and which features are retained. For example, a <code class="docutils literal notranslate"><span class="pre">nearfield_tolerance:</span></code> value of 100 meters means that the simplification of the original flowlines will be limited by the constraint that the simplified lines do not deviate from the original lines by more than this distance. With the <code class="docutils literal notranslate"><span class="pre">min_farfield_order:</span></code> key, lower-order streams can be excluded from the farfield linesinks (a value of 2 means that first-order streams are excluded). The <code class="docutils literal notranslate"><span class="pre">min_waterbody_size:</span></code>, <code class="docutils literal notranslate"><span class="pre">min_nearfield_wb_size:</span></code> and <code class="docutils literal notranslate"><span class="pre">min_farfield_wb_size:</span></code> keys control the minimimum size for the waterbodies that are included in the routed, nearfield and farfield areas of the model (in square km). Finally, with the <code class="docutils literal notranslate"><span class="pre">drop_intermittent:</span></code> key, streams classified as “intermittent” in NHDPlus can be excluded from the routed part of the model outside of the model nearfield. By default, all streams are included in the nearfield.</p>
 <p>The above configuration file can be used in the following script to generate a linesink string (LSS) XML file of the stream network that can be imported into <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> (version 2.2 or later).</p>
 </section>
 </section>
 <section id="python-script-to-build-the-model-make-linesinks-py">
-<h2>Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):<a class="headerlink" href="#python-script-to-build-the-model-make-linesinks-py" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span> <span class="nn">lsmaker</span>
+<h2>Python script to build the model (<code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code>):<a class="headerlink" href="#python-script-to-build-the-model-make-linesinks-py" title="Permalink to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">import</span><span class="w"> </span><span class="nn">lsmaker</span>
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="n">input_file</span> <span class="o">=</span> <span class="s1">&#39;Medford_lines.yml&#39;</span>
 <span class="linenos">4</span><span class="n">ls</span> <span class="o">=</span> <span class="n">lsmaker</span><span class="o">.</span><span class="n">LinesinkData</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
@@ -256,12 +253,12 @@
 <figure class="align-left" id="id2">
 <a class="reference internal image-reference" href="_images/medford_results.png"><img alt="alternate text" src="_images/medford_results.png" style="width: 674.0500000000001px; height: 349.05px;" /></a>
 <figcaption>
-<p><span class="caption-text">Figure 1: Linesinks produced by Linesink-maker for the Medford Unit of the Chequamegon-Nicolet National Forest. A distance tolerance between the simplified linesinks and original hydrography controls the level of detail in the stream network. Linesinks within the forest unit were created at the highlest level of detail (100 meter distance tolerance). A buffer of routed resistance linesinks disretized at a 300 meter tolerance surrounds the forest unit, to allow for accurate simulation of hydraulic divides between competing sinks and stream (base) flows into the forest unit. Coarsely discretized (500 meter tolerance) zero-resistance linesinks create a perimeter boundary condition for the solution. B illustrates the conversion of flowlines (red) into a drainage lake represented by routed resistance linesinks around its perimeter. Linesink-maker makes small adjustments to the end elevations of drainage lake tributaries to ensure proper routing in the GFLOW GUI.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text">Figure 1: Linesinks produced by Linesink-maker for the Medford Unit of the Chequamegon-Nicolet National Forest. A distance tolerance between the simplified linesinks and original hydrography controls the level of detail in the stream network. Linesinks within the forest unit were created at the highlest level of detail (100 meter distance tolerance). A buffer of routed resistance linesinks disretized at a 300 meter tolerance surrounds the forest unit, to allow for accurate simulation of hydraulic divides between competing sinks and stream (base) flows into the forest unit. Coarsely discretized (500 meter tolerance) zero-resistance linesinks create a perimeter boundary condition for the solution. B illustrates the conversion of flowlines (red) into a drainage lake represented by routed resistance linesinks around its perimeter. Linesink-maker makes small adjustments to the end elevations of drainage lake tributaries to ensure proper routing in the GFLOW GUI.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 </section>
 <section id="alternative-xml-format-for-configuration-file-medford-lines-xml">
-<h2>Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)<a class="headerlink" href="#alternative-xml-format-for-configuration-file-medford-lines-xml" title="Permalink to this heading">¶</a></h2>
+<h2>Alternative XML format for configuration file (<code class="docutils literal notranslate"><span class="pre">Medford_lines.xml</span></code>)<a class="headerlink" href="#alternative-xml-format-for-configuration-file-medford-lines-xml" title="Permalink to this heading"></a></h2>
 <div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="nt">&lt;linesinkInput&gt;</span>
 <span class="linenos">  2</span><span class="cm">&lt;!--</span>
 <span class="linenos">  3</span><span class="cm">Notes on linesinkMaker input:</span>
@@ -381,7 +378,7 @@
 
   <div role="contentinfo">
     <p>
-      <span class="lastupdated">Last updated on Feb 21, 2024.
+      <span class="lastupdated">Last updated on Jun 13, 2025.
       </span></p>
   </div>
 

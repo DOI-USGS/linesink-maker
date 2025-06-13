@@ -1,26 +1,26 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nicolet National Forest Unit (Northern part) &mdash; linesink-maker 0.2.0.post0.dev0+gf95e937 documentation</title>
+  <title>Nicolet National Forest Unit (Northern part) &mdash; linesink-maker 0.2.0.post4.dev0+g946993f documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="_static/jquery.js"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+      <script src="_static/doctools.js"></script>
+      <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/clipboard.min.js"></script>
+      <script src="_static/copybutton.js"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -39,9 +39,6 @@
           <a href="index.html" class="icon icon-home">
             linesink-maker
           </a>
-              <div class="version">
-                0.2.0.post0.dev0+gf95e937
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -111,14 +108,14 @@
            <div itemprop="articleBody">
              
   <section id="nicolet-national-forest-unit-northern-part">
-<h1>Nicolet National Forest Unit (Northern part)<a class="headerlink" href="#nicolet-national-forest-unit-northern-part" title="Permalink to this heading">¶</a></h1>
+<h1>Nicolet National Forest Unit (Northern part)<a class="headerlink" href="#nicolet-national-forest-unit-northern-part" title="Permalink to this heading"></a></h1>
 <p>This page shows another example of using Linesink-maker to construct a <a class="reference external" href="https://www.haitjema.com/">GFLOW</a> model, for <a class="reference external" href="https://wgnhs.wisc.edu/pubs/tr0042/">the northern part of the Nicolet National Forest Unit in Northern Wisconsin</a>. The files for this example can be found in the <a class="reference external" href="https://github.com/aleaf/linesink-maker/tree/develop/examples/nicolet">examples/nicolet subfolder</a> of the Linesink-maker repository. To run the example, simply run the included <code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code> script at the command line with <code class="docutils literal notranslate"><span class="pre">Nicolet_lines.xml</span></code> configuration file as an argument:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">make_linesinks</span><span class="o">.</span><span class="n">py</span> <span class="n">Nicolet_lines</span><span class="o">.</span><span class="n">xml</span>
 </pre></div>
 </div>
 <p>See the <a class="reference internal" href="example_medford.html#medford-national-forest-unit"><span class="std std-ref">Medford example</span></a> for a more detailed description of the input options, and an example of the more human-readable YAML configuration file format.</p>
 <section id="configuration-file-in-xml-format-nicolet-lines-xml">
-<h2>Configuration file in XML format (<code class="docutils literal notranslate"><span class="pre">Nicolet_lines.xml</span></code>)<a class="headerlink" href="#configuration-file-in-xml-format-nicolet-lines-xml" title="Permalink to this heading">¶</a></h2>
+<h2>Configuration file in XML format (<code class="docutils literal notranslate"><span class="pre">Nicolet_lines.xml</span></code>)<a class="headerlink" href="#configuration-file-in-xml-format-nicolet-lines-xml" title="Permalink to this heading"></a></h2>
 <div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">&lt;linesinkInput&gt;</span>
 <span class="linenos"> 2</span><span class="cm">&lt;!--</span>
 <span class="linenos"> 3</span><span class="cm">Notes on linesinkMaker input:</span>
@@ -211,9 +208,9 @@
 </div>
 </section>
 <section id="make-linesinks-py">
-<h2><code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code><a class="headerlink" href="#make-linesinks-py" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="linenos"> 2</span><span class="kn">import</span> <span class="nn">lsmaker</span>
+<h2><code class="docutils literal notranslate"><span class="pre">make_linesinks.py</span></code><a class="headerlink" href="#make-linesinks-py" title="Permalink to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">lsmaker</span>
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span><span class="k">try</span><span class="p">:</span>
 <span class="linenos"> 5</span>    <span class="n">input_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -243,7 +240,7 @@
 
   <div role="contentinfo">
     <p>
-      <span class="lastupdated">Last updated on Feb 21, 2024.
+      <span class="lastupdated">Last updated on Jun 13, 2025.
       </span></p>
   </div>
 

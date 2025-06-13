@@ -1,26 +1,26 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en">
 <head>
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Philosophy &mdash; linesink-maker 0.2.0.post0.dev0+gf95e937 documentation</title>
+  <title>Philosophy &mdash; linesink-maker 0.2.0.post4.dev0+g946993f documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="_static/jquery.js"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+      <script src="_static/doctools.js"></script>
+      <script src="_static/sphinx_highlight.js"></script>
+      <script src="_static/clipboard.min.js"></script>
+      <script src="_static/copybutton.js"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -39,9 +39,6 @@
           <a href="index.html" class="icon icon-home">
             linesink-maker
           </a>
-              <div class="version">
-                0.2.0.post0.dev0+gf95e937
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -106,9 +103,9 @@
            <div itemprop="articleBody">
              
   <section id="philosophy">
-<h1>Philosophy<a class="headerlink" href="#philosophy" title="Permalink to this heading">¶</a></h1>
+<h1>Philosophy<a class="headerlink" href="#philosophy" title="Permalink to this heading"></a></h1>
 <section id="motivation">
-<h2>Motivation<a class="headerlink" href="#motivation" title="Permalink to this heading">¶</a></h2>
+<h2>Motivation<a class="headerlink" href="#motivation" title="Permalink to this heading"></a></h2>
 <p>As the availability of datasets required for groundwater modeling has increased, so too has the need for
 improved methods for rapidly assessing stresses to aquatic systems such as cumulative pumping
 impacts. Analytic element groundwater flow models such as GFLOW provide an efficient, rapid, and
@@ -119,7 +116,7 @@ guides. Although typically less cumbersome than building finite difference grids
 prohibitively labor-intensive for many water resources decisions.</p>
 </section>
 <section id="what-linesink-maker-does">
-<h2>What linesink-maker does<a class="headerlink" href="#what-linesink-maker-does" title="Permalink to this heading">¶</a></h2>
+<h2>What linesink-maker does<a class="headerlink" href="#what-linesink-maker-does" title="Permalink to this heading"></a></h2>
 <p>Linesink-maker leverages existing information in the National Hydrography Dataset (NHDPlus) to automate construction of line-sink elements representing streams, rivers, and lakes.</p>
 <ul class="simple">
 <li><p>Vector information defining the waterbody geometries is read in and simplified using a line simplification algorithm in the Shapely Python package. The level of simplification is controlled by a distance tolerance, which can be varied by geographic area (allowing for different levels of complexity in the model near- and farfields). Further simplification can be achieved using ancillary information in NHDPlus such as stream order and arbolate sum. Other properties, such as resistance, width and parameter group, can also be specified.</p></li>
@@ -129,7 +126,7 @@ prohibitively labor-intensive for many water resources decisions.</p>
 </ul>
 </section>
 <section id="what-linesink-maker-doesn-t-do">
-<h2>What linesink-maker doesn’t do<a class="headerlink" href="#what-linesink-maker-doesn-t-do" title="Permalink to this heading">¶</a></h2>
+<h2>What linesink-maker doesn’t do<a class="headerlink" href="#what-linesink-maker-doesn-t-do" title="Permalink to this heading"></a></h2>
 <p>Linesink-maker does not construct a complete, working GFLOW model. It is still on the modeler to specify reasonable recharge rates and hydraulic conductivity values, including any heterogeniety that needs to be represented. More importantly, the modeler must also compare the model output to observed values of stream (base) flow and hydraulic head, and estimated reasonable values for hydraulic conductivity and recharge. GFLOW makes this easy to do with its PEST integration.</p>
 </section>
 </section>
@@ -146,7 +143,7 @@ prohibitively labor-intensive for many water resources decisions.</p>
 
   <div role="contentinfo">
     <p>
-      <span class="lastupdated">Last updated on Feb 21, 2024.
+      <span class="lastupdated">Last updated on Jun 13, 2025.
       </span></p>
   </div>
 
