@@ -2009,21 +2009,12 @@ class LinesinkData:
                       'AutoSWIZC',
                       'DefaultResistance']:
             if self.dtypes[field] == bool:
-                try:
-                    v = np.array([i.text for i in root.iter(field)], 
-                                dtype=self.int_dtype)
-                    if str(v[0]).isdigit():
-                        d[field] = v.astype(int).astype(bool)
-                    else:
-                        d[field] = v.astype(bool)
-                except:
-                    j=2
-                #try:
-                #    v = np.array([i.text for i in root.iter(field)],
-                #                 dtype=self.int_dtype)
-                #    d[field] = v.astype(bool)
-                #except:
-                #    d[field] = np.array([self.tf2flag(i.text) for i in root.iter(field)])
+                v = np.array([i.text for i in root.iter(field)], 
+                            dtype=self.int_dtype)
+                if str(v[0]).isdigit():
+                    d[field] = v.astype(int).astype(bool)
+                else:
+                    d[field] = v.astype(bool)
 
             else:
                 d[field] = np.array([i.text for i in root.iter(field)],
