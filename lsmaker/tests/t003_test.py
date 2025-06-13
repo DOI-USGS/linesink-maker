@@ -1,12 +1,14 @@
 """Tests based on the Medford example."""
-import lsmaker
+import copy
 import os
+import subprocess
 import numpy as np
 import pandas as pd
 import pyproj
 from shapely.geometry import LineString
 import pytest
-import subprocess
+import lsmaker
+
 
 
 @pytest.fixture(scope='module')
@@ -17,8 +19,15 @@ def lsmaker_instance_from_xml():
 
 
 @pytest.fixture(scope='module')
-def lsmaker_instance_with_linesinks(lsmaker_instance_from_xml):
+def get_lsmaker_instance_with_linesinks(lsmaker_instance_from_xml):
     ls = lsmaker_instance_from_xml
+    ls.make_linesinks()
+    return ls
+
+
+@pytest.fixture(scope='function')
+def lsmaker_instance_with_linesinks(get_lsmaker_instance_with_linesinks):
+    ls = copy.deepcopy(get_lsmaker_instance_with_linesinks)
     ls.make_linesinks()
     return ls
 
@@ -68,7 +77,7 @@ def test_medford_from_lss_xml(lsmaker_instance_with_linesinks):
         assert np.allclose(x1, x2)
     assert np.allclose(ls2.df.width.values, ls.df.width.values, rtol=0.01)
     # set the crs and compare
-    ls2.set_crs(epsg=26715)
+    ls2.set_crs(crs=26715)
     assert ls2.pyproj_crs == ls.pyproj_crs
 
 

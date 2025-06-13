@@ -686,10 +686,10 @@ class LinesinkData:
         self.elevs_field = 'DEM'  # field in wb_centroids_w_elevations containing elevations
 
         # outputs
-        self.outfile_basename = os.path.join(self._lsmaker_config_file_path,
-                                             inpars.findall('.//outfile_basename')[0].text)
-        self.error_reporting = os.path.join(self._lsmaker_config_file_path,
-                                            inpars.findall('.//error_reporting')[0].text)
+        self.outfile_basename = Path(self._lsmaker_config_file_path,
+                                     inpars.findall('.//outfile_basename')[0].text).resolve()
+        self.error_reporting = Path(self._lsmaker_config_file_path,
+                                    inpars.findall('.//error_reporting')[0].text).resolve()
 
         # attributes
         self.df = pd.DataFrame() # working dataframe for translating NHDPlus data to linesink strings
@@ -766,7 +766,7 @@ class LinesinkData:
                         if isinstance(item, str):
                             file_abspath = self._lsmaker_config_file_path / item
                             if file_abspath.exists() or item in filepaths_to_make_abs:
-                                item = str(file_abspath)
+                                item = Path(str(file_abspath))
                         new_entry.append(item)
                     entry = new_entry
                 self.__dict__[key] = entry
@@ -908,19 +908,27 @@ class LinesinkData:
         else:
             return False
 
-    def set_crs(self, epsg=None, proj_str=None, prjfile=None):
+    def set_crs(self, crs=None, prjfile=None):
         """Set the projected coordinate reference system, and the BasemapUnits.
         If no arguments are supplied, default to existing BasemapUnits.
         
         Parameters
         ----------
-        epsg: int
-            EPSG code identifying Coordinate Reference System (CRS)
-            for features in df.geometry
-            (optional)
-        proj_str: str
-            proj_str string identifying CRS for features in df.geometry
-            (optional)
+        crs : obj
+            A Python int, dict, str, or pyproj.crs.CRS instance
+            passed to :meth:`pyproj.crs.CRS.from_user_input`
+            Can be any of:
+
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
         prjfile: str
             File path to projection (.prj) file identifying CRS
             for features in df.geometry
@@ -930,13 +938,11 @@ class LinesinkData:
         -------
         sets the LinesinkData.pyproj_crs attribute.
         """
-        args = any(arg for arg in (epsg, proj_str, prjfile))
+        args = any(arg for arg in (crs, prjfile))
         pyproj_crs = None
         if self.BasemapUnits is None or args:
-            if epsg is not None:
-                pyproj_crs = pyproj.CRS.from_epsg(epsg)
-            elif proj_str is not None:
-                pyproj_crs = pyproj.CRS.from_string(proj_str)
+            if crs is not None:
+                pyproj_crs = pyproj.CRS.from_user_input(crs)
             elif prjfile is not None:
                 with open(prjfile) as src:
                     wkt = src.read()
@@ -1446,14 +1452,14 @@ class LinesinkData:
 
             # make a shapefile of the simplified lines with nearfield_tol=tol
             df.drop(['ls_coords', 'geometry'], axis=1, inplace=True)
-            outshp = 'prototypes/' + self.outfile_basename + '_dis_tol_{}.shp'.format(tol)
+            outshp = self.outfile_basename.parent / f'prototypes/{self.outfile_basename.stem}_dis_tol_{tol}.shp'
             gisutils.df2shp(df, outshp, geo_column='ls_geom', crs=self.crs)
 
         plt.figure()
         plt.plot(nftol, nlines)
         plt.xlabel('Distance tolerance')
         plt.ylabel('Number of lines')
-        plt.savefig(self.outfile_basename + 'tol_vs_nlines.pdf')
+        plt.savefig(f"{self.outfile_basename}_tol_vs_nlines.pdf")
 
     def adjust_zero_gradient(self, df, increment=0.01):
 
@@ -1897,7 +1903,7 @@ class LinesinkData:
         if self.split_by_HUC:
             self.write_lss_by_huc(df)
         else:
-            self.write_lss(df, '{}.lss.xml'.format(self.outfile_basename))
+            self.write_lss(df, f'{self.outfile_basename}.lss.xml')
 
         # run diagnostics on lines and report errors
         self.run_diagnostics()
@@ -2004,11 +2010,20 @@ class LinesinkData:
                       'DefaultResistance']:
             if self.dtypes[field] == bool:
                 try:
-                    v = np.array([i.text for i in root.iter(field)],
-                                 dtype=self.int_dtype)
-                    d[field] = v.astype(bool)
+                    v = np.array([i.text for i in root.iter(field)], 
+                                dtype=self.int_dtype)
+                    if str(v[0]).isdigit():
+                        d[field] = v.astype(int).astype(bool)
+                    else:
+                        d[field] = v.astype(bool)
                 except:
-                    d[field] = np.array([self.tf2flag(i.text) for i in root.iter(field)])
+                    j=2
+                #try:
+                #    v = np.array([i.text for i in root.iter(field)],
+                #                 dtype=self.int_dtype)
+                #    d[field] = v.astype(bool)
+                #except:
+                #    d[field] = np.array([self.tf2flag(i.text) for i in root.iter(field)])
 
             else:
                 d[field] = np.array([i.text for i in root.iter(field)],
@@ -2061,7 +2076,7 @@ class LinesinkData:
         HUCs = np.unique(df.HUC)
         for HUC in HUCs:
             dfh = dfg.get_group(HUC)
-            outfile = '{}_{}.lss.xml'.format(self.outfile_basename, HUC)
+            outfile = f'{self.outfile_basename}_{HUC}.lss.xml'
             self.write_lss(dfh, outfile)
 
     def write_lss(self, df, outfile):
@@ -2125,7 +2140,7 @@ class LinesinkData:
 
     def write_shapefile(self, outfile=None, use_ls_coords=True):
         if outfile is None:
-            outfile = self.outfile_basename.split('.')[0] + '.shp'
+            outfile = Path(self.outfile_basename).with_suffix('.shp')
         df = self.df.copy()
 
         for routid in {'dncomid', 'upcomids'}.intersection(set(df.columns)):

@@ -45,14 +45,14 @@ def get_linesink_results(xtr):
 
 def write_heads_raster(grdfile, outraster='heads.tiff',
                        solver_x0=0, solver_y0=0, scale_xy=.3048,
-                       epsg=26715):
+                       crs=26715):
     hds = SurferGrid(grdfile)
     hds.scale_xy(scale_xy)
     hds.offset_xy(solver_x0, solver_y0)
-    hds.write_raster(outraster, epsg=epsg)
+    hds.write_raster(outraster, crs=crs)
 
 
-def plot_flooding(grdfile, dem, epsg,
+def plot_flooding(grdfile, dem, crs,
                   aquifer_bottom=None,
                   outpath='',
                   clipto=None,
@@ -71,8 +71,22 @@ def plot_flooding(grdfile, dem, epsg,
         the GFLOW has already done any conversion, so scale_xy should be 1.
     dem : str
         DEM raster file.
-    epsg : str
-        EPSG code. Must be consistent with coordinate system of clipto feature.
+    crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to :meth:`pyproj.crs.CRS.from_user_input`
+        Can be any of:
+
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
+        Must be consistent with coordinate system of clipto feature.
     aquifer_bottom : str
         Raster file of aquifer bottom elevations. Used to compute saturated thickness.
     outpath : str
@@ -114,7 +128,7 @@ def plot_flooding(grdfile, dem, epsg,
     wtfile = os.path.join(outpath, 'heads_prj.tif')
     write_heads_raster(grdfile, wtfile,
                        solver_x0=solver_x0, solver_y0=solver_y0,
-                       scale_xy=scale_xy, epsg=epsg)
+                       scale_xy=scale_xy, crs=crs)
 
     # clipto must be a list (should add conversion if not)
     #clipto = _to_geojson(clipto) # convert input to geojson
@@ -126,12 +140,12 @@ def plot_flooding(grdfile, dem, epsg,
     aq_bot_rs = tmpath / 'botm_rs.tif'
     aq_bot_cp = tmpath / 'botm_cp.tif'
 
-    project_raster(wtfile, heads_rs, dest_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
-    project_raster(dem, dem_rs, dest_crs='epsg:{}'.format(epsg), resampling=1, resolution=resolution)
+    project_raster(wtfile, heads_rs, dest_crs=crs, resampling=1, resolution=resolution)
+    project_raster(dem, dem_rs, dest_crs=crs, resampling=1, resolution=resolution)
     clip_raster(dem_rs, clipto, dem_cp)
     clip_raster(heads_rs, clipto, heads_cp)
     if aquifer_bottom is not None:
-        project_raster(aquifer_bottom, aq_bot_rs, dest_crs='epsg:{}'.format(epsg),
+        project_raster(aquifer_bottom, aq_bot_rs, dest_crs=crs,
                        resampling=1, resolution=resolution)
         clip_raster(aq_bot_rs, clipto, aq_bot_cp)
 
@@ -262,7 +276,7 @@ class SurferGrid:
             header += '{:.2f} {:.2f}'.format(self.zmin, self.zmax)
             np.savetxt(output, self.data, fmt='%.2f', delimiter=' ', header=header, comments='')
 
-    def write_raster(self, fname='output', epsg=None):
+    def write_raster(self, fname='output', crs=None):
         try:
             import rasterio
             from rasterio import transform
@@ -271,10 +285,6 @@ class SurferGrid:
             return
 
         tfm = transform.from_bounds(self.xmin, self.ymin, self.xmax, self.ymax, self.ncol, self.nrow)
-        if epsg is not None:
-            crs = {'init': 'epsg:{}'.format(epsg)}
-        else:
-            crs = None
 
         with rasterio.Env():
             with rasterio.open(fname,
