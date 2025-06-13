@@ -1,7 +1,6 @@
 name: lsmaker_ci
 channels:
 - conda-forge
-- defaults
 dependencies:
 - python
 - ipython
@@ -29,6 +28,5 @@ dependencies:
 - nbsphinx  # for rendering notebooks in sphinx-generated docs
 - sphinx-copybutton
 - sphinx_rtd_theme
+- gis-utils
 - pip
-- pip:
-  - gis-utils
