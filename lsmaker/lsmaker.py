@@ -1579,7 +1579,7 @@ class LinesinkData:
         # get elevations, up/downcomids, and total lengths for those lines
         # assign attributes to lakes, then drop the lines
 
-        df['total_line_length'] = 0  # field to store total shoreline length of lakes
+        df['total_line_length'] = 0.  # field to store total shoreline length of lakes
         for wb_comid in self.wblist:
 
             lines = df[df['WBAREACOMI'] == wb_comid]
@@ -1926,7 +1926,7 @@ class LinesinkData:
         # confluences are where segments have upsegs (no upsegs means the reach 1 is a headwater)
         confluences = self.df.loc[(seglengths > 0) & (maxsegs > 0), ['COMID', 'upcomids']].copy()
 
-        confluences['elev'] = [0] * len(confluences)
+        confluences['elev'] = [0.] * len(confluences)
         nconfluences = len(confluences)
         print('Mapping {} confluences and updating segment min/max elevations...'.format(nconfluences))
         for i, r in confluences.iterrows():
