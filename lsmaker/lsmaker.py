@@ -793,7 +793,7 @@ class LinesinkData:
                         fnames.append(filename)
                 for fname in fnames:
                     fname = Path(fname)
-                    prjfile = fname.with_suffix('.pfj')
+                    prjfile = fname.with_suffix('.prj')
                     if prjfile.exists():
                         self.prj = prjfile
                         self.crs = gisutils.get_shapefile_crs(prjfile)

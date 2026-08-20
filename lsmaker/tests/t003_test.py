@@ -153,3 +153,23 @@ def test_multiple_nearfields_dict(test_data_path, routed_area_entry, multiple_ne
     # should not have been assigned in the dictionary case
     if not multiple_nearfields_list:
         assert not any(ls.df['tol'].unique() == 1000)
+
+
+def test_prj_from_nearfield_or_routed_area(test_data_path):
+    """With no prj: entry, the projection file is found next to the
+    nearfield or routed area shapefile. The suffix searched for was
+    '.pfj', which never matches, so self.prj stayed None and every
+    configuration without an explicit prj: entry raised ValueError."""
+    config_file = test_data_path / 'test_input.yaml'
+    cfg = lsmaker.LinesinkData.load_configuration(config_file)
+    expected_crs = lsmaker.LinesinkData(copy.deepcopy(cfg)).crs
+
+    del cfg['GlobalSettings']['prj']
+    ls = lsmaker.LinesinkData(cfg)
+
+    assert ls.prj is not None
+    assert str(ls.prj).endswith('.prj')
+    assert os.path.exists(ls.prj)
+    # the file found next to the shapefile describes the same CRS
+    # as the one that was named explicitly
+    assert ls.crs == expected_crs
